@@ -1,42 +1,84 @@
-# Optika Miftari
+# Optika Miftari — storefront + CMS
 
-React/Vite storefront and PHP commerce/CMS for Optika Miftari.
+**Live demo:** https://ariongj.github.io/optika/ · CMS: https://ariongj.github.io/optika/admin
 
-**Live website:** https://optika.itdks.tech/
+A complete, clickable web shop and back office for **Optika Miftari** (Mitrovicë, Kosovo), rebuilt on the design and
+architecture of the [Selca](https://ariongj.github.io/Selca/) build: warm paper palette, serif headings with an italic accent,
+pill buttons, a full-bleed hero slider and a client-side CMS. Optika's own brand photography, frames and copy are carried over,
+together with the **virtual try-on** (live camera, photo and 3D, processed on the device).
 
-This repository contains the source of the published storefront, including sans-serif headings, centered homepage collection CTA, and rounded black/white action buttons. GitHub hosts the source; the working site remains on its existing PHP-capable hosting. GitHub Pages alone cannot run the CMS, accounts, checkout, appointments or other PHP endpoints.
+- **Storefront** — home page (hero slider, categories, bestsellers, end-of-season offer with countdown, process, services,
+  lookbook, FAQ, advice), catalogue with filters, product pages with lens choices (frame only / single vision / screen /
+  progressive / prescription sun) and the **Kujdes+** add-on (12-month breakage cover), cart, checkout (cash on delivery, bank
+  transfer, simulated card) with a prescription step, order confirmation, eye-exam booking, services, lookbook, about,
+  contact, advice articles, CMS pages, search, wishlist and **Provo virtualisht** (`/provo-virtualisht`).
+- **CMS** (`/admin`) — dashboard, orders, draft orders, returns, products, collections, inventory, purchasing, customers and
+  segments, discounts and offer campaigns, homepage builder with live preview, slides and banners, pages, advice posts, lookbook,
+  menus, media, appointments (eye exams, fittings, Klinika Miftari), B2B quotes for Optical Lab, markets, analytics, settings.
+- **Languages** — Albanian (default) and English on the storefront. A third slot holds Serbian (Latin) and can be switched on in
+  *Konfigurimet → Gjuhët*. The CMS itself is available in all three.
 
-## Development
+Everything runs in the browser (no backend). Data is kept in `localStorage`, and open tabs stay in sync, so an order placed in the
+shop appears in the CMS straight away. Each visitor's browser keeps its own copy of the demo data.
 
-Use Node.js 22+ and pnpm. Install dependencies with the committed lockfile:
+**CMS demo login** (pre-filled): `admin@optikamiftari.com` / `miftari2026`
 
-```sh
-pnpm install --frozen-lockfile
-pnpm run dev --port 4190 --strictPort
+## Run it
+
+Requirements: Node.js 20.19+ (tested with Node 24).
+
+```bash
+npm ci
 ```
 
-Port 4190 is the assigned Optika local port. The Vite development server previews the frontend, not the PHP workflows. Do not use another project's occupied port.
-
-Copy `.env.example` to `.env.local` before building, or set `VITE_PUBLIC_SITE_URL=https://optika.itdks.tech` in the build environment:
-
-```sh
-pnpm run build
+```bash
+npm run dev -- --port 4190
 ```
 
-The postbuild generates initial HTML for the public pages, products and guides. Preview output with `pnpm run preview --port 4190 --strictPort`; full commerce testing requires PHP and isolated test storage.
+Open http://localhost:4190 — the CMS is at http://localhost:4190/admin. The camera mode of the virtual try-on needs `localhost` or
+HTTPS.
 
-## Hosting and private configuration
+Production build (static files in `dist/`):
 
-Deploy the contents of `dist/` to the existing Hostinger `public_html`, preserving operational APIs, uploads and sibling private storage. See [deployment instructions](HOSTINGER_DEPLOYMENT.md), [operations guide](ADMIN_GUIDE.md), and [virtual try-on guide](VIRTUAL_TRY_ON_GUIDE.md). Historical evidence paths in these documents refer to private local QA artifacts, which are deliberately not published here.
-
-This is a source publication of an existing installation, not an automatically configured fresh backend. Credentials, provider keys, customer records, health/prescription data, catalogue runtime state, uploaded files, recovery archives, generated release ZIPs and local Git history are excluded. Configure staff credentials and backend storage securely outside the public web root; never commit them. Existing live accounts and orders are not changed by this publication.
-
-The public source contains illustrative catalogue/campaign material. Real product content, payment/email delivery, clinical approvals and protected production workflows require their own verification. A live page or successful build does not constitute production-readiness sign-off.
-
-## Checks
-
-```sh
-node --test scripts/*.test.mjs
+```bash
+npm run build
 ```
 
-Some integration and historical release-verification scripts require PHP, isolated fixtures or private local QA artifacts; inspect their setup before running them. Never point synthetic write tests at production.
+## Deploy
+
+Every push to `main` builds the site with `BASE_PATH=/optika/` and publishes it to GitHub Pages
+(`.github/workflows/pages.yml`; `dist/404.html` is the SPA fallback). For a root deployment (Vercel, Netlify or a custom
+domain) build without `BASE_PATH`; `vercel.json` and `public/_redirects` handle client-side routes.
+
+## The previous PHP site
+
+The earlier React + PHP version (Hostinger deployment with server-side accounts, orders and the staff portal) is preserved
+unchanged on the [`hostinger-php`](https://github.com/ariongj/optika/tree/hostinger-php) branch.
+
+## What is placeholder
+
+- Prices, stock, lens packages and most product copy — based on the previous Optika catalogue; edit them in the CMS.
+- Orders, customers, bookings, quotes and staff — generated demo data (fictional names, `@example.com` addresses).
+- E-mail address, NUI / TVSH numbers and bank account in *Konfigurimet* — samples to be replaced.
+- Card payment is simulated; no card data is collected. The second store's address is not listed.
+- The try-on frames are dimensional approximations built from the catalogue measurements, not product scans; PD and fit are
+  confirmed in store.
+
+## Tech
+
+Vite · React 19 · TypeScript · Tailwind CSS v4 · React Router 7 · Zustand · Motion · Recharts · Lucide icons · three.js and
+MediaPipe Face Landmarker (try-on, loaded only on that page) · Fraunces + Manrope fonts (self-hosted).
+
+```
+src/
+  App.tsx              routes (storefront + /admin; CMS and try-on are code-split)
+  lib/                 types, pricing (VAT, shipping zones, discounts), formatting, search
+  i18n/                typed SQ / EN / SR dictionaries
+  data/                catalogue, homepage sections, pages, posts, lookbook, demo orders and CMS data
+  store/               zustand stores (db = CMS data, ui = cart/lang/session) + cross-tab sync
+  components/          UI kit, logo, icons
+  site/                storefront layout, sections, pages, virtual try-on
+  admin/               CMS layout, components, pages
+public/images/         WebP photography (+ -sm thumbnails)
+public/mediapipe/      face-landmark model and WASM runtime for the try-on
+```
