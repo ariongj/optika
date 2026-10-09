@@ -35,10 +35,11 @@ jobs:
           BASE_PATH: /optika/
 
       # SPA fallback: GitHub Pages serves 404.html for deep links such as /optika/admin/narudzbe,
-      # so it must be the app shell. .nojekyll keeps files that start with "_" in the artifact.
+      # so it must be the app shell. Known routes also get their own <route>/index.html copy so shared
+      # links answer 200 instead of 404. .nojekyll keeps files that start with "_" in the artifact.
       - name: SPA fallback
         run: |
-          cp dist/index.html dist/404.html
+          node scripts/spa-shells.mjs dist
           touch dist/.nojekyll
 
       - uses: actions/configure-pages@v5
