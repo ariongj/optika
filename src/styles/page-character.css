@@ -1,0 +1,112 @@
+/* One identity, deliberately different page compositions. */
+.editorial-site .site-header { grid-template-columns:auto minmax(0,1fr) auto auto; gap:18px; }
+.editorial-site .site-header .desktop-nav { min-width:0; gap:16px; justify-content:center; }
+.language-switch { display:flex; flex-shrink:0; align-items:center; padding:3px; border:1px solid #d2d5ca; border-radius:24px; gap:2px; order:2; margin-left:auto; }
+.language-switch button { min-width:38px; min-height:38px; padding:5px; border:0; background:transparent; color:#3d493d; font-size:11px; font-weight:650; border-radius:20px; }
+.language-switch button[aria-pressed="true"] { color:#fff; background:#293e32; }
+.language-switch button:focus-visible { outline:2px solid #956c43; outline-offset:3px; }
+.editorial-site .site-header .desktop-nav { order:1; }
+.editorial-site .site-header .header-actions { order:3; }
+
+/* About is a family editorial, not another product sales page. */
+.editorial-site .ed-about .ed-story-hero { display:grid; grid-template-columns:1.15fr .85fr; align-items:center; background:transparent; border:0; gap:7%; margin-top:36px; overflow:visible; }
+.editorial-site .ed-about .ed-story-hero > div { padding:24px 0; }
+.editorial-site .ed-about .ed-story-hero h1 { font-family:Georgia,serif; font-weight:400; letter-spacing:-.055em; font-size:clamp(48px,6.5vw,92px); line-height:1.02; max-width:12ch; }
+.editorial-site .ed-about .ed-story-hero p { max-width:48ch; font-size:16px; margin-block:24px; }
+.editorial-site .ed-about .ed-story-hero figure { min-height:0; aspect-ratio:4/5; border-radius:48% 48% 0 0; overflow:hidden; }
+.editorial-site .ed-about .ed-story-section { border-top:1px solid #cccdbf; padding-block:36px; }
+.editorial-site .ed-about .ed-value-grid { display:flex; flex-direction:column; gap:0; background:none; border:0; }
+.editorial-site .ed-about .ed-value-grid article { display:grid; grid-template-columns:1fr 1.7fr auto; align-items:start; gap:24px; padding:24px 0; border:0; border-bottom:1px solid #d8d8cb; background:none; }
+.editorial-site .ed-about .ed-value-grid article h3 { font-family:Georgia,serif; font-size:28px; font-weight:400; }
+.editorial-site .ed-about .ed-about-values { background:#e9eadf; padding:32px; }
+
+/* Lab has a technical workbench rhythm and horizontal process. */
+.editorial-site .ed-laboratory .ed-story-hero { display:grid; grid-template-columns:1fr; background:#293e32; color:#fff; position:relative; }
+.editorial-site .ed-laboratory .ed-story-hero > div { display:grid; grid-template-columns:1.25fr 1fr; column-gap:8%; padding:34px 38px; }
+.editorial-site .ed-laboratory .ed-story-hero .ed-kicker { grid-column:1/-1; color:#ccd8c9; }
+.editorial-site .ed-laboratory .ed-story-hero h1 { grid-row:2/4; margin:15px 0 0; color:#fff !important; font-size:clamp(36px,4.5vw,65px); max-width:15ch; }
+.editorial-site .ed-laboratory .ed-story-hero p { color:#e2e7df !important; margin-top:20px; }
+.editorial-site .ed-laboratory .ed-story-hero .ed-actions { margin-top:14px; }
+.editorial-site .ed-laboratory .ed-story-hero .ed-link { color:#fff; }
+.editorial-site .ed-laboratory .ed-story-hero .primary-button { background:#fffefa !important; color:#293e32 !important; border-color:#fffefa !important; }
+.editorial-site .ed-laboratory .ed-story-hero .primary-button:hover { background:#e2e7df !important; }
+.editorial-site .ed-laboratory .ed-story-hero figure { min-height:0; height:280px; }
+.editorial-site .ed-laboratory .ed-story-hero figure img { object-position:50% 58%; }
+.editorial-site .ed-laboratory .ed-process-section { display:block; padding:32px 0; }
+.editorial-site .ed-laboratory .ed-process-section > div { max-width:650px; }
+.editorial-site .ed-laboratory .ed-process-section ol { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:0; margin-top:24px; }
+.editorial-site .ed-laboratory .ed-process-section li { display:block; border-top:2px solid #64745d; padding:20px 18px 8px 0; }
+.editorial-site .ed-laboratory .ed-process-section li > span { display:block; font-size:12px; margin-bottom:12px; }
+.editorial-site .ed-laboratory .ed-value-grid { background:transparent; border:0; gap:20px; }
+.editorial-site .ed-laboratory .ed-value-grid article { border:0; border-left:2px solid #c3cabb; padding:6px 20px; background:none; }
+
+/* Clinic is a clear service entrance; the photograph supports the task. */
+.editorial-site .mg-clinic .mg-clinic-hero { grid-template-columns:1.4fr .6fr; background:#eef0e7; border:0; align-items:center; padding:26px 36px; gap:36px; }
+.editorial-site .mg-clinic .mg-clinic-hero > div { padding:0; }
+.editorial-site .mg-clinic .mg-clinic-hero h1 { max-width:19ch; font-size:clamp(34px,4.2vw,60px); }
+.editorial-site .mg-clinic .mg-clinic-hero figure { min-height:0; aspect-ratio:1; border-radius:50%; }
+.editorial-site .mg-clinic .mg-clinic-hero figcaption { position:absolute; bottom:12%; left:10%; right:10%; padding:6px 10px; font-size:10px; text-align:center; background:#fffdf5eb; color:#293e32; border-radius:8px; }
+.editorial-site .mg-clinic .clinic-service-grid { border:0; gap:12px; background:none; }
+.editorial-site .mg-clinic .clinic-service-grid article { border:1px solid #ccd5c7; border-radius:12px; background:#fffefa; min-height:230px; }
+.editorial-site .mg-clinic .clinic-service-grid .ed-kicker { font-size:12px; color:#4b6550; }
+.editorial-site .mg-clinic .clinic-visit { background:transparent; border-top:1px solid #ccd5c7; padding-top:26px; }
+
+/* Examinations use a practical appointment brief, not a lifestyle hero. */
+.editorial-site .ed-examination .ed-story-hero { grid-template-columns:1fr .65fr; background:#f0ede4; min-height:0; }
+.editorial-site .ed-examination .ed-story-hero h1 { font-family:Georgia,serif; font-weight:400; font-size:clamp(37px,4.5vw,64px); }
+.editorial-site .ed-examination .ed-story-hero figure { min-height:300px; }
+.editorial-site .ed-examination .ed-process-section { grid-template-columns:.65fr 1.35fr; }
+.editorial-site .ed-examination .ed-process-section li { border-bottom:1px solid #cbd0c2; padding:20px 0; }
+.editorial-site .ed-examination .ed-story-banner { border-left:4px solid #a57550; background:#eee8db; }
+
+@media(max-width:1100px) {
+  .language-switch { margin-left:10px; }
+  .editorial-site .site-header { gap:10px; }
+}
+@media(max-width:1050px) {
+  .editorial-site .site-header { grid-template-columns:auto 1fr auto; gap:10px; }
+  .editorial-site .site-header .desktop-nav { display:none; }
+  .editorial-site .site-header .mobile-toggle { display:inline-grid; }
+  .editorial-site .site-header .header-booking { display:none; }
+}
+@media(max-width:800px) {
+  .editorial-site .ed-about .ed-value-grid article { grid-template-columns:1fr; gap:10px; }
+  .editorial-site .ed-laboratory .ed-process-section ol { grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+}
+@media(max-width:680px) {
+  .language-switch { margin-left:auto; padding:2px; gap:0; }
+  .language-switch button { min-width:34px; min-height:40px; font-size:10px; }
+  .editorial-site .site-header.is-unified { padding-inline:12px; gap:7px; }
+  .editorial-site .site-header .brand { min-width:max-content; }
+  .editorial-site .site-header .brand-wordmark { font-size:8px; letter-spacing:.11em; }
+  .editorial-site .site-header .brand-wordmark strong { font-size:11px; }
+  .editorial-site .site-header .brand-logo { width:29px; height:29px; }
+  .editorial-site .site-header .header-actions { gap:3px; }
+  .editorial-site .ed-about .ed-story-hero { grid-template-columns:1fr; gap:16px; margin-top:20px; }
+  .editorial-site .ed-about .ed-story-hero > div { padding:0; }
+  .editorial-site .ed-about .ed-story-hero h1 { font-size:48px; max-width:14ch; }
+  .editorial-site .ed-about .ed-story-hero p { font-size:14px; margin-block:15px; }
+  .editorial-site .ed-about .ed-story-hero figure { aspect-ratio:1.6; border-radius:60px 0 0 0; }
+  .editorial-site .ed-about .ed-about-values { padding:22px 18px; }
+  .editorial-site .ed-laboratory .ed-story-hero > div { display:block; padding:24px; }
+  .editorial-site .ed-laboratory .ed-story-hero h1 { font-size:38px; }
+  .editorial-site .ed-laboratory .ed-story-hero figure { height:190px; }
+  .editorial-site .ed-laboratory .ed-process-section li { padding-right:8px; }
+  .editorial-site .mg-clinic .mg-clinic-hero { grid-template-columns:1fr; padding:24px 20px; gap:18px; }
+  .editorial-site .mg-clinic .mg-clinic-hero figure { aspect-ratio:2.5; width:100%; border-radius:60px 0 0 0; }
+  .editorial-site .mg-clinic .clinic-service-grid { grid-template-columns:1fr; gap:8px; }
+  .editorial-site .mg-clinic .clinic-service-grid article { min-height:0; padding:18px; }
+  .editorial-site .mg-clinic .clinic-service-grid h3 { margin-top:8px; }
+  .editorial-site .ed-examination .ed-story-hero { grid-template-columns:1fr; }
+  .editorial-site .ed-examination .ed-story-hero figure { min-height:0; height:190px; }
+  .editorial-site .ed-examination .ed-process-section { grid-template-columns:1fr; }
+}
+@media(max-width:360px) {
+  .editorial-site .site-header.is-unified { padding-inline:8px; gap:5px; }
+  .editorial-site .site-header .brand { gap:5px; }
+  .editorial-site .site-header .brand-logo { width:26px; height:26px; }
+  .editorial-site .site-header .brand-wordmark strong { font-size:10px; letter-spacing:.1em; }
+  .editorial-site .site-header .header-actions { gap:2px; }
+  .editorial-site .site-header .icon-button,
+  .editorial-site .site-header .header-account.is-authenticated { width:32px; min-width:32px; padding:0; }
+}

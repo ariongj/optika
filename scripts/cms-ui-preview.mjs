@@ -1,0 +1,20 @@
+// Isolated browser acceptance fixture. Never reads production data or enables mail.
+import {spawn} from 'node:child_process';
+import {mkdir,writeFile} from 'node:fs/promises';
+import {resolve} from 'node:path';
+import {randomBytes,pbkdf2Sync} from 'node:crypto';
+import net from 'node:net';
+const password=process.env.OPTIKA_UI_QA_PASSWORD;
+if(!password || password.length<16) throw Error('Provide a temporary localhost-only QA password');
+await new Promise((yes,no)=>{const s=net.createServer();s.once('error',()=>no(Error('4190 is occupied; no server stopped')));s.listen(4190,'127.0.0.1',()=>s.close(yes));});
+const storage=resolve('output/qa/final-audit-20261008',`ui-${Date.now()}`);
+await mkdir(storage,{recursive:true});
+const salt=randomBytes(18).toString('hex');
+await writeFile(resolve(storage,'credentials.json'),JSON.stringify({email:'qa.admin@example.test',salt,hash:pbkdf2Sync(password,salt,120000,32,'sha256').toString('hex'),iterations:120000,updatedAt:new Date().toISOString()}));
+const env={...process.env,OPTIKA_STORAGE_DIR:storage,OPENAI_API_KEY:''};
+delete env.OPTIKA_UI_QA_PASSWORD;
+const child=spawn(resolve('tmp/php-8.5.9/php.exe'),['-d','disable_functions=mail','-d',`extension=${resolve('tmp/php-8.5.9/ext/php_fileinfo.dll')}`,'-S','127.0.0.1:4190','-t','dist','scripts/seo-router.php'],{env,windowsHide:true,stdio:'ignore'});
+child.on('error',()=>{console.error('Isolated preview failed');process.exitCode=1;});
+console.log('Isolated CMS preview: http://127.0.0.1:4190/staff/?lang=en; mail disabled; synthetic storage only');
+for(const sig of ['SIGINT','SIGTERM'])process.on(sig,()=>child.kill());
+await new Promise(done=>child.once('exit',done));

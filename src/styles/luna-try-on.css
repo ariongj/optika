@@ -1,0 +1,37 @@
+.luna-guide { border-block: 1px solid #d6d0c6; background: #f6f3ed; color: #232922; }
+.luna-guide button, .luna-guide textarea { font: inherit; }
+.luna-guide-toggle { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px 20px; text-align: left; border: 0; color: inherit; background: transparent; cursor: pointer; min-height: 58px; }
+.luna-guide-toggle > span:first-of-type { display: grid; gap: 3px; flex: 1; min-width: 0; }
+.luna-guide-toggle strong { font-size: 12px; letter-spacing: .06em; }
+.luna-guide-toggle small { font-size: 12px; color: #5c6259; }
+.luna-guide-toggle-label { font-size: 12px; }
+.luna-guide-body { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 24px; padding: 6px 20px 20px; }
+.luna-guide-main { min-width: 0; }
+.luna-guide-prompts { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.luna-guide-body button { padding: 9px 12px; border: 1px solid #c5cabe; border-radius: 6px; background: #fffdf9; color: #232922; cursor: pointer; min-height: 40px; font-size: 12px; }
+.luna-guide form > label:first-child { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+.luna-guide textarea { display: block; width: 100%; box-sizing: border-box; resize: vertical; min-height: 76px; max-height: 200px; border: 1px solid #aeb5a6; border-radius: 6px; padding: 10px; color: #232922; background: white; font-size: 16px; }
+.luna-guide-privacy { font-size: 12px; line-height: 1.65; margin: 10px 0; color: #535a50; }
+.luna-guide-consent { display: flex; align-items: flex-start; gap: 9px; font-size: 12px; line-height: 1.5; cursor: pointer; }
+.luna-guide-consent input { flex: 0 0 auto; width: 18px; height: 18px; accent-color: #303e2c; margin-top: 1px; }
+.luna-guide-submit { display: flex; gap: 8px; margin-top: 12px; }
+.luna-guide-submit button:first-child { display: flex; align-items: center; gap: 8px; background: #263023; color: #fff; }
+.luna-guide button:disabled { opacity: .5; cursor: not-allowed; }
+.luna-guide button:focus-visible, .luna-guide textarea:focus-visible, .luna-guide input:focus-visible { outline: 2px solid #496a36; outline-offset: 3px; }
+.luna-guide-answer { margin-top: 16px; background: #fffdf9; padding: 16px; border-left: 3px solid #75856a; border-radius: 4px; overflow-wrap: anywhere; }
+.luna-guide-answer > strong { font-size: 11px; letter-spacing: .08em; }
+.luna-guide-answer p { white-space: pre-wrap; font-size: 14px; line-height: 1.7; margin: 8px 0 12px; }
+.luna-guide-answer small { font-size: 11px; line-height: 1.6; display: block; color: #5c6259; }
+.luna-guide-actions { display: flex; flex-direction: column; align-self: start; gap: 7px; }
+.luna-guide-actions > strong { font-size: 12px; margin-bottom: 4px; }
+.luna-guide-actions button { text-align: left; }
+.luna-guide-main > p { font-size: 13px; line-height: 1.6; }
+@media (max-width: 640px) {
+  .luna-guide-toggle { padding: 12px; gap: 8px; }
+  .luna-guide-toggle-label { display: none; }
+  .luna-guide-body { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 4px 12px 16px; }
+  .luna-guide-prompts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .luna-guide-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .luna-guide-actions > strong { grid-column: 1 / -1; }
+  .luna-guide-body button { min-height: 44px; }
+}

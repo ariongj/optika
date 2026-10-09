@@ -1,0 +1,113 @@
+/* A calm clinical department within the existing warm Miftari identity. */
+.editorial-site .mg-clinic { --clinic-ink: #24382c; --clinic-muted: #53604f; --clinic-line: #cfd5c8; --clinic-soft: #eef0e7; color: var(--clinic-ink); }
+.editorial-site .mg-clinic .mg-breadcrumb { padding-block: 15px; }
+.editorial-site .mg-clinic .mg-clinic-hero { grid-template-columns: 1fr 1fr; background: var(--clinic-soft); border: 1px solid #dce0d5; }
+.editorial-site .mg-clinic .mg-clinic-hero > div { padding: clamp(25px, 3.2vw, 48px); }
+.editorial-site .mg-clinic .mg-clinic-hero h1 { max-width: 15ch; font-size: clamp(36px, 4vw, 58px); margin-block: 15px 17px; line-height: 1.08; }
+.editorial-site .mg-clinic .mg-clinic-hero p { font-size: 15px; margin-bottom: 20px; max-width: 47ch; line-height: 1.65; }
+.editorial-site .mg-clinic .mg-clinic-hero figure { min-height: 370px; overflow: hidden; }
+.editorial-site .mg-clinic .mg-clinic-hero img { object-position: 48% center; }
+.editorial-site .mg-clinic .mg-clinic-hero small { max-width: 48ch; font-size: 12px; line-height: 1.6; }
+.clinic-hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; }
+.editorial-site .mg-clinic .clinic-hero-actions .ed-link { display: inline-flex; min-height: 44px; align-items: center; gap: 10px; }
+.clinic-identity { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 20px; padding: 14px 0; border-bottom: 1px solid var(--clinic-line); font-size: 12px; color: var(--clinic-muted); line-height: 1.6; }
+.clinic-identity strong { font-weight: 600; color: var(--clinic-ink); }
+.clinic-services { padding-block: 34px; scroll-margin-top: 96px; }
+.clinic-services header h2 { font-size: clamp(27px, 3vw, 39px); line-height: 1.15; letter-spacing: -.04em; margin: 9px 0 10px; text-wrap: balance; }
+.clinic-services header p { font-size: 14px; line-height: 1.65; color: var(--clinic-muted); }
+.clinic-service-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 23px; border: 1px solid var(--clinic-line); background: #fbfaf6; }
+.clinic-service-grid article { padding: 24px; display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
+.clinic-service-grid article + article { border-left: 1px solid var(--clinic-line); }
+.clinic-service-grid h3 { font-size: clamp(20px, 1.8vw, 26px); letter-spacing: -.035em; line-height: 1.25; margin: 15px 0 11px; }
+.clinic-service-grid p { font-size: 14px; line-height: 1.7; color: var(--clinic-muted); }
+.editorial-site .clinic-service-grid .ed-link { display: flex; gap: 10px; align-items: center; min-height: 44px; margin-top: auto; padding-top: 17px; font-size: 13px; }
+.clinic-visit { display: grid; grid-template-columns: .85fr 1.15fr; background: var(--clinic-soft); gap: clamp(24px, 4vw, 60px); margin-bottom: 35px; }
+.clinic-visit figure { position: relative; min-height: 335px; overflow: hidden; }
+.clinic-visit figure img { width: 100%; height: 100%; object-fit: cover; object-position: 43% center; display: block; position: absolute; inset: 0; }
+.clinic-visit figcaption { position: absolute; bottom: 10px; left: 12px; right: 12px; width: fit-content; background: #fffdf5ed; color: #334035; padding: 6px 8px; font-size: 10px; line-height: 1.4; }
+.clinic-visit > div { padding: 30px 32px 30px 0; }
+.clinic-visit h2 { font-size: clamp(27px, 2.9vw, 39px); line-height: 1.12; letter-spacing: -.04em; margin: 10px 0 18px; }
+.clinic-visit ol { list-style: none; padding: 0; margin: 0; }
+.clinic-visit li { display: grid; grid-template-columns: 25px minmax(0, 1fr); gap: 10px; padding-block: 12px; border-top: 1px solid #cbd2c1; }
+.clinic-visit li:last-child { padding-bottom: 0; }
+.clinic-visit li > span { padding-top: 2px; font-size: 11px; color: var(--clinic-muted); }
+.clinic-visit li h3 { font-size: 15px; margin-bottom: 5px; line-height: 1.4; }
+.clinic-visit li p { color: var(--clinic-muted); font-size: 13px; line-height: 1.65; max-width: 58ch; }
+.editorial-site .mg-clinic .mg-enquiry-section { gap: 7%; padding-block: 32px; grid-template-columns: .9fr 1.1fr; }
+.editorial-site .mg-clinic .mg-enquiry-section h2 { font-size: clamp(29px, 3.2vw, 42px); }
+.editorial-site .mg-clinic .mg-enquiry-section > div > p { max-width: 48ch; line-height: 1.7; }
+.clinic-contact-facts { display: grid; gap: 13px; margin: 24px 0; }
+.clinic-contact-facts > div { display: grid; grid-template-columns: 105px minmax(0, 1fr); gap: 10px; font-size: 13px; line-height: 1.5; }
+.clinic-contact-facts span { color: var(--clinic-muted); }
+.clinic-contact-facts strong { font-weight: 500; }
+.editorial-site .mg-clinic .mg-safety-note { font-size: 12px; background: #eeefe6; border-left-color: #6a785f; padding: 12px 14px; }
+.editorial-site .mg-clinic .mg-enquiry-form { padding: 25px; background: #fbfaf6; }
+.editorial-site .mg-clinic .mg-enquiry-form :is(input,select):focus-visible { outline: 2px solid #4d6550; outline-offset: 2px; }
+.editorial-site .mg-clinic .mg-enquiry-form :is(input,select):disabled { opacity: .65; cursor: wait; }
+.editorial-site .mg-clinic .mg-enquiry-form .primary-button { min-height: 46px; }
+.editorial-site .mg-clinic .mg-enquiry-form .primary-button:disabled { opacity: .7; cursor: wait; }
+.editorial-site .mg-clinic .clinic-form-note { margin: 12px 0 0; font-size: 12px; line-height: 1.6; }
+.editorial-site .mg-clinic .mg-direct-contact { border-top: 1px solid var(--clinic-line); padding-top: 15px; line-height: 1.6; }
+.clinic-faq { display: grid; grid-template-columns: .9fr 1.1fr; gap: 7%; padding-block: 30px; border-top: 1px solid var(--clinic-line); }
+.clinic-faq h2 { margin-top: 10px; font-size: clamp(27px, 2.7vw, 36px); line-height: 1.2; letter-spacing: -.04em; }
+.clinic-faq details { border-bottom: 1px solid var(--clinic-line); }
+.clinic-faq summary { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 54px; padding-block: 15px; font-size: 14px; line-height: 1.5; list-style: none; cursor: pointer; }
+.clinic-faq summary::-webkit-details-marker { display: none; }
+.clinic-faq summary svg { flex-shrink: 0; }
+.clinic-faq details[open] summary svg { transform: rotate(180deg); }
+.clinic-faq details p { font-size: 13px; color: var(--clinic-muted); line-height: 1.75; padding-bottom: 18px; max-width: 70ch; }
+.mg-clinic :is(a,button,summary):focus-visible { outline: 2px solid #4d6550; outline-offset: 4px; }
+.editorial-site .mg-clinic .clinic-related { padding: 24px 28px; gap: 20px 36px; background: #e9ecdf; }
+.clinic-related > div:first-child { max-width: 650px; }
+.clinic-related h2 { margin-top: 9px; }
+.clinic-related > div:last-child { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+.editorial-site .clinic-related .ed-link { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 44px; font-size: 13px; }
+
+@media (max-width: 900px) {
+  .editorial-site .mg-clinic .mg-clinic-hero h1 { font-size: 40px; }
+  .clinic-service-grid article { padding: 20px; }
+  .clinic-visit { gap: 24px; grid-template-columns: .85fr 1.15fr; }
+  .clinic-visit > div { padding: 25px 24px 25px 0; }
+}
+@media (max-width: 680px) {
+  .editorial-site .mg-clinic { padding-inline: 18px; padding-bottom: 26px; }
+  .editorial-site .mg-clinic .mg-breadcrumb { padding-block: 13px; font-size: 11px; }
+  .editorial-site .mg-clinic .mg-clinic-hero { grid-template-columns: 1fr; }
+  .editorial-site .mg-clinic .mg-clinic-hero > div { padding: 23px; }
+  .editorial-site .mg-clinic .mg-clinic-hero h1 { font-size: clamp(31px, 8.6vw, 39px); max-width: 17ch; margin-block: 12px 14px; }
+  .editorial-site .mg-clinic .mg-clinic-hero p { font-size: 14px; line-height: 1.6; margin-bottom: 15px; }
+  .editorial-site .mg-clinic .mg-clinic-hero figure { min-height: 0; height: 190px; }
+  .editorial-site .mg-clinic .mg-clinic-hero img { object-position: center 53%; }
+  .editorial-site .mg-clinic .mg-clinic-hero small { font-size: 11px; margin-top: 8px; }
+  .clinic-hero-actions { gap: 2px 16px; }
+  .editorial-site .clinic-hero-actions .ed-link { font-size: 12px; }
+  .clinic-identity { padding-block: 12px; gap: 5px; font-size: 11px; }
+  .clinic-services { padding-block: 25px; }
+  .clinic-services header h2 { font-size: 28px; text-wrap: initial; }
+  .clinic-services header p { font-size: 13px; }
+  .clinic-service-grid { grid-template-columns: 1fr; margin-top: 18px; }
+  .clinic-service-grid article { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 0 11px; padding: 19px; }
+  .clinic-service-grid article + article { border-left: 0; border-top: 1px solid var(--clinic-line); }
+  .clinic-service-grid article > .ed-kicker { grid-column: 1; grid-row: 1 / 4; padding-top: 3px; }
+  .clinic-service-grid h3 { grid-column: 2; margin: 0 0 7px; font-size: 21px; }
+  .clinic-service-grid p { grid-column: 2; font-size: 13px; line-height: 1.6; }
+  .editorial-site .clinic-service-grid .ed-link { grid-column: 2; padding-top: 5px; min-height: 42px; font-size: 12px; }
+  .clinic-visit { grid-template-columns: 1fr; gap: 0; margin-bottom: 25px; }
+  .clinic-visit figure { min-height: 0; height: 185px; }
+  .clinic-visit figure img { object-position: center 46%; }
+  .clinic-visit > div { padding: 23px; }
+  .clinic-visit h2 { font-size: 29px; }
+  .clinic-visit h2 br { display: none; }
+  .clinic-visit li p { font-size: 13px; }
+  .editorial-site .mg-clinic .mg-enquiry-section { grid-template-columns: 1fr; gap: 20px; padding-block: 25px; }
+  .editorial-site .mg-clinic .mg-enquiry-section h2 { font-size: 30px; margin-bottom: 12px; }
+  .clinic-contact-facts { gap: 9px; margin: 18px 0; }
+  .clinic-contact-facts > div { grid-template-columns: 90px minmax(0, 1fr); font-size: 12px; }
+  .editorial-site .mg-clinic .mg-safety-note { margin: 0; }
+  .editorial-site .mg-clinic .mg-enquiry-form { padding: 19px; }
+  .clinic-faq { grid-template-columns: 1fr; gap: 12px; padding-block: 24px; }
+  .clinic-faq h2 { font-size: 28px; }
+  .clinic-faq summary { font-size: 13px; gap: 14px; }
+  .editorial-site .mg-clinic .clinic-related { padding: 22px; gap: 10px; }
+  .clinic-related > div:last-child { width: 100%; flex-direction: row; gap: 20px; flex-wrap: wrap; }
+}

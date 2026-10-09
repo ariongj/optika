@@ -1,0 +1,17 @@
+{
+  "name": "Optika Miftari",
+  "short_name": "Optika Miftari",
+  "description": "Shtëpi optike familjare me mbi 20 vjet përvojë, dy lokacione, ekzaminime profesionale, thjerrëza me recetë, Fit Studio dhe laborator optik.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf9f6",
+  "theme_color": "#faf9f6",
+  "icons": [
+    {
+      "src": "/assets/brand/optika-miftari-monogram.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

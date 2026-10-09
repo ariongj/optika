@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Lens Focus — Animacioni i punimit | Optika Miftari</title>
+<script>window.__CRAFTED_BOOT_START = performance.now(); window.__resources = {}; document.documentElement.dataset.guided = String(new URLSearchParams(location.search).get('mode') === 'guided');</script>
+<script src="./react.production.min.js" defer></script>
+<script src="./react-dom.production.min.js" defer></script>
+<script src="./locale.js" defer></script>
+<script src="./support.js" defer></script>
+<script type="importmap">
+{ "imports": { "three": "./three.module.js" } }
+</script>
+<link rel="modulepreload" href="./three.module.js">
+<link rel="modulepreload" href="./lens3d.js?v=20260929-lens-studio">
+<script type="module">
+  // Paint the interface before parsing and building the WebGL scene. The
+  // module is queued during the first idle window, with a short timeout so the
+  // interactive version still arrives promptly on busy mobile devices.
+  let engineStarted = false;
+  const startEngine = () => {
+    if (engineStarted) return;
+    engineStarted = true;
+    window.__CRAFTED_ENGINE_START_MS = performance.now() - window.__CRAFTED_BOOT_START;
+    document.documentElement.dataset.engineStartMs = String(Math.round(window.__CRAFTED_ENGINE_START_MS));
+    import('./lens3d.js?v=20260929-lens-studio').then((m) => {
+      window.__CRAFTED_createLens = m.createHero;
+      window.__CRAFTED_ENGINE_READY_MS = performance.now() - window.__CRAFTED_BOOT_START;
+      document.documentElement.dataset.engineReadyMs = String(Math.round(window.__CRAFTED_ENGINE_READY_MS));
+      window.dispatchEvent(new CustomEvent('crafted-lens-ready'));
+    }).catch((e) => {
+      console.error('[Crafted Lens] engine failed to load:', e);
+      window.__CRAFTED_LENS_ERROR = true;
+      window.dispatchEvent(new CustomEvent('crafted-lens-error'));
+    });
+  };
+  const queueEngine = () => requestAnimationFrame(() => requestAnimationFrame(() => {
+    if ('requestIdleCallback' in window) requestIdleCallback(startEngine, { timeout: 180 });
+    else setTimeout(startEngine, 32);
+  }));
+  queueEngine();
+</script>
+</head>
+<body>
+<h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">Lens Focus — animacioni i punimit të thjerrëzës</h1>
+<div id="lens-cold-shell" aria-hidden="true">
+  <div class="lens-cold-phase">Faza 01 / 8 &nbsp;—&nbsp; Blloku optik</div>
+  <div class="lens-cold-copy">
+    <span>Lens Focus &middot; Punimi optik</span>
+    <strong>Shihni si ndërtohet<br>qartësia juaj.</strong>
+    <small>Vizualizim ilustrues · specifikat e lentes konfirmohen me optikun.</small>
+  </div>
+  <div class="lens-cold-disc"></div>
+  <div class="lens-cold-status">Duke përgatitur përvojën</div>
+</div>
+<script>
+  (() => {
+    const settle = () => document.getElementById('lens-cold-shell')?.classList.add('is-ready');
+    window.addEventListener('crafted-lens-first-frame', settle, { once: true });
+    window.addEventListener('crafted-lens-error', settle, { once: true });
+  })();
+</script>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #F0EEE7; }
+  x-dc { display: none; }
+  #lens-cold-shell {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    overflow: hidden;
+    pointer-events: none;
+    background:
+      radial-gradient(72% 42% at 50% 4%, rgba(166,210,232,0.2), transparent 68%),
+      linear-gradient(#F0EEE7, #F0EEE7);
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 220ms ease, visibility 220ms step-end;
+  }
+  #lens-cold-shell.is-ready { opacity: 0; visibility: hidden; }
+  .lens-cold-phase {
+    position: absolute;
+    top: 7%;
+    left: 5%;
+    font: 500 10px/1.4 'IBM Plex Mono', monospace;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: rgba(16,22,26,0.52);
+  }
+  .lens-cold-disc {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: clamp(190px, 27vw, 330px);
+    aspect-ratio: 1 / 1;
+    border: 1px solid rgba(70,104,113,0.34);
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 36% 28%, rgba(255,255,255,0.98), rgba(218,229,232,0.92) 46%, rgba(157,179,185,0.78) 100%);
+    box-shadow:
+      inset -18px -22px 42px rgba(55,83,91,0.16),
+      inset 15px 16px 28px rgba(255,255,255,0.72),
+      0 38px 40px -32px rgba(16,22,26,0.34);
+    transform: translate(-50%, -46%);
+  }
+  .lens-cold-disc::after {
+    position: absolute;
+    right: 12%;
+    bottom: -19%;
+    left: 12%;
+    height: 13%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(16,22,26,0.2), transparent 72%);
+    filter: blur(8px);
+    content: '';
+  }
+  .lens-cold-copy {
+    position: absolute;
+    top: 12%;
+    left: 5%;
+    display: none;
+  }
+  .lens-cold-copy span {
+    display: block;
+    font: 600 9px/1.4 'IBM Plex Mono', monospace;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #226C60;
+  }
+  .lens-cold-copy strong {
+    display: block;
+    margin-top: 9px;
+    font: 300 clamp(27px,8.2vw,36px)/0.98 'IBM Plex Sans', system-ui, sans-serif;
+    letter-spacing: -0.045em;
+    color: #10161A;
+  }
+  .lens-cold-copy small {
+    display: block;
+    margin-top: 10px;
+    font: 400 11px/1.45 'IBM Plex Sans', system-ui, sans-serif;
+    color: rgba(16,22,26,0.62);
+  }
+  .lens-cold-status {
+    position: absolute;
+    bottom: 5%;
+    left: 5%;
+    font: 500 9px/1.4 'IBM Plex Mono', monospace;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(16,22,26,0.4);
+  }
+  a { color: #0E8C7A; text-decoration: none; }
+  a:hover { color: rgb(var(--ink-rgb)); }
+  ::selection { background: rgba(70,224,200,0.28); }
+  @media (prefers-reduced-motion: reduce) {
+    [style*="craftedChev"], [style*="craftedPulse"] { animation: none !important; }
+  }
+  [data-scroller][data-nobar] { scrollbar-width: none; -ms-overflow-style: none; }
+  [data-scroller][data-nobar]::-webkit-scrollbar { width: 0; height: 0; display: none; }
+  [data-scroller]::-webkit-scrollbar { width: 9px; }
+  [data-scroller]::-webkit-scrollbar-track { background: transparent; }
+  [data-scroller]::-webkit-scrollbar-thumb { background: rgba(var(--ink-rgb),0.18); border-radius: 9px; }
+  [data-scroller]::-webkit-scrollbar-thumb:hover { background: rgba(var(--ink-rgb),0.32); }
+  [data-scroller]:focus-visible { outline: 3px solid #226C60; outline-offset: -3px; }
+  [data-story-controls] { position:absolute;bottom:18px;left:0;width:100%;padding:0 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;pointer-events:auto; }
+  [data-stage-controls] { display:flex;align-items:center;gap:6px; }
+  [data-stage-controls] button, [data-story-controls] [data-sound] { min-height:44px;padding:8px 12px;border:1px solid rgba(var(--ink-rgb),0.28);border-radius:7px;background:rgb(var(--panel-rgb));color:rgb(var(--ink-rgb));font:500 12px 'IBM Plex Sans',system-ui,sans-serif;cursor:pointer; }
+  [data-stage-controls] button:disabled { opacity:0.4;cursor:default; }
+  [data-story-controls] button:focus-visible, [data-exit]:focus-visible { outline:3px solid var(--laser-ink,#226C60);outline-offset:3px; }
+  [data-story-controls] [data-sound] { display:flex;align-items:center;gap:8px; }
+  [data-story-controls] [data-scrollword] { display:none; }
+  [data-exit] { position:absolute;top:66px;right:28px;min-height:44px;padding:10px 12px;border:1px solid rgba(var(--ink-rgb),0.24);border-radius:7px;background:rgb(var(--panel-rgb));color:rgb(var(--ink-rgb));font:500 12px 'IBM Plex Sans',system-ui,sans-serif;pointer-events:auto;cursor:pointer; }
+  [data-illustration-note] { position:absolute;bottom:72px;left:12px;right:12px;text-align:center;color:rgb(var(--ink-rgb));font:11px/1.4 'IBM Plex Sans',system-ui,sans-serif; }
+  [data-mobile-legend] { display:none; }
+  @media (max-width:760px), (orientation:portrait) {
+    [data-mobile-legend]:not([hidden]) { display:block; position:absolute; z-index:12; left:18px; right:18px; bottom:100px; max-height:55%; overflow:auto; pointer-events:auto; border:1px solid rgba(var(--ink-rgb),.2); background:rgb(var(--panel-rgb)); color:rgb(var(--ink-rgb)); border-radius:6px; }
+    [data-mobile-legend] summary { min-height:44px; padding:12px 16px; font:500 13px 'IBM Plex Sans',sans-serif; cursor:pointer; }
+    [data-mobile-legend] ul { list-style:none; margin:0; padding:0 16px 12px; }
+    [data-mobile-legend] li { padding:8px 0; border-top:1px solid rgba(var(--ink-rgb),.12); font:12px/1.5 'IBM Plex Sans',sans-serif; }
+    [data-story-controls] { padding:0 12px;bottom:12px;gap:6px; }
+    [data-stage-controls] button { padding:8px 10px; }
+    [data-exit] { top:5px;right:12px; }
+    [data-ovroot] > div:has(> [data-cta]) { top:auto !important;bottom:112px;width:min(92vw,400px); }
+    [data-cta] { display:grid !important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px !important;width:100% !important; }
+    [data-cta] > button { min-width:0;min-height:48px;padding:10px 8px !important;font-size:12px !important;line-height:1.3;text-align:center;white-space:normal; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    *, *::before, *::after { animation:none !important;transition:none !important;scroll-behavior:auto !important; }
+  }
+  @media (max-width:760px), (orientation:portrait) {
+    [data-scroll-track] { height:calc(var(--vh,100vh) * 11.8) !important; }
+    [data-scroller] { scroll-behavior:auto; }
+    .lens-mobile-intro {
+      position:absolute;
+      top:92px;
+      left:18px;
+      z-index:9;
+      display:block;
+      width:calc(100% - 36px);
+    }
+    .lens-mobile-intro > [data-ov] {
+      padding:16px 17px 17px;
+      border:1px solid rgba(16,22,26,0.12);
+      border-radius:14px;
+      background:rgba(244,247,248,0.78);
+      box-shadow:0 18px 44px rgba(16,22,26,0.08);
+      backdrop-filter:blur(12px);
+    }
+    [data-opening-copy] { display:none; }
+    .lens-mobile-intro span {
+      display:block;
+      font-family:'IBM Plex Mono',monospace;
+      font-size:9px;
+      font-weight:600;
+      letter-spacing:0.2em;
+      text-transform:uppercase;
+      color:#226C60;
+    }
+    .lens-mobile-intro strong {
+      display:block;
+      margin-top:9px;
+      font-family:'IBM Plex Sans',system-ui,sans-serif;
+      font-size:clamp(27px,8.2vw,36px);
+      font-weight:300;
+      letter-spacing:-0.045em;
+      line-height:0.98;
+      color:#10161A;
+    }
+    .lens-mobile-intro small {
+      display:block;
+      margin-top:10px;
+      font-family:'IBM Plex Sans',system-ui,sans-serif;
+      font-size:11px;
+      line-height:1.45;
+      color:rgba(16,22,26,0.78);
+    }
+    .lens-cold-phase { top: 6.5%; left: 18px; }
+    .lens-cold-copy {
+      top: 92px;
+      left: 18px;
+      display: block;
+      width: calc(100% - 36px);
+      padding: 16px 17px 17px;
+      border: 1px solid rgba(16,22,26,0.12);
+      border-radius: 14px;
+      background: rgba(244,247,248,0.82);
+      box-shadow: 0 18px 44px rgba(16,22,26,0.08);
+      backdrop-filter: blur(12px);
+    }
+    .lens-cold-disc { top: 58%; width: min(49vw, 230px); }
+    .lens-cold-status { left: 18px; }
+  }
+  .lens-mobile-intro { display:none; }
+  html[data-guided="true"] [data-scroller] { overflow-y:hidden !important; }
+  html[data-guided="true"] [data-scroll-track] { height:var(--vh,100vh) !important; }
+  html[data-guided="true"] [data-story-controls] { bottom:16px !important; }
+  html[data-guided="true"] [data-scroll-hint] { display:none; }
+  @media (max-width:760px), (orientation:portrait) { .lens-mobile-intro { display:block; } }
+  @keyframes craftedChev { 0%,100% { transform: translateY(0); opacity: 0.35; } 50% { transform: translateY(6px); opacity: 1; } }
+  @keyframes craftedPulse { 0%,100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 1; transform: scale(1.4); } }
+  @keyframes craftedSpin { to { transform: rotate(360deg); } }
+</style>
+</helmet>
+
+<div data-scroller ref="{{ scrollerRef }}" tabindex="0" role="region" aria-label="Ilustrimi i punimit të lentes. Lëvizni poshtë ose përdorni butonat e fazave." style="position:relative;width:100%;height:var(--vh,100vh);overflow-x:hidden;overflow-y:scroll;-webkit-overflow-scrolling:touch;background:#F0EEE7;overscroll-behavior:auto;font-family:'IBM Plex Sans',system-ui,sans-serif;color:rgb(var(--ink-rgb));--ink-rgb:16,22,26;--panel-rgb:240,244,246;">
+  <div data-scroll-track style="position:relative;width:100%;height:calc(var(--vh,100vh) * 9.8);">
+    <div style="position:sticky;top:0;left:0;width:100%;height:var(--vh,100vh);overflow:hidden;background:#F0EEE7;">
+
+      <!-- 3D stage -->
+      <div ref="{{ hostRef }}" style="position:absolute;inset:0;z-index:1;pointer-events:none;"></div>
+
+      <!-- cinematic vignette -->
+      <div style="position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(78% 46% at 50% 0%, rgba(150,205,235,0.12), rgba(150,205,235,0) 62%), radial-gradient(126% 100% at 50% 46%, rgba(10,16,22,0) 48%, rgba(10,16,22,0.20) 100%);"></div>
+      <!-- film grain -->
+      <div style="position:absolute;inset:0;z-index:8;pointer-events:none;opacity:0.05;mix-blend-mode:overlay;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E&quot;);background-size:130px 130px;"></div>
+
+      <!-- connector lines -->
+      <svg data-lines style="position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;overflow:visible;"></svg>
+
+      <!-- ============ OVERLAY ROOT ============ -->
+      <div data-ovroot ref="{{ overlayRef }}" style="position:absolute;inset:0;z-index:4;pointer-events:none;">
+
+        <!-- MOBILE OPENING MESSAGE -->
+        <div class="lens-mobile-intro">
+          <div data-ov data-a="-0.03" data-b="-0.01" data-c="0.045" data-d="0.075" style="opacity:0;">
+            <span>Lens Focus &middot; Punimi optik</span>
+            <strong>Shihni si ndërtohet<br>qartësia juaj.</strong>
+            <small>Vizualizim ilustrues · specifikat e lentes konfirmohen me optikun.</small>
+          </div>
+        </div>
+
+        <!-- ENGINE LOAD FAILURE -->
+        <div data-fallback style="position:absolute;inset:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:0 8%;pointer-events:auto;background:#F0EEE7;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.34em;text-transform:uppercase;color:rgba(16,22,26,0.78);">Optika Miftari &middot; Ilustrim i lentes</div>
+          <div style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-weight:300;font-size:clamp(30px,5.6vw,64px);line-height:1.04;color:#10161A;">Asgjë mes teje<br>dhe <span style="color:#0E8C7A;font-weight:200;">dritës.</span></div>
+          <div style="font-family:'IBM Plex Sans',sans-serif;font-size:15px;color:rgba(16,22,26,0.78);max-width:460px;">Ndërtimi interaktiv nuk u ngarkua. Kontrollo lidhjen dhe ringarko.</div>
+          <button onClick="{{ reload }}" style="font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:14px;padding:14px 30px;border:1px solid rgba(16,22,26,0.4);background:transparent;color:#10161A;cursor:pointer;">Ringarko</button>
+        </div>
+
+        <!-- SCROLL HINT -->
+        <div data-scroll-hint style="position:absolute;left:50%;bottom:12%;transform:translateX(-50%);text-align:center;">
+          <div data-ov data-a="-0.02" data-b="0.006" data-c="0.02" data-d="0.04" data-dir="down" style="opacity:0;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.42em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);">Lëviz për të ndjekur formimin</div>
+            <div style="font-size:15px;color:var(--laser-ink);margin-top:14px;animation:craftedChev 1.6s ease-in-out infinite;">&#9662;</div>
+          </div>
+        </div>
+
+        <!-- 01 RAW CRYSTAL -->
+        <div data-opening-copy style="position:absolute;left:50%;top:33%;transform:translateX(-50%);text-align:center;width:min(92%,900px);">
+          <div data-ov data-a="-0.03" data-b="-0.01" data-c="0.058" data-d="0.073" style="opacity:0;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.34em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);display:flex;align-items:center;gap:11px;justify-content:center;">
+              <span style="width:6px;height:6px;border-radius:50%;background:var(--laser);"></span>01 &middot; Blloku optik
+            </div>
+            <div style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-weight:400;font-size:var(--t-xl,min(8.2vw,102px));line-height:1.0;letter-spacing:0.01em;margin-top:22px;">Gjithçka nis<br><span style="color:var(--laser-ink);font-weight:200;">si një disk.</span></div>
+            <div style="font-size:14px;letter-spacing:0.02em;color:rgba(var(--ink-rgb),0.78);margin-top:24px;">Materiali dhe dizajni i lentes zgjidhen sipas recetës dhe nevojës.</div>
+          </div>
+        </div>
+
+        <!-- 02 DIAMOND CUTTING -->
+        <div style="position:absolute;left:6%;bottom:12%;text-align:left;">
+          <div data-ov data-a="0.083" data-b="0.098" data-c="0.136" data-d="0.152" style="opacity:0;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.32em;text-transform:uppercase;color:var(--laser-ink,#226C60);">02a &middot; Formimi i konturit</div>
+            <div style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:var(--t-md,min(5vw,58px));font-weight:400;line-height:1.05;margin:14px 0 18px;">Konturi ndjek kornizën.</div>
+            <div style="display:flex;flex-wrap:wrap;gap:14px var(--stat-gap,34px);font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.06em;color:rgba(var(--ink-rgb),0.78);">
+              <div><div style="font-size:var(--t-stat,22px);color:rgb(var(--ink-rgb));letter-spacing:0;">Konturi</div><div style="margin-top:5px;letter-spacing:0.2em;font-size:10px;text-transform:uppercase;">Sipas kornizës</div></div>
+              <div><div style="font-size:var(--t-stat,22px);color:rgb(var(--ink-rgb));letter-spacing:0;">Materiali</div><div style="margin-top:5px;letter-spacing:0.2em;font-size:10px;text-transform:uppercase;">Sipas lentes</div></div>
+              <div><div style="font-size:var(--t-stat,22px);color:rgb(var(--ink-rgb));letter-spacing:0;">Përshtatja</div><div style="margin-top:5px;letter-spacing:0.2em;font-size:10px;text-transform:uppercase;">Verifikim në laborator</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 03 CURVE GENERATION -->
+        <div style="position:absolute;left:50%;top:37%;transform:translateX(-50%);text-align:center;width:min(92%,820px);">
+          <div data-ov data-a="0.163" data-b="0.177" data-c="0.218" data-d="0.232" style="opacity:0;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.34em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);">02b &middot; Formimi i lakimit</div>
+            <div style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:var(--t-lg,min(6.6vw,80px));font-weight:400;line-height:1.02;margin-top:18px;">Një disk i sheshtë<br><span style="color:var(--laser-ink);font-weight:200;">mëson të lakohet.</span></div>
+            <div style="font-size:14px;letter-spacing:0.16em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;color:rgba(var(--ink-rgb),0.78);margin-top:18px;">Lakimi dhe trashësia përcaktohen sipas recetës</div>
+          </div>
+        </div>
+
+        <!-- 04 OPTICAL POLISH -->
+        <div style="position:absolute;left:50%;top:39%;transform:translateX(-50%);text-align:center;">
+          <div data-ov data-a="0.243" data-b="0.254" data-c="0.286" data-d="0.297" style="opacity:0;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.34em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);">03 &middot; Lustrimi optik</div>
+            <div style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:var(--t-lg,min(6.4vw,78px));font-weight:400;line-height:1.02;margin-top:18px;">Lustrim për qartësi.</div>
+            <div style="font-size:14px;letter-spacing:0.16em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;color:rgba(var(--ink-rgb),0.78);margin-top:16px;">Përpunimi i sipërfaqes sipas materialit</div>
+          </div>
+        </div>
+
+        <!-- 05 COATING STACK -->
+        <div style="position:absolute;left:8%;top:15%;text-align:left;">
+          <div data-ov data-a="0.307" data-b="0.319" data-c="0.385" data-d="0.403" style="opacity:0;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.32em;text-transform:uppercase;color:var(--laser-ink,#226C60);">04 &middot; Shtresat optike</div>
+            <div style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:var(--t-md,min(5.4vw,66px));font-weight:400;line-height:1.02;margin-top:12px;">Trajtime të zgjedhura.<br><span style="color:var(--laser-ink);font-weight:200;">Një lente e personalizuar.</span></div>
+            <div style="font-size:14px;letter-spacing:0.02em;color:rgba(var(--ink-rgb),0.78);margin-top:16px;max-width:330px;">Trajtimet dhe materiali varen nga lentja e zgjedhur. Jo çdo lente i përfshin të gjitha.</div>
+          </div>
+        </div>
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;">
+          <div data-ov data-a="0.425" data-b="0.431" data-c="0.439" data-d="0.449" style="opacity:0;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.34em;text-transform:uppercase;color:rgb(var(--ink-rgb));display:flex;align-items:center;gap:11px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--laser);"></span>Shtresat &middot; sipas lentes së zgjedhur</div>
+          </div>
+        </div>
+
+        <!-- 06 POLARIZATION -->
+        <div style="position:absolute;left:6.5%;bottom:13%;text-align:left;">
+          <div data-ov data-a="0.457" data-b="0.468" data-c="0.513" data-d="0.522" style="opacity:0;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.32em;text-transform:uppercase;color:var(--laser-ink,#226C60);">05a &middot; Polarizimi</div>
+            <div style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:var(--t-sm,min(5.2vw,62px));font-weight:400;line-height:1.04;margin:14px 0 16px;">Polarizimi, i ilustruar.</div>
+            <div style="font-size:14px;letter-spacing:0.02em;color:rgba(var(--ink-rgb),0.78);max-width:400px;margin-bottom:18px;">Opsion për lente të caktuara. Efekti dhe specifikimet verifikohen për modelin që zgjidhni.</div>
+            <div style="display:flex;flex-wrap:wrap;gap:14px var(--stat-gap,34px);font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.06em;color:rgba(var(--ink-rgb),0.78);">
+              <div><div style="font-size:var(--t-stat,22px);color:rgb(var(--ink-rgb));letter-spacing:0;">Polarizim</div><div style="margin-top:5px;letter-spacing:0.2em;font-size:10px;text-transform:uppercase;">Sipas lentes</div></div>
+              <div><div style="font-size:var(--t-stat,22px);color:rgb(var(--ink-rgb));letter-spacing:0;">Orientim</div><div style="margin-top:5px;letter-spacing:0.2em;font-size:10px;text-transform:uppercase;">Sipas dizajnit</div></div>
+              <div><div style="font-size:var(--t-stat,22px);color:rgb(var(--ink-rgb));letter-spacing:0;">Material</div><div style="margin-top:5px;letter-spacing:0.2em;font-size:10px;text-transform:uppercase;">Sipas produktit</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 07 UV & SPECTRUM -->
+        <div style="position:absolute;left:6.5%;bottom:13%;text-align:left;">
+          <div data-ov data-a="0.531" data-b="0.541" data-c="0.589" data-d="0.597" style="opacity:0;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.32em;text-transform:uppercase;color:var(--laser-ink,#226C60);">05b &middot; Filtrimi spektral</div>
+            <div style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:var(--t-sm,min(5.2vw,62px));font-weight:400;line-height:1.04;margin:14px 0 16px;">Çfarë hyn.<br><span style="color:var(--laser-ink);font-weight:200;">Çfarë jo.</span></div>
+          </div>
+        </div>
+        <div data-side="ray" style="position:absolute;right:7%;top:50%;transform:translateY(-50%);text-align:left;">
+          <div data-ov data-a="0.538" data-b="0.548" data-c="0.586" data-d="0.596" style="opacity:0;">
+            <div style="display:flex;flex-direction:column;gap:11px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.08em;min-width:270px;">
+              <div style="display:flex;justify-content:space-between;gap:34px;border-bottom:1px solid rgba(var(--ink-rgb),0.16);padding-bottom:9px;"><span style="color:rgba(var(--ink-rgb),0.78);text-transform:uppercase;letter-spacing:0.16em;font-size:10px;">Mbrojtje UV</span><span>Sipas lentes</span></div>
+              <div style="display:flex;justify-content:space-between;gap:34px;border-bottom:1px solid rgba(var(--ink-rgb),0.16);padding-bottom:9px;"><span style="color:rgba(var(--ink-rgb),0.78);text-transform:uppercase;letter-spacing:0.16em;font-size:10px;">Trajtimi optik</span><span>Sipas lentes</span></div>
+              <div style="display:flex;justify-content:space-between;gap:34px;border-bottom:1px solid rgba(var(--ink-rgb),0.16);padding-bottom:9px;"><span style="color:rgba(var(--ink-rgb),0.78);text-transform:uppercase;letter-spacing:0.16em;font-size:10px;">Filtrimi i dritës</span><span>Sipas trajtimit</span></div>
+              <div style="display:flex;justify-content:space-between;gap:34px;border-bottom:1px solid rgba(var(--ink-rgb),0.16);padding-bottom:9px;"><span style="color:rgba(var(--ink-rgb),0.78);text-transform:uppercase;letter-spacing:0.16em;font-size:10px;">Transmetimi</span><span>Sipas materialit</span></div>
+              <div style="display:flex;justify-content:space-between;gap:34px;"><span style="color:rgba(var(--ink-rgb),0.78);text-transform:uppercase;letter-spacing:0.16em;font-size:10px;">Nuanca</span><span>Sipas materialit</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 08 PHOTOCHROMIC (phase) -->
+        <div style="position:absolute;left:50%;bottom:12%;transform:translateX(-50%);text-align:center;width:min(92%,820px);height:96px;">
+          <div data-ov data-a="0.607" data-b="0.619" data-c="0.661" data-d="0.672" style="opacity:0;position:relative;height:100%;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.34em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);">06 &middot; Reagimi fotokromatik</div>
+            <div style="position:relative;height:60px;margin-top:14px;">
+              <div data-ph11 data-idx="0" style="position:absolute;inset:0;opacity:0;"><div style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:var(--t-phase,48px);font-weight:400;">Diell i plotë</div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);">Reagim ilustrues ndaj dritës</div></div>
+              <div data-ph11 data-idx="1" style="position:absolute;inset:0;opacity:0;"><div style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:var(--t-phase,48px);font-weight:400;">Vranësira</div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);">Nuanca ndryshon sipas lentes</div></div>
+              <div data-ph11 data-idx="2" style="position:absolute;inset:0;opacity:0;"><div style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:var(--t-phase,48px);font-weight:400;">Përsëri në diell</div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);">Koha varet nga materiali dhe kushtet</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 09 HARDNESS & REPELLENCY -->
+        <div style="position:absolute;left:6.5%;bottom:13%;text-align:left;">
+          <div data-ov data-a="0.682" data-b="0.693" data-c="0.734" data-d="0.742" style="opacity:0;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.32em;text-transform:uppercase;color:var(--laser-ink,#226C60);">07a &middot; Trajtimi i sipërfaqes</div>
+            <div style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:var(--t-sm,min(5.2vw,62px));font-weight:400;line-height:1.04;margin:14px 0 16px;">Mbrojtje shtesë.<br><span style="color:var(--laser-ink);font-weight:200;">Kujdes i përditshëm.</span></div>
+            <div style="display:flex;flex-wrap:wrap;gap:14px var(--stat-gap,34px);font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.06em;color:rgba(var(--ink-rgb),0.78);">
+              <div><div style="font-size:var(--t-stat,22px);color:rgb(var(--ink-rgb));letter-spacing:0;">Mbrojtja</div><div style="margin-top:5px;letter-spacing:0.2em;font-size:10px;text-transform:uppercase;">Sipas trajtimit</div></div>
+              <div><div style="font-size:var(--t-stat,22px);color:rgb(var(--ink-rgb));letter-spacing:0;">Pastrimi</div><div style="margin-top:5px;letter-spacing:0.2em;font-size:10px;text-transform:uppercase;">Sipas udhëzimeve</div></div>
+              <div><div style="font-size:var(--t-stat,22px);color:rgb(var(--ink-rgb));letter-spacing:0;">Kujdesi</div><div style="margin-top:5px;letter-spacing:0.2em;font-size:10px;text-transform:uppercase;">Përdorim i kujdesshëm</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 10 EDGE BEVEL (phase) -->
+        <div style="position:absolute;left:50%;bottom:13%;transform:translateX(-50%);text-align:center;width:min(90%,760px);height:76px;">
+          <div data-ov data-a="0.751" data-b="0.759" data-c="0.792" data-d="0.798" style="opacity:0;position:relative;height:100%;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.34em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);">07b &middot; Përfundimi i skajit</div>
+            <div style="position:relative;height:56px;margin-top:12px;">
+              <div data-ph12 data-idx="0" style="position:absolute;inset:0;opacity:0;"><div style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:var(--t-phase,44px);font-weight:400;">Skaj i lëmuar</div><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.24em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);margin-top:6px;">Përshtatje me kornizën</div></div>
+              <div data-ph12 data-idx="1" style="position:absolute;inset:0;opacity:0;"><div style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:var(--t-phase,44px);font-weight:400;">Trashësia në qendër</div><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.24em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);margin-top:6px;">Sipas recetës dhe materialit</div></div>
+              <div data-ph12 data-idx="2" style="position:absolute;inset:0;opacity:0;"><div style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:var(--t-phase,44px);font-weight:400;">Shenjat e identifikimit</div><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.24em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);margin-top:6px;">Sipas dizajnit të lentes</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 11 WAVEFRONT SCAN -->
+        <div style="position:absolute;left:8%;top:15%;text-align:left;">
+          <div data-ov data-a="0.807" data-b="0.820" data-c="0.863" data-d="0.873" style="opacity:0;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.32em;text-transform:uppercase;color:var(--laser-ink,#226C60);display:flex;align-items:center;gap:11px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--laser);animation:craftedPulse 1.4s ease-in-out infinite;"></span>08 &middot; Kontrolli optik</div>
+          </div>
+        </div>
+        <div data-side="spec" style="position:absolute;left:8%;bottom:11%;text-align:left;">
+          <div data-ov data-a="0.812" data-b="0.825" data-c="0.861" data-d="0.872" style="opacity:0;">
+            <div data-specwrap style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:34px;row-gap:0;font-family:'IBM Plex Sans',sans-serif;background:rgba(var(--panel-rgb),0.78);padding:6px 22px;border:1px solid rgba(var(--ink-rgb),0.1);">
+              <div data-spec style="display:flex;align-items:baseline;justify-content:space-between;gap:30px;padding:12px 0;border-bottom:1px solid rgba(var(--ink-rgb),0.14);opacity:0.25;"><span style="display:flex;align-items:center;gap:11px;font-weight:500;font-size:15px;"><span data-dot style="width:6px;height:6px;border-radius:50%;background:var(--laser);opacity:0;"></span>Fuqia optike</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(var(--ink-rgb),0.78);">Sipas recetës</span></div>
+              <div data-spec style="display:flex;align-items:baseline;justify-content:space-between;gap:30px;padding:12px 0;border-bottom:1px solid rgba(var(--ink-rgb),0.14);opacity:0.25;"><span style="display:flex;align-items:center;gap:11px;font-weight:500;font-size:15px;"><span data-dot style="width:6px;height:6px;border-radius:50%;background:var(--laser);opacity:0;"></span>Transmetimi i dritës</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(var(--ink-rgb),0.78);">Sipas lentes</span></div>
+              <div data-spec style="display:flex;align-items:baseline;justify-content:space-between;gap:30px;padding:12px 0;border-bottom:1px solid rgba(var(--ink-rgb),0.14);opacity:0.25;"><span style="display:flex;align-items:center;gap:11px;font-weight:500;font-size:15px;"><span data-dot style="width:6px;height:6px;border-radius:50%;background:var(--laser);opacity:0;"></span>Indeksi i përthyerjes</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(var(--ink-rgb),0.78);">Sipas materialit</span></div>
+              <div data-spec style="display:flex;align-items:baseline;justify-content:space-between;gap:30px;padding:12px 0;border-bottom:1px solid rgba(var(--ink-rgb),0.14);opacity:0.25;"><span style="display:flex;align-items:center;gap:11px;font-weight:500;font-size:15px;"><span data-dot style="width:6px;height:6px;border-radius:50%;background:var(--laser);opacity:0;"></span>Karakteristikat optike</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(var(--ink-rgb),0.78);">Sipas materialit</span></div>
+              <div data-spec style="display:flex;align-items:baseline;justify-content:space-between;gap:30px;padding:12px 0;border-bottom:1px solid rgba(var(--ink-rgb),0.14);opacity:0.25;"><span style="display:flex;align-items:center;gap:11px;font-weight:500;font-size:15px;"><span data-dot style="width:6px;height:6px;border-radius:50%;background:var(--laser);opacity:0;"></span>Sipërfaqja</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(var(--ink-rgb),0.78);">Kontroll vizual</span></div>
+              <div data-spec style="display:flex;align-items:baseline;justify-content:space-between;gap:30px;padding:12px 0;opacity:0.25;"><span style="display:flex;align-items:center;gap:11px;font-weight:500;font-size:15px;"><span data-dot style="width:6px;height:6px;border-radius:50%;background:var(--laser);opacity:0;"></span>Përshtatja finale</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(var(--ink-rgb),0.78);">Verifikim në laborator</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 12 HERO -->
+        <div style="position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);text-align:center;width:min(94%,1000px);">
+          <div data-ov data-a="0.882" data-b="0.901" data-c="1.01" data-d="1.02" style="opacity:0;">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.4em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);">Optika Miftari &middot; Ilustrim i lentes</div>
+            <div style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-weight:400;font-size:var(--t-hero,min(9vw,15vh,116px));line-height:0.98;letter-spacing:0.01em;margin-top:20px;">Asgjë mes teje<br>dhe <span style="color:var(--laser-ink);font-weight:200;">dritës.</span></div>
+            <div style="font-size:16px;letter-spacing:0.02em;color:rgba(var(--ink-rgb),0.78);margin-top:20px;">Tetë faza ilustruese. Zgjedhja përfundimtare bëhet me optikun.</div>
+          </div>
+        </div>
+        <div style="position:absolute;left:50%;top:75%;transform:translateX(-50%);">
+          <div data-cta data-ov data-a="0.899" data-b="0.916" data-c="0.955" data-d="0.970" style="opacity:0;pointer-events:auto;display:flex;gap:16px;align-items:center;">
+            <button onclick="window.top.location.href='/shop'" style="font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:14px;letter-spacing:0.02em;padding:15px 30px;border:none;background:rgb(var(--ink-rgb));color:rgb(var(--panel-rgb));cursor:pointer;transition:transform 0.25s,background 0.25s;" style-hover="background:#000;transform:translateY(-2px);">Shiko kornizat</button>
+            <button onclick="window.top.location.href='/contact#booking'" style="font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:14px;letter-spacing:0.02em;padding:15px 30px;border:1px solid rgba(var(--ink-rgb),0.4);background:transparent;color:rgb(var(--ink-rgb));cursor:pointer;transition:transform 0.25s,border-color 0.25s;" style-hover="border-color:rgb(var(--ink-rgb));transform:translateY(-2px);">Rezervo ekzaminimin</button>
+          </div>
+        </div>
+
+        <!-- 12 HANDOFF -->
+        <div style="position:absolute;left:0;right:0;bottom:0;padding:0 6% 76px;">
+          <div data-ov data-a="0.958" data-b="0.981" data-c="1.01" data-d="1.02" style="opacity:0;">
+            <div style="display:flex;align-items:flex-end;justify-content:space-between;border-top:1px solid rgba(var(--ink-rgb),0.18);padding-top:16px;">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.34em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);">Koleksioni i Thjerrëzave</div>
+              <div style="pointer-events:auto;"><a href="/prescription-glasses" target="_top" style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.24em;text-transform:uppercase;">Shiko të gjitha &rarr;</a></div>
+            </div>
+            <div data-handoff style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:16px;">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;border-bottom:1px solid rgba(var(--ink-rgb),0.12);padding-bottom:12px;"><span style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-weight:300;font-size:var(--t-item,26px);">Gri e polarizuar</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(var(--ink-rgb),0.78);">Sipas lentes</span></div>
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;border-bottom:1px solid rgba(var(--ink-rgb),0.12);padding-bottom:12px;"><span style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-weight:300;font-size:var(--t-item,26px);">Kontrast qelibari</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(var(--ink-rgb),0.78);">Sipas lentes</span></div>
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px;border-bottom:1px solid rgba(var(--ink-rgb),0.12);padding-bottom:12px;"><span style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-weight:300;font-size:var(--t-item,26px);">Fotokromatike</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(var(--ink-rgb),0.78);">Sipas materialit</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== anchored chips: COATING LAYERS ===== -->
+        <div data-chip data-group="layers" data-ladder data-anchor="layer0" data-idx="0" style="position:absolute;left:0;top:0;opacity:0;transform:translate(-50%,-50%);pointer-events:none;z-index:5;white-space:nowrap;display:flex;align-items:baseline;gap:10px;padding:7px 13px;background:rgba(var(--panel-rgb),0.9);border:1px solid rgba(var(--ink-rgb),0.14);">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;color:var(--laser-ink,#226C60);">01</span><span style="font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:13px;">Mbrojtje UV</span><span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);">Sipas lentes</span>
+        </div>
+        <div data-chip data-group="layers" data-ladder data-anchor="layer1" data-idx="1" style="position:absolute;left:0;top:0;opacity:0;transform:translate(-50%,-50%);pointer-events:none;z-index:5;white-space:nowrap;display:flex;align-items:baseline;gap:10px;padding:7px 13px;background:rgba(var(--panel-rgb),0.9);border:1px solid rgba(var(--ink-rgb),0.14);">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;color:var(--laser-ink,#226C60);">02</span><span style="font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:13px;">Film polarizues</span><span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);">Sipas lentes</span>
+        </div>
+        <div data-chip data-group="layers" data-ladder data-anchor="layer2" data-idx="2" style="position:absolute;left:0;top:0;opacity:0;transform:translate(-50%,-50%);pointer-events:none;z-index:5;white-space:nowrap;display:flex;align-items:baseline;gap:10px;padding:7px 13px;background:rgba(var(--panel-rgb),0.9);border:1px solid rgba(var(--ink-rgb),0.14);">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;color:var(--laser-ink,#226C60);">03</span><span style="font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:13px;">Filtër për dritën blu</span><span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);">Opsional</span>
+        </div>
+        <div data-chip data-group="layers" data-ladder data-anchor="layer3" data-idx="3" style="position:absolute;left:0;top:0;opacity:0;transform:translate(-50%,-50%);pointer-events:none;z-index:5;white-space:nowrap;display:flex;align-items:baseline;gap:10px;padding:7px 13px;background:rgba(var(--panel-rgb),0.9);border:1px solid rgba(var(--ink-rgb),0.14);">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;color:var(--laser-ink,#226C60);">04</span><span style="font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:13px;">Rezistencë ndaj gërvishtjeve</span><span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);">Sipas trajtimit</span>
+        </div>
+        <div data-chip data-group="layers" data-ladder data-anchor="layer4" data-idx="4" style="position:absolute;left:0;top:0;opacity:0;transform:translate(-50%,-50%);pointer-events:none;z-index:5;white-space:nowrap;display:flex;align-items:baseline;gap:10px;padding:7px 13px;background:rgba(var(--panel-rgb),0.9);border:1px solid rgba(var(--ink-rgb),0.14);">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;color:var(--laser-ink,#226C60);">05</span><span style="font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:13px;">Hidrofobike</span><span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);">Oleofobike</span>
+        </div>
+        <div data-chip data-group="layers" data-ladder data-anchor="layer5" data-idx="5" style="position:absolute;left:0;top:0;opacity:0;transform:translate(-50%,-50%);pointer-events:none;z-index:5;white-space:nowrap;display:flex;align-items:baseline;gap:10px;padding:7px 13px;background:rgba(var(--panel-rgb),0.9);border:1px solid rgba(var(--ink-rgb),0.14);">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;color:var(--laser-ink,#226C60);">06</span><span style="font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:13px;">Antirefleks</span><span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);">Sipas lentes</span>
+        </div>
+        <div data-chip data-group="layers" data-ladder data-anchor="layer6" data-idx="6" style="position:absolute;left:0;top:0;opacity:0;transform:translate(-50%,-50%);pointer-events:none;z-index:5;white-space:nowrap;display:flex;align-items:baseline;gap:10px;padding:7px 13px;background:rgba(var(--panel-rgb),0.9);border:1px solid rgba(var(--ink-rgb),0.14);">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.16em;color:var(--laser-ink,#226C60);">07</span><span style="font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:13px;">Materiali bazë</span><span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.78);">Sipas recetës</span>
+        </div>
+
+        <!-- ===== anchored chips: EDGE (10) ===== -->
+        <div data-chip data-group="edge" data-anchor="edgeA" data-ox="150" data-oy="-10" style="position:absolute;left:0;top:0;opacity:0;transform:translate(-50%,-50%);pointer-events:none;z-index:5;white-space:nowrap;display:flex;align-items:center;gap:9px;padding:7px 13px;background:rgba(var(--panel-rgb),0.9);border:1px solid rgba(var(--ink-rgb),0.14);"><span style="width:5px;height:5px;border-radius:50%;background:var(--laser);"></span><span style="font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:13px;">Skaj i përshtatur me kornizën</span></div>
+        <div data-chip data-group="edge" data-anchor="edgeB" data-ox="-186" data-oy="42" style="position:absolute;left:0;top:0;opacity:0;transform:translate(-50%,-50%);pointer-events:none;z-index:5;white-space:nowrap;display:flex;align-items:center;gap:9px;padding:7px 13px;background:rgba(var(--panel-rgb),0.9);border:1px solid rgba(var(--ink-rgb),0.14);"><span style="width:5px;height:5px;border-radius:50%;background:var(--laser);"></span><span style="font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:13px;">Trashësi sipas recetës</span></div>
+        <div data-chip data-group="edge" data-anchor="edgeC" data-ox="-58" data-oy="96" style="position:absolute;left:0;top:0;opacity:0;transform:translate(-50%,-50%);pointer-events:none;z-index:5;white-space:nowrap;display:flex;align-items:center;gap:9px;padding:7px 13px;background:rgba(var(--panel-rgb),0.9);border:1px solid rgba(var(--ink-rgb),0.14);"><span style="width:5px;height:5px;border-radius:50%;background:var(--laser);"></span><span style="font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:13px;">Identifikimi i lentes</span></div>
+
+        <!-- ===== anchored chips: WAVEFRONT (11) ===== -->
+        <div data-chip data-group="scan" data-anchor="scanA" data-ox="0" data-oy="-118" style="position:absolute;left:0;top:0;opacity:0;transform:translate(-50%,-50%);pointer-events:none;z-index:5;white-space:nowrap;display:flex;align-items:center;gap:9px;padding:7px 13px;background:rgba(var(--panel-rgb),0.9);border:1px solid rgba(var(--ink-rgb),0.14);"><span style="width:5px;height:5px;border-radius:50%;background:var(--laser);"></span><span style="font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:13px;">Kontrolli i sipërfaqes së përparme</span></div>
+        <div data-chip data-group="scan" data-anchor="scanB" data-ox="206" data-oy="-16" style="position:absolute;left:0;top:0;opacity:0;transform:translate(-50%,-50%);pointer-events:none;z-index:5;white-space:nowrap;display:flex;align-items:center;gap:9px;padding:7px 13px;background:rgba(var(--panel-rgb),0.9);border:1px solid rgba(var(--ink-rgb),0.14);"><span style="width:5px;height:5px;border-radius:50%;background:var(--laser);"></span><span style="font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:13px;">Trajtime sipas lentes</span></div>
+        <div data-chip data-group="scan" data-anchor="scanC" data-ox="196" data-oy="54" style="position:absolute;left:0;top:0;opacity:0;transform:translate(-50%,-50%);pointer-events:none;z-index:5;white-space:nowrap;display:flex;align-items:center;gap:9px;padding:7px 13px;background:rgba(var(--panel-rgb),0.9);border:1px solid rgba(var(--ink-rgb),0.14);"><span style="width:5px;height:5px;border-radius:50%;background:var(--laser);"></span><span style="font-family:'IBM Plex Sans',sans-serif;font-weight:500;font-size:13px;">Sipërfaqja e pasme &middot; AR</span></div>
+
+      </div>
+
+      <!-- ============ HUD ============ -->
+      <div style="position:absolute;inset:0;z-index:6;pointer-events:none;">
+        <!-- top progress hairline -->
+        <div style="position:absolute;top:0;left:0;width:100%;height:2px;background:rgba(var(--ink-rgb),0.1);">
+          <div data-prog style="height:100%;width:0%;background:var(--laser);transition:none;"></div>
+        </div>
+        <!-- top bar -->
+        <div data-hud style="position:absolute;top:26px;left:0;width:100%;padding:0 34px;display:flex;align-items:center;justify-content:space-between;">
+          <div data-brand style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.18em;font-weight:500;">LENS FOCUS · ILUSTRIM</div>
+          <div style="display:flex;align-items:center;gap:12px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.24em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.7);">
+            <span>Faza</span><span data-stage style="color:rgb(var(--ink-rgb));">01</span><span style="opacity:0.4;">/ 8</span>
+            <span style="width:26px;height:1px;background:rgba(var(--ink-rgb),0.3);"></span>
+            <span data-stagename style="color:rgb(var(--ink-rgb));">Blloku optik</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(var(--ink-rgb),0.7);">
+            <span data-readout>Në pritje të lëvizjes</span>
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--laser);animation:craftedPulse 1.6s ease-in-out infinite;"></span>
+          </div>
+        </div>
+        <button data-exit onClick="{{ exitStory }}">Shiko lentet &darr;</button>
+        <div data-illustration-note>Ilustrim · specifikat e lentes konfirmohen me optikun.</div>
+        <details data-mobile-legend="layers" hidden><summary>Shtresat optike · shihni detajet</summary><ul></ul></details>
+        <details data-mobile-legend="edge" hidden><summary>Skaji i lentes · shihni detajet</summary><ul></ul></details>
+        <details data-mobile-legend="scan" hidden><summary>Kontrolli optik · shihni detajet</summary><ul></ul></details>
+        <!-- Native buttons keep all eight stages reachable without a long swipe. -->
+        <div data-story-controls>
+          <nav data-stage-controls aria-label="Fazat e punimit">
+            <button data-stage-prev onClick="{{ previousStage }}" aria-label="Faza e mëparshme" disabled>&larr; Para</button>
+            <button data-stage-next onClick="{{ nextStage }}" aria-label="Faza tjetër">Tjetra &rarr;</button>
+          </nav>
+          <div data-scrollword hidden>Ilustrim &middot; <span data-pct>0%</span></div>
+          <button data-sound onClick="{{ soundToggle }}" aria-label="Aktivizo zërin e animacionit" aria-pressed="false">
+            <span data-soundicon style="width:6px;height:6px;border-radius:50%;background:rgba(var(--ink-rgb),0.3);"></span><span data-soundlabel>Pa zë</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#F3EFE6"/>
+    <ellipse cx="50" cy="50" rx="26" ry="21" fill="none" stroke="#26221B" stroke-width="2.6"/>
+    <ellipse cx="50" cy="50" rx="18" ry="14" fill="none" stroke="#26221B" stroke-width="1.2" opacity="0.5"/>
+    <path d="M24 42 h52 M24 58 h52" stroke="#E8B84B" stroke-width="1.4" opacity="0.85"/>
+    <circle cx="50" cy="50" r="3" fill="#E8B84B"/>
+  </svg>
+</template>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;brand&quot;: {&quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;OPTIKA MIFTARI&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Brand&quot;}, &quot;tintColor&quot;: {&quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#3A4A52&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;#3A4A52&quot;, &quot;#5A3A2A&quot;, &quot;#2E3A2E&quot;, &quot;#4A3A52&quot;], &quot;section&quot;: &quot;Glass&quot;}, &quot;laserColor&quot;: {&quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#C9A66B&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;#E8B84B&quot;, &quot;#C9A66B&quot;, &quot;#FF5A4D&quot;, &quot;#B36BFF&quot;], &quot;section&quot;: &quot;Materials&quot;}}">
+class Component extends DCLogic {
+  scrollerRef = (el) => { this._scroller = el; };
+  hostRef = (el) => { this._host = el; };
+  overlayRef = (el) => { this._ov = el; };
+  soundToggle = () => { this.toggleSound(); };
+  reload = () => { window.location.reload(); };
+  previousStage = () => { this.goToStage(-1); };
+  nextStage = () => { this.goToStage(1); };
+  exitStory = () => {
+    if (window.parent !== window) window.parent.postMessage({ type: 'crafted-lens-exit' }, window.location.origin);
+    else window.location.assign('/lens-focus#lens-systems');
+  };
+
+  STAGES_OBJ = {
+    s1: [0, 0.075], s2: [0.075, 0.155], s3: [0.155, 0.235], s4: [0.235, 0.30],
+    s5: [0.30, 0.45], s6: [0.45, 0.525], s7: [0.525, 0.60], s8: [0.60, 0.675],
+    s9: [0.675, 0.745], s10: [0.745, 0.80], s11: [0.80, 0.875], s12: [0.875, 1.0],
+    // These 12 keys are the choreography contract with lens3d.js. The story is
+    // told in 8 beats (BEATS below): cutting owns s2+s3, polarization s6+s7,
+    // hardness s9+s10, clarity s11+s12. Overlay data-a/b/c/d windows are keyed
+    // to these exact boundaries.
+  };
+  BEATS = [[0, 0.075], [0.075, 0.235], [0.235, 0.30], [0.30, 0.45], [0.45, 0.60], [0.60, 0.675], [0.675, 0.80], [0.80, 1.0]];
+  // Each stop sits inside a caption's fully visible interval, never between
+  // the two subscenes that share a numbered chapter.
+  STAGE_STOPS = [0, 0.112, 0.269, 0.365, 0.488, 0.64, 0.715, 0.928];
+  NAMES = ['Blloku optik', 'Formimi i konturit', 'Lustrimi optik', 'Shtresat optike', 'Polarizimi', 'Fotokromatike', 'Sipërfaqja', 'Kontrolli'];
+  READOUTS = ['Ilustrim i procesit', 'Formimi i konturit', 'Lëmimi i sipërfaqes', 'Shtresat mbrojtëse', 'Filtrimi i dritës', 'Reagimi ndaj dritës', 'Mbrojtja e sipërfaqes', 'Kontrolli optik'];
+
+  // ---- math helpers
+  clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
+  smooth(t) { return t * t * (3 - 2 * t); }
+  seg(p, a, b) { return this.clamp((p - a) / (b - a), 0, 1); }
+  trap(p, a, b, c, d) {
+    if (p <= a || p >= d) return 0;
+    if (p < b) return this.smooth((p - a) / (b - a));
+    if (p > c) return this.smooth(1 - (p - c) / (d - c));
+    return 1;
+  }
+
+  componentDidMount() {
+    this._p = 0; this._prevP = 0; this._last = performance.now();
+    this._guided = document.documentElement.dataset.guided === 'true';
+    this._target = 0;
+    if (this._guided) this._scroller?.setAttribute('aria-label', 'Ilustrimi i punimit të lentes. Përdorni butonat Para dhe Tjetra për tetë fazat.');
+    this._soundOn = false;
+    this._userMuted = false;
+    if (window.__CRAFTED_createLens) this.boot();
+    else window.addEventListener('crafted-lens-ready', this._onReady = () => this.boot(), { once: true });
+    if (window.__CRAFTED_LENS_ERROR) this.showFallback();
+    else window.addEventListener('crafted-lens-error', this._onErr = () => this.showFallback(), { once: true });
+    this._bootTimer = setTimeout(() => { if (!this._firstFrameSent) this.showFallback(); }, 12000);
+  }
+
+  componentDidUpdate() {
+    if (!this.hero) return;
+    const p = this.props || {};
+    this.hero.setBrand(p.brand || 'OPTIKA MIFTARI');
+    this.hero.setTint(p.tintColor || '#3A4A52');
+    this.hero.setLaser(p.laserColor || '#C9A66B');
+    this.applyLaserVar(p.laserColor || '#C9A66B');
+    const bEl = this._ov && this._ov.parentNode && this._ov.parentNode.querySelector('[data-brand]');
+    if (bEl) bEl.textContent = (p.brand || 'OPTIKA MIFTARI').toUpperCase();
+    this.recache();
+  }
+
+  componentWillUnmount() {
+    this._disposed = true;
+    if (this._raf) cancelAnimationFrame(this._raf);
+    if (this._ro) this._ro.disconnect();
+    if (this._vo) this._vo.disconnect();
+    if (this._resizeFrame) cancelAnimationFrame(this._resizeFrame);
+    if (this._onScroll) this._scroller?.removeEventListener('scroll', this._onScroll);
+    if (this._onManualNavigation) ['wheel', 'touchstart', 'keydown'].forEach((event) => this._scroller?.removeEventListener(event, this._onManualNavigation));
+    if (this._onVisibility) document.removeEventListener('visibilitychange', this._onVisibility);
+    if (this._onParentVisibility) window.removeEventListener('message', this._onParentVisibility);
+    if (this._onMotionChange) this._motionQuery?.removeEventListener?.('change', this._onMotionChange);
+    window.removeEventListener('resize', this._onResize);
+    if (this._onReady) window.removeEventListener('crafted-lens-ready', this._onReady);
+    if (this._onErr) window.removeEventListener('crafted-lens-error', this._onErr);
+    if (this._bootTimer) clearTimeout(this._bootTimer);
+    if (this.hero) this.hero.dispose();
+    if (this._autoCleanup) this._autoCleanup();
+    if (this._audio) { try { this._audio.ctx.close(); } catch (e) {} }
+    if (window.__craftedHero === this) delete window.__craftedHero;
+  }
+
+  applyLaserVar(hex) {
+    if (!this._ov) return;
+    this._ov.style.setProperty('--laser', hex);
+    // darker, legible variant for text
+    const c = hex.replace('#', '');
+    const r = parseInt(c.slice(0, 2), 16), g = parseInt(c.slice(2, 4), 16), b = parseInt(c.slice(4, 6), 16);
+    const dk = (x) => Math.round(x * 0.48);
+    // two legible variants: darkened for the light studio, full strength once the
+    // lights drop for the beam, spectrum and interferometry stages
+    this._laserLit = [r, g, b];
+    this._laserDk = [dk(r), dk(g), dk(b)];
+    // deliberately NOT set here: --laser-ink is written per frame on the scroller
+    // (see updateOverlays). An inline value on the overlay root would shadow it.
+    const root = this._ov.parentNode;
+    if (root) root.style.setProperty('--laser', hex);
+    if (this._scroller) this._scroller.style.setProperty('--laser-ink', `rgb(${this._laserDk.join(',')})`);
+  }
+
+  async boot() {
+    if (this._booted || !this._host) return;
+    this._booted = true;
+    const p = this.props || {};
+    const laser = p.laserColor || '#C9A66B';
+    this.applyLaserVar(laser);
+    const mq = window.matchMedia;
+    this._motionQuery = mq && mq('(prefers-reduced-motion: reduce)');
+    this._reduced = !!this._motionQuery?.matches;
+    const nav = navigator || {};
+    const weak = (nav.hardwareConcurrency || 8) <= 4 || (nav.deviceMemory || 8) <= 4;
+    this._embedded = window.self !== window.top;
+    try { this.hero = window.__CRAFTED_createLens({
+      host: this._host, stages: this.STAGES_OBJ,
+      brand: p.brand || 'OPTIKA MIFTARI', tint: p.tintColor || '#3A4A52', laser,
+      lowQuality: this.isNarrow() || weak,
+      balanced: this._embedded,
+      reducedMotion: this._reduced,
+      onContextLost: () => {
+        this._prepared = false;
+        this._firstFrameSent = false;
+        if (this._raf) cancelAnimationFrame(this._raf);
+        this._raf = 0;
+        this.showFallback();
+      },
+    }); } catch (error) {
+      this._booted = false;
+      this.showFallback();
+      return;
+    }
+    if (p.brand) {
+      const bEl = this._ov.parentNode.querySelector('[data-brand]');
+      if (bEl) bEl.textContent = p.brand.toUpperCase();
+    }
+    this.cacheOverlays();
+    this.buildLines();
+    this.wireHover();
+    this.applyLayout();
+    this._onResize = () => {
+      if (this._resizeFrame) return;
+      this._resizeFrame = requestAnimationFrame(() => {
+        this._resizeFrame = 0;
+        this.applyLayout();
+        this.flushResize();
+        this.measureScroll();
+        this._lastRender = 0;
+        this.requestFrame();
+      });
+    };
+    window.addEventListener('resize', this._onResize);
+    this._ro = new ResizeObserver(this._onResize);
+    this._ro.observe(this._host);
+    if (this._scroller && this._scroller.parentElement) this._ro.observe(this._scroller.parentElement);
+    this._visible = true;
+    if ('IntersectionObserver' in window) {
+      this._vo = new IntersectionObserver((ents) => {
+        this._visible = ents.some((e) => e.isIntersecting);
+        this.syncActivity();
+      }, { threshold: 0 });
+      this._vo.observe(this._host);
+    }
+    // Sound is explicitly opt-in. Initialising a convolution graph on the
+    // first swipe used to steal the very frame the customer was waiting for.
+    window.__craftedHero = this;
+    this._loop = this._loop.bind(this);
+    this._onMotionChange = (event) => {
+      this._reduced = event.matches;
+      this.hero?.setReducedMotion(event.matches);
+      this._lastRender = 0;
+      this.requestFrame();
+    };
+    this._motionQuery?.addEventListener?.('change', this._onMotionChange);
+    this._onScroll = () => { this.measureScroll(); this.requestFrame(); };
+    this._scroller.addEventListener('scroll', this._onScroll, { passive: true });
+    this._onManualNavigation = (event) => {
+      if (this._guided) return;
+      if (event.target?.closest?.('button, a')) return;
+      if (event.type === 'keydown' && !['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) return;
+      this._requestedStage = null;
+    };
+    ['wheel', 'touchstart', 'keydown'].forEach((event) => this._scroller.addEventListener(event, this._onManualNavigation, { passive: true }));
+    this._onVisibility = () => this.syncActivity();
+    document.addEventListener('visibilitychange', this._onVisibility);
+    this._onParentVisibility = (event) => {
+      if (event.source !== window.parent || event.origin !== window.location.origin || event.data?.type !== 'crafted-lens-visibility') return;
+      this._parentVisible = event.data.visible === true;
+      this.syncActivity();
+    };
+    window.addEventListener('message', this._onParentVisibility);
+    this.measureScroll();
+    try { await this.hero.prepare?.(); } catch (error) { /* render still provides the normal fallback path */ }
+    if (this._disposed || !this._host?.isConnected) return;
+    this._prepared = true;
+    clearTimeout(this._bootTimer);
+    const fallback = this._ov?.parentNode?.querySelector('[data-fallback]');
+    if (fallback) fallback.style.display = 'none';
+    this.requestFrame();
+  }
+
+  showFallback() {
+    if (this._firstFrameSent || this._fellBack) return;
+    this._fellBack = true;
+    const root = this._ov && this._ov.parentNode;
+    const el = root && root.querySelector('[data-fallback]');
+    if (el) el.style.display = 'flex';
+    window.dispatchEvent(new CustomEvent('crafted-lens-error'));
+  }
+
+  isNarrow() {
+    const el = this._host;
+    const w = (el && el.clientWidth) || window.innerWidth || 1200;
+    const h = (el && el.clientHeight) || window.innerHeight || 800;
+    return w < 760 || h > w;
+  }
+
+  // Type scale and block placement are set here rather than in a stylesheet:
+  // the piece is driven imperatively, and the 3D framing changes with it.
+  // The scroll track is a multiple of one "screen". When embedded, one screen is
+  // the host box, not the browser viewport — measure it and publish --vh.
+  syncViewport() {
+    const sc = this._scroller;
+    const pe = sc && sc.parentElement;
+    if (!sc || !pe) return;
+    const ph = document.documentElement.clientHeight || window.innerHeight;
+    // The outer iframe uses svh. Use its actual stable box, not the oversized
+    // story parent (which contains the whole scroll track).
+    const next = ph > 120 ? ph + 'px' : '';
+    if (next === this._vhApplied) return;
+    this._vhApplied = next;
+    if (next) sc.style.setProperty('--vh', next);
+    else sc.style.removeProperty('--vh');
+    this.flushResize();
+  }
+
+  // Reading a layout property forces the pending style change to apply, so the
+  // host box is already its final size when the renderer reads it.
+  flushResize() {
+    if (!this.hero || !this._host) return;
+    void this._host.offsetHeight;
+    const hw = this._host.clientWidth, hh = this._host.clientHeight;
+    if (hw > 0 && hh > 0 && (hw !== this._lastW || hh !== this._lastH)) {
+      this._lastW = hw; this._lastH = hh; this.hero.resize();
+    }
+  }
+
+  applyLayout() {
+    this.syncViewport();
+    const root = this._ov && this._ov.parentNode;
+    if (!root) return;
+    const mob = this.isNarrow();
+    if (this._mob === mob) return;
+    this._mob = mob;
+    const V = mob ? {
+      '--t-hero': 'clamp(32px,9.4vw,54px)',
+      '--t-xl': 'clamp(31px,9vw,50px)',
+      '--t-lg': 'clamp(28px,8.2vw,44px)',
+      '--t-md': 'clamp(26px,7.6vw,40px)',
+      '--t-sm': 'clamp(24px,7.2vw,36px)',
+      '--t-phase': 'clamp(21px,6.2vw,30px)',
+      '--t-stat': '17px',
+      '--t-item': '19px',
+      '--stat-gap': '18px',
+    } : {
+      '--t-hero': '', '--t-xl': '', '--t-lg': '', '--t-md': '', '--t-sm': '',
+      '--t-phase': '', '--t-stat': '', '--t-item': '', '--stat-gap': '',
+    };
+    Object.keys(V).forEach((k) => {
+      if (V[k]) root.style.setProperty(k, V[k]); else root.style.removeProperty(k);
+    });
+
+    const set = (sel, css) => {
+      const el = root.querySelector(sel);
+      if (!el) return;
+      if (el.dataset.baseCss === undefined) el.dataset.baseCss = el.getAttribute('style') || '';
+      el.setAttribute('style', mob ? el.dataset.baseCss + ';' + css : el.dataset.baseCss);
+    };
+    // side tables become full-width bands; rows and CTAs stack
+    set('[data-side="ray"]', 'right:auto;left:5%;width:90%;top:auto;bottom:30%;transform:none;');
+    set('[data-side="spec"]', 'left:4%;width:92%;bottom:7%;');
+    set('[data-specwrap]', 'grid-template-columns:1fr;column-gap:0;padding:2px 14px;');
+    set('[data-cta]', 'flex-direction:column;align-items:stretch;width:min(86vw,340px);');
+    set('[data-handoff]', 'grid-template-columns:1fr;gap:10px;');
+    root.querySelectorAll('[data-chip]').forEach((el) => {
+      if (el.dataset.baseCss === undefined) el.dataset.baseCss = el.getAttribute('style') || '';
+      el.setAttribute('style', mob
+        ? el.dataset.baseCss + ';transform:translate(-50%,-50%);padding:5px 11px;font-size:12px;background:rgba(var(--panel-rgb),0.82);'
+        : el.dataset.baseCss);
+    });
+    if (this._scroller) {
+      if (mob) this._scroller.setAttribute('data-nobar', '');
+      else this._scroller.removeAttribute('data-nobar');
+    }
+    set('[data-hud]', 'top:calc(env(safe-area-inset-top, 0px) + 52px);padding:0 18px;gap:14px;');
+    set('[data-brand]', 'display:none;');
+    set('[data-stagename]', 'white-space:nowrap;');
+    const rd = root.querySelector('[data-readout]');
+    if (rd && rd.parentNode) rd.parentNode.style.display = mob ? 'none' : '';
+    this.flushResize();
+  }
+
+  cacheOverlays() {
+    const ov = this._ov, root = ov.parentNode;
+    this._caps = [...ov.querySelectorAll('[data-ov]')];
+    this._chips = [...ov.querySelectorAll('[data-chip]')];
+    this._spec = [...ov.querySelectorAll('[data-spec]')];
+    this._ph11 = [...ov.querySelectorAll('[data-ph11]')];
+    this._ph12 = [...ov.querySelectorAll('[data-ph12]')];
+    this._svg = root.querySelector('[data-lines]');
+    this._elStage = root.querySelector('[data-stage]');
+    this._elName = root.querySelector('[data-stagename]');
+    this._elRead = root.querySelector('[data-readout]');
+    this._elPct = root.querySelector('[data-pct]');
+    this._elProg = root.querySelector('[data-prog]');
+    this._elScrollWord = root.querySelector('[data-scrollword]');
+    // group chips
+    this._groups = { layers: [], edge: [], scan: [] };
+    this._chips.forEach((el) => {
+      const g = el.dataset.group;
+      this._groups[g].push({
+        el, anchor: el.dataset.anchor,
+        ladder: el.hasAttribute('data-ladder'),
+        idx: +(el.dataset.idx || 0),
+        ox: +(el.dataset.ox || 0), oy: +(el.dataset.oy || 0),
+        line: null, dot: null,
+      });
+    });
+  }
+
+  recache() {
+    if (!this._booted) return;
+    try { this.cacheOverlays(); this.buildLines(); this.wireHover(); } catch (e) {}
+  }
+
+  buildLines() {
+    if (this._svg) this._svg.innerHTML = '';
+    const NS = 'http://www.w3.org/2000/svg';
+    Object.values(this._groups).forEach((arr) => arr.forEach((c) => {
+      const ln = document.createElementNS(NS, 'line');
+      ln.setAttribute('stroke', 'var(--laser)');
+      ln.setAttribute('stroke-width', '1');
+      ln.style.opacity = '0';
+      const dot = document.createElementNS(NS, 'circle');
+      dot.setAttribute('r', '2.4');
+      dot.setAttribute('fill', 'var(--laser)');
+      dot.style.opacity = '0';
+      this._svg.appendChild(ln); this._svg.appendChild(dot);
+      c.line = ln; c.dot = dot;
+    }));
+  }
+
+  wireHover() {
+    this._groups.layers.forEach((c) => {
+      c.el.onmouseenter = () => { this.hero?.highlightLayer(c.idx); this._lastRender = 0; this.requestFrame(); };
+      c.el.onmouseleave = () => { this.hero?.highlightLayer(-1); this._lastRender = 0; this.requestFrame(); };
+    });
+  }
+
+  stageIdx(p) {
+    const B = this.BEATS;
+    for (let i = 0; i < B.length; i++) if (p < B[i][1]) return i;
+    return B.length - 1;
+  }
+
+  measureScroll() {
+    if (this._guided) return;
+    const sc = this._scroller;
+    const range = sc ? sc.scrollHeight - sc.clientHeight : 0;
+    this._target = range > 0 ? this.clamp(sc.scrollTop / range, 0, 1) : 0;
+    this._lastInputAt = performance.now();
+  }
+
+  goToStage(direction) {
+    if (!this._scroller) return;
+    const current = Number.isInteger(this._requestedStage) ? this._requestedStage : this.stageIdx(this._target || 0);
+    const index = this.clamp(current + direction, 0, this.BEATS.length - 1);
+    this._requestedStage = index;
+    const progress = this.STAGE_STOPS[index];
+    const range = this._scroller.scrollHeight - this._scroller.clientHeight;
+    this.updateStageButtons(index);
+    if (this._guided) {
+      this._target = progress;
+      this._lastInputAt = performance.now();
+      this.requestFrame();
+      return;
+    }
+    this._scroller.scrollTo({ top: range * progress, behavior: this._reduced ? 'auto' : 'smooth' });
+  }
+
+  updateStageButtons(index) {
+    const root = this._ov?.parentNode;
+    const previous = root?.querySelector('[data-stage-prev]');
+    const next = root?.querySelector('[data-stage-next]');
+    if (previous) previous.disabled = index === 0;
+    if (next) next.disabled = index === this.BEATS.length - 1;
+  }
+
+  isActive() { return this._visible !== false && this._parentVisible !== false && !document.hidden; }
+
+  requestFrame() {
+    if (!this._prepared || this._raf || !this.isActive()) return;
+    this._raf = requestAnimationFrame(this._loop);
+  }
+
+  syncActivity() {
+    if (!this.isActive()) {
+      if (this._raf) cancelAnimationFrame(this._raf);
+      this._raf = 0;
+      if (this._audio?.ctx.state === 'running') this._audio.ctx.suspend().catch(() => {});
+      return;
+    }
+    this._last = performance.now();
+    this._lastRender = 0;
+    if (this._soundOn && this._audio?.ctx.state === 'suspended') this._audio.ctx.resume().catch(() => {});
+    this.requestFrame();
+  }
+
+  _loop(t) {
+    this._raf = 0;
+    if (!this.isActive() || !this.hero) return;
+    const dt = this.clamp((t - this._last) / 1000, 0, 0.05);
+    this._last = t;
+    const target = this._target || 0;
+    // Reading pace comes from the scroll-track length, never a delayed response
+    // to the finger. Reduced motion shows static stage poses instead of a sweep.
+    if (this._reduced) {
+      const index = this.stageIdx(target);
+      this._p = this.STAGE_STOPS[index];
+    } else {
+      this._p += (target - this._p) * (1 - Math.exp(-dt * (this._guided ? 9 : 24)));
+      if (Math.abs(target - this._p) < 0.00008) this._p = target;
+    }
+    this._p = this.clamp(this._p, 0, 1);
+    const p = this._p;
+    const progressChanged = Math.abs(p - this._prevP) > 0.00001;
+    const inputActive = t - (this._lastInputAt || 0) < 180;
+    const shouldRender = !this._lastRender || progressChanged || (!this._reduced && inputActive);
+    let fr = null;
+    if (shouldRender) {
+      const renderDt = this._lastRender ? this.clamp((t - this._lastRender) / 1000, 0, 0.06) : dt;
+      this._lastRender = t;
+      try { fr = this.hero.frame(p, renderDt); } catch (error) {
+        this._firstFrameSent = false;
+        this.showFallback();
+        return;
+      }
+      if (!this._firstFrameSent) {
+        this._firstFrameSent = true;
+        window.__CRAFTED_FIRST_FRAME_MS = performance.now() - (window.__CRAFTED_BOOT_START || 0);
+        document.documentElement.dataset.firstFrameMs = String(Math.round(window.__CRAFTED_FIRST_FRAME_MS));
+        window.dispatchEvent(new CustomEvent('crafted-lens-first-frame', {
+          detail: { elapsed: window.__CRAFTED_FIRST_FRAME_MS }
+        }));
+      }
+    }
+    const refreshOverlay = shouldRender && (progressChanged || !this._lastOverlayAt);
+    if (refreshOverlay) {
+      this._lastOverlayAt = t;
+      this.updateOverlays(p, fr && fr.bgLum);
+      this.fireEvents(p);
+    }
+    if (this._soundOn) this.audioUpdate(p, dt);
+    this._prevP = p;
+    if ((!this._reduced && (inputActive || Math.abs(target - p) > 0.00008)) || this._soundOn) this.requestFrame();
+  }
+
+  updateOverlays(p, bgLum) {
+    if (!this._elProg || !this._elProg.isConnected) { this.recache(); if (!this._elProg) return; }
+    if (bgLum != null && this._scroller) {
+      const t = this.clamp((bgLum - 0.32) / 0.26, 0, 1);
+      const mx = (a, b) => Math.round(a + (b - a) * t);
+      // set on the SCROLLER: it both defines --ink-rgb and declares color:rgb(var(--ink-rgb)),
+      // so inherited text color re-resolves for every descendant (sticky container is too low
+      // in the tree — descendants inherit the color resolved above it).
+      const st = this._scroller.style;
+      st.setProperty('--ink-rgb', mx(226, 16) + ',' + mx(232, 22) + ',' + mx(235, 26));
+      st.setProperty('--panel-rgb', mx(14, 240) + ',' + mx(18, 244) + ',' + mx(22, 246));
+      // accent text follows the same curve, or it goes unreadable on the dark stages
+      if (this._laserDk) {
+        const L = this._laserLit, D = this._laserDk;
+        st.setProperty('--laser-ink', 'rgb(' + mx(L[0], D[0]) + ',' + mx(L[1], D[1]) + ',' + mx(L[2], D[2]) + ')');
+      }
+    }
+    // HUD
+    const si = this.stageIdx(p);
+    this._elStage.textContent = ('0' + (si + 1)).slice(-2);
+    this._elName.textContent = this.NAMES[si];
+    this._elRead.textContent = this.READOUTS[si];
+    this.updateStageButtons(Number.isInteger(this._requestedStage) ? this._requestedStage : si);
+    this._elPct.textContent = Math.round(p * 100) + '%';
+    this._elProg.style.width = (p * 100).toFixed(2) + '%';
+    this._elScrollWord.style.opacity = p > 0.03 ? '1' : '0.5';
+
+    // timed captions
+    for (const el of this._caps) {
+      const o = this.trap(p, +el.dataset.a, +el.dataset.b, +el.dataset.c, +el.dataset.d);
+      el.style.opacity = o.toFixed(3);
+      const dir = el.dataset.dir === 'down' ? -1 : 1;
+      el.style.transform = 'translateY(' + ((1 - o) * 10 * dir).toFixed(1) + 'px)';
+      // hidden captions must not stay clickable (invisible buttons/links)
+      if (el._pe === undefined) el._pe = el.style.pointerEvents || '';
+      if (el._peKids === undefined) el._peKids = [...el.querySelectorAll('*')].filter((k) => k.style && k.style.pointerEvents === 'auto');
+      const on = o > 0.5;
+      el.style.pointerEvents = on ? el._pe : 'none';
+      el.inert = !on;
+      el.setAttribute('aria-hidden', String(!on));
+      for (const k of el._peKids) k.style.pointerEvents = on ? 'auto' : 'none';
+    }
+
+    // phase: stage 08 photochromic
+    if (this.trap(p, 0.607, 0.619, 0.661, 0.672) > 0.001) {
+      const idx = this.clamp(Math.round(this.seg(p, 0.611, 0.667) * 2), 0, 2);
+      this._ph11.forEach((e) => { e.style.opacity = (+e.dataset.idx === idx) ? '1' : '0'; e.style.transition = 'opacity 0.35s'; });
+    }
+    // phase: stage 10 edge bevel
+    if (this.trap(p, 0.751, 0.759, 0.792, 0.798) > 0.001) {
+      const idx = this.clamp(Math.round(this.seg(p, 0.754, 0.794) * 2), 0, 2);
+      this._ph12.forEach((e) => { e.style.opacity = (+e.dataset.idx === idx) ? '1' : '0'; e.style.transition = 'opacity 0.4s'; });
+    }
+
+    // stage 11 spec highlight
+    if (this.trap(p, 0.812, 0.825, 0.861, 0.872) > 0.001) {
+      const act = this.clamp(Math.floor(this.seg(p, 0.817, 0.867) * 6), 0, 5);
+      this._spec.forEach((e, i) => {
+        e.style.opacity = i <= act ? '1' : '0.28';
+        e.style.transition = 'opacity 0.3s';
+        const dot = e.querySelector('[data-dot]');
+        if (dot) dot.style.opacity = i === act ? '1' : (i < act ? '0.55' : '0');
+      });
+    }
+
+    // anchored groups
+    this.updateGroup('layers', this.trap(p, 0.330, 0.341, 0.397, 0.407));
+    this.updateGroup('edge', this.trap(p, 0.756, 0.764, 0.790, 0.797));
+    this.updateGroup('scan', this.trap(p, 0.814, 0.825, 0.860, 0.869));
+  }
+
+  updateGroup(name, amt) {
+    const arr = this._groups[name];
+    const legend = this._ov.parentNode.querySelector(`[data-mobile-legend="${name}"]`);
+    if (legend) {
+      legend.hidden = !this._mob || amt < 0.5;
+      if (legend.hidden) legend.open = false;
+      if (!legend.dataset.populated) {
+        const list = legend.querySelector('ul');
+        arr.forEach(({ el }) => { const item = document.createElement('li'); item.textContent = [...el.children].map(part => part.textContent.trim()).filter(Boolean).join(' · '); list.appendChild(item); });
+        legend.dataset.populated = 'true';
+      }
+    }
+    if (amt <= 0.003) {
+      arr.forEach((c) => { c.el.style.opacity = '0'; c.el.style.pointerEvents = 'none'; c.line.style.opacity = '0'; c.dot.style.opacity = '0'; });
+      return;
+    }
+    const A = this.hero.getAnchors();
+    const W = this._ov.clientWidth, H = this._ov.clientHeight;
+    if (this._mob) {
+      // A single expandable legend replaces labels that used to overlap the
+      // caption and model. Details stay available without obscuring the scene.
+      arr.forEach((c) => {
+        c.el.style.opacity = '0';
+        c.el.style.pointerEvents = 'none';
+        c.line.style.opacity = '0';
+        c.dot.style.opacity = '0';
+      });
+      return;
+    }
+    arr.forEach((c) => {
+      const an = A[c.anchor]; if (!an) return;
+      let cx, cy;
+      if (c.ladder) { cx = W * 0.72; cy = H * (0.2 + c.idx * 0.093); }
+      else { cx = an.x + c.ox; cy = an.y + c.oy; }
+      const mx = Math.min(96, W * 0.16), my = Math.min(78, H * 0.1);
+      cx = this.clamp(cx, mx, W - mx); cy = this.clamp(cy, my, H - my);
+      c.el.style.left = cx + 'px';
+      c.el.style.top = cy + 'px';
+      c.el.style.opacity = amt.toFixed(3);
+      c.el.style.pointerEvents = amt > 0.6 ? 'auto' : 'none';
+      c.line.setAttribute('x1', an.x.toFixed(1)); c.line.setAttribute('y1', an.y.toFixed(1));
+      c.line.setAttribute('x2', cx.toFixed(1)); c.line.setAttribute('y2', cy.toFixed(1));
+      c.line.style.opacity = (amt * 0.85).toFixed(3);
+      c.dot.setAttribute('cx', an.x.toFixed(1)); c.dot.setAttribute('cy', an.y.toFixed(1));
+      c.dot.style.opacity = amt.toFixed(3);
+    });
+  }
+
+  // ---------- sound ----------
+  toggleSound() {
+    this.setSound(!this._soundOn);
+    this._userMuted = !this._soundOn;
+  }
+
+  setSound(on) {
+    this._soundOn = on;
+    if (on) { try { this.ensureAudio(); } catch (error) { this._soundOn = false; on = false; } }
+    if (on && !this._audio) { this._soundOn = false; on = false; }
+    if (this._audio) {
+      const now = this._audio.ctx.currentTime;
+      if (on && this._audio.ctx.state === 'suspended') this._audio.ctx.resume().catch(() => this.setSound(false));
+      this._audio.master.gain.cancelScheduledValues(now);
+      this._audio.master.gain.setTargetAtTime(on ? 0.42 : 0.0, now, 0.25);
+    }
+    const root = this._ov && this._ov.parentNode;
+    if (!root) return;
+    const ic = root.querySelector('[data-soundicon]'), lb = root.querySelector('[data-soundlabel]');
+    const button = root.querySelector('[data-sound]');
+    if (button) {
+      button.setAttribute('aria-pressed', String(on));
+      button.setAttribute('aria-label', on ? 'Çaktivizo zërin e animacionit' : 'Aktivizo zërin e animacionit');
+    }
+    if (ic) ic.style.background = on ? 'var(--laser)' : 'rgba(124,138,146,0.55)';
+    if (lb) lb.textContent = on ? 'Me zë' : 'Pa zë';
+    if (!this._audio && !on && button) {
+      button.disabled = true;
+      button.setAttribute('aria-label', 'Zëri nuk mbështetet në këtë shfletues');
+      if (lb) lb.textContent = 'Pa audio';
+    }
+    this.requestFrame();
+  }
+
+  ensureAudio() {
+    if (this._audio) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    const ctx = new AC();
+
+    // ---- master chain: master -> compressor -> air shelf -> destination ----
+    const master = ctx.createGain(); master.gain.value = 0;
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -16; comp.knee.value = 28; comp.ratio.value = 3.5;
+    comp.attack.value = 0.005; comp.release.value = 0.3;
+    const airShelf = ctx.createBiquadFilter(); airShelf.type = 'highshelf'; airShelf.frequency.value = 5000; airShelf.gain.value = -6;
+    master.connect(comp); comp.connect(airShelf); airShelf.connect(ctx.destination);
+
+    // ---- convolution reverb (generated impulse) for cinematic space ----
+    function makeIR(seconds, decay) {
+      const len = Math.floor(ctx.sampleRate * seconds);
+      const buf = ctx.createBuffer(2, len, ctx.sampleRate);
+      for (let ch = 0; ch < 2; ch++) {
+        const d = buf.getChannelData(ch);
+        for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+      }
+      return buf;
+    }
+    const conv = ctx.createConvolver(); conv.buffer = makeIR(3.6, 2.4);
+    const revReturn = ctx.createGain(); revReturn.gain.value = 0.68; conv.connect(revReturn); revReturn.connect(master);
+    const revSend = ctx.createGain(); revSend.gain.value = 1.0; revSend.connect(conv);
+    const sendTo = (node, amt) => { const g = ctx.createGain(); g.gain.value = amt; node.connect(g); g.connect(revSend); };
+    const pan = (v) => { if (!ctx.createStereoPanner) return null; const p = ctx.createStereoPanner(); p.pan.value = v; return p; };
+
+    // shared pink-ish noise buffer (reused by every noise voice)
+    const nb = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+    const nd = nb.getChannelData(0);
+    let b0 = 0, b1 = 0, b2 = 0;
+    for (let i = 0; i < nd.length; i++) {
+      const w = Math.random() * 2 - 1;
+      b0 = 0.99765 * b0 + w * 0.0990460;
+      b1 = 0.96300 * b1 + w * 0.2965164;
+      b2 = 0.57000 * b2 + w * 1.0526913;
+      nd[i] = (b0 + b1 + b2 + w * 0.1848) * 0.16;
+    }
+    const noise = () => { const s = ctx.createBufferSource(); s.buffer = nb; s.loop = true; s.start(); return s; };
+
+    // ---- cinematic harmonic pad (A minor drifting to A major at the reveal) ----
+    const pad = ctx.createGain(); pad.gain.value = 0; pad.connect(master);
+    const padLP = ctx.createBiquadFilter(); padLP.type = 'lowpass'; padLP.frequency.value = 400; padLP.Q.value = 0.6; padLP.connect(pad);
+    sendTo(pad, 0.5);
+    const padVoice = (freq, type, gain, panV) => {
+      const o = ctx.createOscillator(); o.type = type; o.frequency.value = freq;
+      const g = ctx.createGain(); g.gain.value = gain; o.connect(g);
+      const pn = pan(panV || 0); if (pn) { g.connect(pn); pn.connect(padLP); } else { g.connect(padLP); }
+      o.start(); return o;
+    };
+    padVoice(55.0, 'sine', 0.55, 0);          // A1 sub
+    padVoice(110.0, 'triangle', 0.14, -0.5);  // A2
+    padVoice(164.81, 'triangle', 0.11, 0.5);  // E3 (fifth)
+    padVoice(220.0, 'sine', 0.11, -0.25);     // A3
+    const padThird = padVoice(130.81, 'triangle', 0.11, 0.3); // C3 minor 3rd -> C#3 major 3rd
+    // slow LFO breathes the pad filter so the bed never feels static
+    const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.05;
+    const lfoG = ctx.createGain(); lfoG.gain.value = 150; lfo.connect(lfoG); lfoG.connect(padLP.frequency); lfo.start();
+
+    // ---- airy room bed ----
+    const bed = ctx.createGain(); bed.gain.value = 0; bed.connect(master);
+    const bedBP = ctx.createBiquadFilter(); bedBP.type = 'bandpass'; bedBP.frequency.value = 640; bedBP.Q.value = 0.9; bedBP.connect(bed);
+    noise().connect(bedBP); sendTo(bed, 0.4);
+
+    // ---- scroll-motion layer: the machine responds to scroll speed ----
+    const motion = ctx.createGain(); motion.gain.value = 0; motion.connect(master);
+    const motBP = ctx.createBiquadFilter(); motBP.type = 'bandpass'; motBP.frequency.value = 600; motBP.Q.value = 1.5; motBP.connect(motion);
+    noise().connect(motBP); sendTo(motion, 0.45);
+
+    // ---- laser bus: continuous tone + high sizzle while cutting (stage 2) ----
+    const laser = ctx.createGain(); laser.gain.value = 0; laser.connect(master);
+    const lbp = ctx.createBiquadFilter(); lbp.type = 'bandpass'; lbp.frequency.value = 1200; lbp.Q.value = 2; lbp.connect(laser);
+    const lo = ctx.createOscillator(); lo.type = 'sine'; lo.frequency.value = 220; lo.connect(lbp); lo.start();
+    const lo2 = ctx.createOscillator(); lo2.type = 'sine'; lo2.frequency.value = 660;
+    const lo2g = ctx.createGain(); lo2g.gain.value = 0.25; lo2.connect(lo2g); lo2g.connect(lbp); lo2.start();
+    const sizz = ctx.createGain(); sizz.gain.value = 0; sizz.connect(laser);
+    const sizHP = ctx.createBiquadFilter(); sizHP.type = 'highpass'; sizHP.frequency.value = 3200; sizHP.connect(sizz);
+    noise().connect(sizHP); sendTo(laser, 0.4);
+
+    // ---- diamond polish grind bus (stage 3) ----
+    const polish = ctx.createGain(); polish.gain.value = 0; polish.connect(master);
+    const polBP = ctx.createBiquadFilter(); polBP.type = 'bandpass'; polBP.frequency.value = 2500; polBP.Q.value = 1.3; polBP.connect(polish);
+    noise().connect(polBP); sendTo(polish, 0.5);
+
+    // ---- x-ray scanner shimmer (stage 10) ----
+    const xray = ctx.createGain(); xray.gain.value = 0; xray.connect(master);
+    const xo = ctx.createOscillator(); xo.type = 'sine'; xo.frequency.value = 1760; xo.connect(xray); xo.start();
+    const xo2 = ctx.createOscillator(); xo2.type = 'sine'; xo2.frequency.value = 2640;
+    const xg2 = ctx.createGain(); xg2.gain.value = 0.4; xo2.connect(xg2); xg2.connect(xray); xo2.start();
+    sendTo(xray, 0.6);
+
+    // ---- tension riser building into the final reveal ----
+    const riser = ctx.createGain(); riser.gain.value = 0; riser.connect(master);
+    const riserBP = ctx.createBiquadFilter(); riserBP.type = 'bandpass'; riserBP.frequency.value = 500; riserBP.Q.value = 1.8; riserBP.connect(riser);
+    noise().connect(riserBP);
+    const rTone = ctx.createOscillator(); rTone.type = 'sine'; rTone.frequency.value = 90;
+    const rToneG = ctx.createGain(); rToneG.gain.value = 0.3; rTone.connect(rToneG); rToneG.connect(riser); rTone.start();
+    sendTo(riser, 0.5);
+
+    this._audio = { ctx, master, revSend, nb, pad, padLP, padThird, bed, motion, motBP, laser, sizz, lo, polish, polBP, xray, riser, riserBP, rTone, spd: 0 };
+  }
+
+  audioUpdate(p, dt) {
+    const a = this._audio; if (!a) return;
+    const now = a.ctx.currentTime;
+    // normalized, smoothed scroll speed
+    const dp = Math.abs(p - (this._prevP || 0)) / Math.max(dt, 0.001);
+    const raw = this.clamp(dp / 0.4, 0, 1);
+    a.spd = a.spd * 0.82 + raw * 0.18;
+    const spd = a.spd;
+
+    // background pad + room bed removed — effects only
+    a.pad.gain.setTargetAtTime(0, now, 0.1);
+    a.bed.gain.setTargetAtTime(0, now, 0.1);
+
+    // motion whoosh — gentle response to scrolling
+    a.motion.gain.setTargetAtTime(spd * 0.12, now, 0.1);
+    a.motBP.frequency.setTargetAtTime(240 + 700 * spd, now, 0.12);
+
+    // diamond cutting (stage 2)
+    const cut = this.trap(p, 0.075, 0.094, 0.147, 0.155);
+    a.laser.gain.setTargetAtTime(cut * 0.09, now, 0.08);
+    a.sizz.gain.setTargetAtTime(cut * 0.1, now, 0.08);
+    a.lo.frequency.setTargetAtTime(205 + 70 * Math.sin(now * 8.0), now, 0.05);
+
+    // curve generation + optical polish (stages 3-4)
+    const pol = this.trap(p, 0.155, 0.174, 0.290, 0.300);
+    a.polish.gain.setTargetAtTime(pol * 0.025 * (0.55 + 0.45 * spd), now, 0.1);
+    a.polBP.frequency.setTargetAtTime(2100 + 1000 * (0.5 + 0.5 * Math.sin(now * 2.6)), now, 0.08);
+
+    // wavefront scanner shimmer (stage 11)
+    const xr = this.trap(p, 0.80, 0.814, 0.863, 0.875);
+    a.xray.gain.setTargetAtTime(xr * 0.018 * (0.6 + 0.4 * Math.sin(now * 5.0)), now, 0.1);
+
+    // tension riser building into the final reveal (0.82 -> 0.9)
+    const build = this.smooth(this.clamp(this.seg(p, 0.80, 0.882), 0, 1));
+    const inBuild = (p > 0.79 && p < 0.888) ? 1 : 0;
+    a.riser.gain.setTargetAtTime(inBuild * build * 0.045, now, 0.12);
+    a.riserBP.frequency.setTargetAtTime(300 + 3200 * build, now, 0.08);
+    a.rTone.frequency.setTargetAtTime(80 + 240 * build, now, 0.1);
+  }
+
+  fireEvents(p) {
+    if (!this._soundOn || !this._audio) return;
+    const cross = (th) => this._prevP < th && p >= th;
+    if (cross(0.076)) this.ignite();       // diamond wheel spins up
+    if (cross(0.152)) this.thunk(0.6);     // lens breaks free of the blank
+    if (cross(0.429)) this.boom(0.8);      // 7 coatings fuse
+    if (cross(0.495)) this.click();        // polarizer axis engages
+    if (cross(0.710)) this.click();        // hardness stylus contact
+    if (cross(0.882)) { this.boom(1.0); this.chime(); }  // clarity reveal
+  }
+
+  ignite() {
+    const a = this._audio; if (!a) return;
+    const t = a.ctx.currentTime;
+    // upward tonal whoosh
+    const o = a.ctx.createOscillator(); o.type = 'sine';
+    o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(900, t + 0.32);
+    const bp = a.ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = 3;
+    const g = a.ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.14, t + 0.08); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+    o.connect(bp); bp.connect(g); g.connect(a.master);
+    const rs = a.ctx.createGain(); rs.gain.value = 0.4; g.connect(rs); rs.connect(a.revSend);
+    o.start(t); o.stop(t + 0.52);
+    // rising noise burst
+    const ns = a.ctx.createBufferSource(); ns.buffer = a.nb; ns.loop = true;
+    const nhp = a.ctx.createBiquadFilter(); nhp.type = 'highpass';
+    nhp.frequency.setValueAtTime(400, t); nhp.frequency.exponentialRampToValueAtTime(4200, t + 0.3);
+    const ng = a.ctx.createGain(); ng.gain.setValueAtTime(0.0001, t); ng.gain.exponentialRampToValueAtTime(0.06, t + 0.08); ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+    ns.connect(nhp); nhp.connect(ng); ng.connect(a.master); ns.start(t); ns.stop(t + 0.42);
+  }
+
+  boom(v) {
+    const a = this._audio; if (!a) return;
+    v = v == null ? 1 : v;
+    const t = a.ctx.currentTime;
+    // deep sine drop — soft cinematic impact
+    const o = a.ctx.createOscillator(); o.type = 'sine';
+    o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(38, t + 0.55);
+    const g = a.ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.28 * v, t + 0.05); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.25);
+    o.connect(g); g.connect(a.master);
+    const rs = a.ctx.createGain(); rs.gain.value = 0.42; g.connect(rs); rs.connect(a.revSend);
+    o.start(t); o.stop(t + 1.3);
+    // filtered noise slam (gentle)
+    const ns = a.ctx.createBufferSource(); ns.buffer = a.nb; ns.loop = true;
+    const lp = a.ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(1500, t); lp.frequency.exponentialRampToValueAtTime(180, t + 0.45);
+    const ng = a.ctx.createGain(); ng.gain.setValueAtTime(0.08 * v, t); ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+    ns.connect(lp); lp.connect(ng); ng.connect(a.master);
+    const nrs = a.ctx.createGain(); nrs.gain.value = 0.3; ng.connect(nrs); nrs.connect(a.revSend);
+    ns.start(t); ns.stop(t + 0.55);
+  }
+
+  click() {
+    const a = this._audio; if (!a) return;
+    const t = a.ctx.currentTime;
+    const o = a.ctx.createOscillator(); o.type = 'triangle'; o.frequency.setValueAtTime(1900, t); o.frequency.exponentialRampToValueAtTime(520, t + 0.05);
+    const g = a.ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.18, t + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+    o.connect(g); g.connect(a.master); o.start(t); o.stop(t + 0.11);
+    const rs = a.ctx.createGain(); rs.gain.value = 0.3; g.connect(rs); rs.connect(a.revSend);
+    // crisp tick transient
+    const ns = a.ctx.createBufferSource(); ns.buffer = a.nb; ns.loop = true;
+    const hp = a.ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 2600;
+    const ng = a.ctx.createGain(); ng.gain.setValueAtTime(0.1, t); ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
+    ns.connect(hp); hp.connect(ng); ng.connect(a.master); ns.start(t); ns.stop(t + 0.05);
+  }
+
+  thunk(v) {
+    const a = this._audio; if (!a) return;
+    v = v == null ? 1 : v;
+    const t = a.ctx.currentTime;
+    const o = a.ctx.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(190, t); o.frequency.exponentialRampToValueAtTime(66, t + 0.16);
+    const g = a.ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.32 * v, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.26);
+    o.connect(g); g.connect(a.master); o.start(t); o.stop(t + 0.28);
+    const rs = a.ctx.createGain(); rs.gain.value = 0.35; g.connect(rs); rs.connect(a.revSend);
+  }
+
+  chime() {
+    const a = this._audio; if (!a) return;
+    const t = a.ctx.currentTime;
+    // rich bell cascade — A-major shimmer stack
+    const bells = [440, 554.37, 659.25, 880, 1108.73, 1318.5, 1760, 2637];
+    bells.forEach((f, i) => {
+      const o = a.ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+      const g = a.ctx.createGain(); const st = t + i * 0.045;
+      const peak = 0.16 / (1 + i * 0.32);
+      g.gain.setValueAtTime(0.0001, st); g.gain.exponentialRampToValueAtTime(peak, st + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, st + 2.6);
+      o.connect(g); g.connect(a.master);
+      const rs = a.ctx.createGain(); rs.gain.value = 0.9; g.connect(rs); rs.connect(a.revSend);
+      o.start(st); o.stop(st + 2.7);
+    });
+    // grand warm A-major pad swell with sub weight + long reverb bloom
+    const pg = a.ctx.createGain(); pg.gain.setValueAtTime(0.0001, t); pg.gain.exponentialRampToValueAtTime(0.2, t + 0.7); pg.gain.exponentialRampToValueAtTime(0.0001, t + 4.2); pg.connect(a.master);
+    const prs = a.ctx.createGain(); prs.gain.value = 0.85; pg.connect(prs); prs.connect(a.revSend);
+    [110, 220, 277.18, 329.63, 440, 554.37].forEach((f) => { const o = a.ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f; o.connect(pg); o.start(t); o.stop(t + 4.3); });
+  }
+
+  renderVals() {
+    return {
+      scrollerRef: this.scrollerRef,
+      hostRef: this.hostRef,
+      overlayRef: this.overlayRef,
+      soundToggle: this.soundToggle,
+      reload: this.reload,
+      previousStage: this.previousStage,
+      nextStage: this.nextStage,
+      exitStory: this.exitStory,
+    };
+  }
+}
+</script>
+</body>
+</html>

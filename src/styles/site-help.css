@@ -1,0 +1,50 @@
+/* A deliberately quiet help entry. No pop-ups, fake unread counts or claims of
+   live staffing. Checkout and try-on own their own critical screen space. */
+.miftari-help { --help-ink: #253b2d; --help-paper: #fffef8; --help-muted: #596454; --help-line: #d9dfd3; font-family: "Manrope", Arial, sans-serif; color: var(--help-ink); }
+.miftari-help :is(button,a) { font: inherit; cursor: pointer; }
+.miftari-help button { border: 0; }
+.miftari-help :is(button,a):focus-visible { outline: 2px solid #4e7054 !important; outline-offset: 3px; }
+.miftari-help-launcher { position: fixed; z-index: 8800; right: max(22px, env(safe-area-inset-right)); bottom: max(22px, env(safe-area-inset-bottom)); display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 10px 15px; color: var(--help-ink); border: 1px solid #c5cebd !important; border-radius: 28px; background: var(--help-paper); box-shadow: 0 4px 20px #23332417; font-size: 13px !important; font-weight: 600 !important; }
+.miftari-help-launcher:hover { background: #eef2e8; }
+.miftari-help-launcher.has-cart { bottom: max(87px, calc(env(safe-area-inset-bottom) + 68px)); }
+/* Child-owned filter and comparison dialogs do not expose state to App. */
+.app-shell:has([role="dialog"][aria-modal="true"]:not([data-help-dialog])) .miftari-help-launcher,
+.app-shell:has(dialog[open]) .miftari-help-launcher,
+.app-shell:has(:is(input,select,textarea):focus) .miftari-help-launcher,
+.app-shell:has([contenteditable="true"]:focus) .miftari-help-launcher { display: none; }
+.miftari-help-overlay { position: fixed; inset: 0; z-index: 9700; display: flex; justify-content: flex-end; align-items: flex-end; padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); }
+.miftari-help-backdrop { position: absolute; inset: 0; background: #15221c59; }
+.miftari-help-panel { position: relative; display: flex; flex-direction: column; width: min(400px, 100%); max-height: calc(100dvh - 40px); min-height: 0; background: var(--help-paper); border: 1px solid var(--help-line); border-radius: 15px; box-shadow: 0 16px 55px #13201726; overflow: hidden; }
+.miftari-help-panel > header { flex: 0 0 auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 21px 18px 15px; border-bottom: 1px solid var(--help-line); }
+.miftari-help-panel > header > div { min-width: 0; }
+.miftari-help-panel > header span { display: block; font-size: 10px; letter-spacing: .09em; text-transform: uppercase; color: var(--help-muted); }
+.miftari-help-panel h2 { margin: 7px 0 0; font-size: 21px; line-height: 1.3; letter-spacing: -.035em; color: var(--help-ink); font-weight: 500; }
+.miftari-help-close { display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 44px; margin: -9px -7px 0 0; color: var(--help-ink); background: transparent; border-radius: 50%; }
+.miftari-help-close:hover { background: #e9eedf; }
+.miftari-help-body { min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 16px 18px 18px; }
+.miftari-help-intro { margin: 0 0 12px; font-size: 13px; line-height: 1.65; color: var(--help-muted); }
+.miftari-help-topics { display: grid; }
+.miftari-help-topics > button { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 46px; padding: 11px 0; border-bottom: 1px solid var(--help-line); background: transparent; color: var(--help-ink); text-align: left; font-size: 13px; line-height: 1.45; }
+.miftari-help-topics > button svg { flex-shrink: 0; }
+.miftari-help-topics > button:hover { color: #476743; text-decoration: underline; text-underline-offset: 3px; }
+.miftari-help-back { display: flex; align-items: center; gap: 7px; padding: 4px 0; min-height: 44px; margin-top: -8px; color: var(--help-muted); background: transparent; font-size: 12px !important; }
+.miftari-help-answer h3 { margin: 9px 0 12px; font-size: 19px; line-height: 1.35; font-weight: 500; letter-spacing: -.02em; color: var(--help-ink); }
+.miftari-help-answer p { margin: 0; font-size: 14px; line-height: 1.75; color: var(--help-muted); }
+.miftari-help-actions { display: grid; gap: 8px; margin: 20px 0 0; }
+.miftari-help-actions button { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 46px; padding: 12px 14px; color: #fff; background: #2d4539; border-radius: 5px; text-align: left; font-size: 13px; line-height: 1.4; }
+.miftari-help-actions button + button { color: var(--help-ink); border: 1px solid #c5cebd; background: transparent; }
+.miftari-help-actions button:hover { filter: brightness(.94); }
+.miftari-help-human { padding-top: 18px; margin-top: 17px; border-top: 1px solid var(--help-line); }
+.miftari-help-human strong { display: block; font-size: 12px; font-weight: 600; }
+.miftari-help-human > div { display: flex; gap: 12px; flex-wrap: wrap; }
+.miftari-help-human a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 5px 0; color: var(--help-ink); font-size: 12px; text-decoration: underline; text-underline-offset: 4px; }
+.miftari-help-disclosure { flex: 0 0 auto; margin: 0; padding: 12px 18px; border-top: 1px solid var(--help-line); background: #f0f2e9; color: #55604e; font-size: 10px; line-height: 1.6; }
+.miftari-help-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 600px) {
+  .miftari-help-launcher { right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); min-height: 44px; padding-inline: 12px; font-size: 12px !important; }
+  .miftari-help-launcher.has-cart { bottom: max(77px, calc(env(safe-area-inset-bottom) + 68px)); }
+  .miftari-help-overlay { padding: max(12px, env(safe-area-inset-top)) 0 0; }
+  .miftari-help-panel { width: 100%; max-height: calc(100dvh - max(12px, env(safe-area-inset-top))); border-radius: 15px 15px 0 0; border-bottom: 0; }
+  .miftari-help-body { padding-inline: max(18px, env(safe-area-inset-left)) max(18px, env(safe-area-inset-right)); }
+  .miftari-help-disclosure { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+}
