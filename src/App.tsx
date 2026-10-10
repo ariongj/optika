@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useLayoutEffect, type ReactNode } from 'react';
+import { Suspense, useEffect, useLayoutEffect, type ReactNode } from 'react';
 import { createBrowserRouter, Navigate, Outlet, RouterProvider, ScrollRestoration, useLocation, type RouteObject } from 'react-router';
 import { BASENAME } from '@/lib/paths';
 import { Toaster, toast } from 'sonner';
@@ -14,7 +14,8 @@ import type { Action, Module } from '@/lib/permissions';
 // Storefront pages: Home ships in the entry bundle; every other page is its own chunk, prefetched on link intent
 // and when idle (see site/pages/lazy.ts), so first load stays small on phones and navigation still feels instant.
 import Home from '@/site/pages/Home';
-import { Pages as StorePages } from '@/site/pages/lazy';
+import RouteError from '@/site/pages/RouteError';
+import { lazyRetry, Pages as StorePages } from '@/site/pages/lazy';
 const {
   shop: Shop, product: ProductPage, cart: CartPage, checkout: Checkout, orderSuccess: OrderSuccess, services: Services, projects: Projects,
   about: About, contact: Contact, blog: Blog, post: PostPage, cmsPage: CmsPageView, search: SearchPage, wishlist: Wishlist,
@@ -23,55 +24,55 @@ const {
 } = StorePages;
 
 // CMS (lazy — separate bundle)
-const AdminLayout = lazy(() => import('@/admin/layout/AdminLayout'));
-const Login = lazy(() => import('@/admin/pages/Login'));
-const Invoice = lazy(() => import('@/admin/pages/Invoice'));
+const AdminLayout = lazyRetry(() => import('@/admin/layout/AdminLayout'));
+const Login = lazyRetry(() => import('@/admin/pages/Login'));
+const Invoice = lazyRetry(() => import('@/admin/pages/Invoice'));
 // Overview, orders
-const Dashboard = lazy(() => import('@/admin/pages/Dashboard'));
-const Orders = lazy(() => import('@/admin/pages/Orders'));
-const OrderDetail = lazy(() => import('@/admin/pages/OrderDetail'));
-const DraftOrders = lazy(() => import('@/admin/pages/DraftOrders'));
-const DraftOrderEdit = lazy(() => import('@/admin/pages/DraftOrderEdit'));
-const Returns = lazy(() => import('@/admin/pages/Returns'));
+const Dashboard = lazyRetry(() => import('@/admin/pages/Dashboard'));
+const Orders = lazyRetry(() => import('@/admin/pages/Orders'));
+const OrderDetail = lazyRetry(() => import('@/admin/pages/OrderDetail'));
+const DraftOrders = lazyRetry(() => import('@/admin/pages/DraftOrders'));
+const DraftOrderEdit = lazyRetry(() => import('@/admin/pages/DraftOrderEdit'));
+const Returns = lazyRetry(() => import('@/admin/pages/Returns'));
 // Products
-const Products = lazy(() => import('@/admin/pages/Products'));
-const ProductEdit = lazy(() => import('@/admin/pages/ProductEdit'));
-const Collections = lazy(() => import('@/admin/pages/Collections'));
-const CollectionEdit = lazy(() => import('@/admin/pages/CollectionEdit'));
-const Categories = lazy(() => import('@/admin/pages/Categories'));
-const Inventory = lazy(() => import('@/admin/pages/Inventory'));
-const PurchaseOrders = lazy(() => import('@/admin/pages/PurchaseOrders'));
+const Products = lazyRetry(() => import('@/admin/pages/Products'));
+const ProductEdit = lazyRetry(() => import('@/admin/pages/ProductEdit'));
+const Collections = lazyRetry(() => import('@/admin/pages/Collections'));
+const CollectionEdit = lazyRetry(() => import('@/admin/pages/CollectionEdit'));
+const Categories = lazyRetry(() => import('@/admin/pages/Categories'));
+const Inventory = lazyRetry(() => import('@/admin/pages/Inventory'));
+const PurchaseOrders = lazyRetry(() => import('@/admin/pages/PurchaseOrders'));
 // Customers, growth, discounts
-const Customers = lazy(() => import('@/admin/pages/Customers'));
-const Segments = lazy(() => import('@/admin/pages/Segments'));
-const Offers = lazy(() => import('@/admin/pages/Offers'));
-const OfferEdit = lazy(() => import('@/admin/pages/OfferEdit'));
-const Discounts = lazy(() => import('@/admin/pages/Discounts'));
-const DiscountEdit = lazy(() => import('@/admin/pages/DiscountEdit'));
+const Customers = lazyRetry(() => import('@/admin/pages/Customers'));
+const Segments = lazyRetry(() => import('@/admin/pages/Segments'));
+const Offers = lazyRetry(() => import('@/admin/pages/Offers'));
+const OfferEdit = lazyRetry(() => import('@/admin/pages/OfferEdit'));
+const Discounts = lazyRetry(() => import('@/admin/pages/Discounts'));
+const DiscountEdit = lazyRetry(() => import('@/admin/pages/DiscountEdit'));
 // Content
-const Pages = lazy(() => import('@/admin/pages/Pages'));
-const PageEdit = lazy(() => import('@/admin/pages/PageEdit'));
-const Posts = lazy(() => import('@/admin/pages/Posts'));
-const PostEdit = lazy(() => import('@/admin/pages/PostEdit'));
-const ProjectsAdmin = lazy(() => import('@/admin/pages/ProjectsAdmin'));
-const Menus = lazy(() => import('@/admin/pages/Menus'));
-const ContentModels = lazy(() => import('@/admin/pages/ContentModels'));
-const Media = lazy(() => import('@/admin/pages/Media'));
+const Pages = lazyRetry(() => import('@/admin/pages/Pages'));
+const PageEdit = lazyRetry(() => import('@/admin/pages/PageEdit'));
+const Posts = lazyRetry(() => import('@/admin/pages/Posts'));
+const PostEdit = lazyRetry(() => import('@/admin/pages/PostEdit'));
+const ProjectsAdmin = lazyRetry(() => import('@/admin/pages/ProjectsAdmin'));
+const Menus = lazyRetry(() => import('@/admin/pages/Menus'));
+const ContentModels = lazyRetry(() => import('@/admin/pages/ContentModels'));
+const Media = lazyRetry(() => import('@/admin/pages/Media'));
 // Markets, analytics, contacts, appointments
-const Markets = lazy(() => import('@/admin/pages/Markets'));
-const Analytics = lazy(() => import('@/admin/pages/Analytics'));
-const Inquiries = lazy(() => import('@/admin/pages/Inquiries'));
-const Quotes = lazy(() => import('@/admin/pages/Quotes'));
-const Appointments = lazy(() => import('@/admin/pages/Appointments'));
-const AppointmentServices = lazy(() => import('@/admin/pages/AppointmentServices'));
+const Markets = lazyRetry(() => import('@/admin/pages/Markets'));
+const Analytics = lazyRetry(() => import('@/admin/pages/Analytics'));
+const Inquiries = lazyRetry(() => import('@/admin/pages/Inquiries'));
+const Quotes = lazyRetry(() => import('@/admin/pages/Quotes'));
+const Appointments = lazyRetry(() => import('@/admin/pages/Appointments'));
+const AppointmentServices = lazyRetry(() => import('@/admin/pages/AppointmentServices'));
 // Sales channels, settings
-const OnlineStore = lazy(() => import('@/admin/pages/OnlineStore'));
-const ContentEditor = lazy(() => import('@/admin/pages/ContentEditor'));
-const Slides = lazy(() => import('@/admin/pages/Slides'));
-const SlideEdit = lazy(() => import('@/admin/pages/SlideEdit'));
-const Integrations = lazy(() => import('@/admin/pages/Integrations'));
-const SettingsPage = lazy(() => import('@/admin/pages/SettingsPage'));
-const ModuleMap = lazy(() => import('@/admin/pages/ModuleMap'));
+const OnlineStore = lazyRetry(() => import('@/admin/pages/OnlineStore'));
+const ContentEditor = lazyRetry(() => import('@/admin/pages/ContentEditor'));
+const Slides = lazyRetry(() => import('@/admin/pages/Slides'));
+const SlideEdit = lazyRetry(() => import('@/admin/pages/SlideEdit'));
+const Integrations = lazyRetry(() => import('@/admin/pages/Integrations'));
+const SettingsPage = lazyRetry(() => import('@/admin/pages/SettingsPage'));
+const ModuleMap = lazyRetry(() => import('@/admin/pages/ModuleMap'));
 
 function Loader() {
   return (
@@ -203,6 +204,7 @@ const adminRoutes: RouteObject[] = [
 const router = createBrowserRouter([
   {
     element: <Root />,
+    errorElement: <RouteError />,
     children: [
       {
         element: <SiteLayout />,
