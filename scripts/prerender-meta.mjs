@@ -160,7 +160,7 @@ function ogImage(img) {
 }
 
 /* ---- write shells ---- */
-function render(route, m) {
+function render(route, m, shellFor = route) {
   const url = abs(route ? `${route}/` : '');
   const title = m.raw ? plain(m.title) : titled(m.title);
   const desc = clip(m.description);
@@ -193,7 +193,26 @@ function render(route, m) {
     .replace(/\s*<meta name="twitter:[^>]*>/g, '')
     .replace(/\s*<link rel="canonical"[^>]*>/, '')
     .replace(/\s*<meta name="robots"[^>]*>/, '')
-    .replace('</head>', `    ${head}\n  </head>`);
+    .replace('</head>', `    ${head}\n  </head>`)
+    .replace('<div id="root"></div>', `<div id="root">${appShell(shellFor)}</div>`);
+}
+
+/**
+ * Static first screen inside #root, painted before any JavaScript runs (React replaces it on mount): the dark
+ * announcement strip and, on the homepage, the first hero photo exactly where the real hero draws it (portrait crop on
+ * phones) — so a phone on a slow network sees the page at once instead of a blank screen. Inline styles only.
+ */
+function appShell(route) {
+  const bar = '<div style="height:36px;background:#1c1a17"></div>';
+  if (route !== '' || !heroRel) return `${bar}<div style="height:76px;border-bottom:1px solid #e3d9cc"></div>`;
+  const src = `${BASE}${heroRel}`;
+  const portrait = heroPortrait && fs.existsSync(path.join(DIST, heroPortrait)) ? `<source media="(max-width: 767px)" srcset="${BASE}${heroPortrait}">` : '';
+  return (
+    `${bar}<div aria-hidden="true" style="position:relative;height:calc(100svh - 36px);min-height:600px;max-height:1000px;overflow:hidden;background:#1c1a17">` +
+    `<picture>${portrait}<img src="${src}" alt="" fetchpriority="high" decoding="sync" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></picture>` +
+    '<div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(28,26,23,.8),rgba(28,26,23,.4),rgba(28,26,23,.05))"></div>' +
+    '<div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(28,26,23,.7),transparent,rgba(28,26,23,.3))"></div></div>'
+  );
 }
 
 let n = 0;
@@ -204,7 +223,10 @@ for (const [route, meta] of pages) {
   n++;
 }
 // Fallback for anything unknown (CMS-created pages, typos): generic shell, not indexed.
-fs.writeFileSync(path.join(DIST, '404.html'), render('', { ...pages.get(''), noindex: true, preload: [] }));
+fs.writeFileSync(
+  path.join(DIST, '404.html'),
+  render('', { ...pages.get(''), noindex: true, preload: [] }, '404'),
+);
 
 const urls = [...pages].filter(([, m]) => !m.noindex).map(([r]) => abs(r ? `${r}/` : ''));
 fs.writeFileSync(
