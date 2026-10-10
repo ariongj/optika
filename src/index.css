@@ -198,3 +198,17 @@ html[data-admin] ::selection {
   outline-offset: -3px;
   transition: outline-color 0.6s ease;
 }
+
+/* Respect "reduce motion": no reveal/slide animations or smooth scrolling (functional transitions stay instant). */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

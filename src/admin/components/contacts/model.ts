@@ -61,6 +61,8 @@ export function sourcePath(q: Inquiry, productSlug?: string): string | null {
   const s = sourceOf(q);
   if (s === 'phone' || s === 'manual') return null;
   if (productSlug) return `/produkt/${productSlug}`;
+  if (q.tags?.includes('optical-lab')) return '/optical-lab';
+  if (/klinik|clinic/i.test(q.service ?? '')) return '/klinika';
   if (s === 'measurement') return '/sherbimet';
   return '/kontakt';
 }

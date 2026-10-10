@@ -145,8 +145,13 @@ export function resolveHref(href: string, ctx: LinkCtx, lang: Lang): { type: Lin
   const path = h.split(/[?#]/)[0] || '/';
   if (h === '/#rezervo') return { type: 'page', label: SE[lang].dest_measure };
   if (path === '/produktet' && !h.includes('#')) return { type: 'category', label: site[lang].allProducts };
-  const fixed: Record<string, 'nav_services' | 'nav_contact' | 'nav_projects' | 'nav_about' | 'nav_blog' | 'nav_tryon'> = { '/sherbimet': 'nav_services', '/kontakt': 'nav_contact', '/lookbook': 'nav_projects', '/rreth-nesh': 'nav_about', '/keshilla': 'nav_blog', '/provo-virtualisht': 'nav_tryon' };
+  const fixed: Record<string, keyof (typeof site)['sq']> = {
+    '/sherbimet': 'nav_services', '/kontakt': 'nav_contact', '/lookbook': 'nav_projects', '/rreth-nesh': 'nav_about', '/keshilla': 'nav_blog',
+    '/provo-virtualisht': 'nav_tryon', '/rezervo': 'nav_book', '/gjej-kornizen': 'nav_finder', '/lentet': 'nav_lensGuide', '/gjurmo-porosine': 'nav_track',
+  };
   if (fixed[path]) return { type: 'page', label: site[lang][fixed[path]] };
+  if (path === '/klinika') return { type: 'page', label: 'Klinika Miftari' };
+  if (path === '/optical-lab') return { type: 'page', label: 'Optical Lab' };
   return { type: 'url', label: h };
 }
 

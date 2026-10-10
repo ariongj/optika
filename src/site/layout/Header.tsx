@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
-import { ArrowRight, ArrowUpRight, Eye, Heart, Menu, Phone, ScanFace, Search, ShoppingBag } from 'lucide-react';
+import {
+  ArrowRight, ArrowUpRight, CalendarCheck, Eye, FlaskConical, Glasses, Heart, Layers, Menu, PackageSearch, Phone, ScanFace, Search, ShoppingBag,
+  Sparkles, Stethoscope, type LucideIcon,
+} from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Logo } from '@/components/brand/Logo';
 import { LangSwitcher } from '@/components/LangSwitcher';
-import { Button } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/Button';
 import { Img } from '@/components/ui/misc';
 import { Drawer } from '@/components/ui/Overlay';
 import { useDict, useL } from '@/i18n';
@@ -31,8 +34,23 @@ interface NavItem {
   type: NavNode['type'];
   image?: string;
   sub?: string;
+  /** Icon for picture-less pages in the dropdown (see PAGE_HINTS) */
+  icon?: LucideIcon;
   children: NavItem[];
 }
+
+/** Built-in pages have no picture: a dropdown tile gets an icon and a one-line description instead. */
+const PAGE_HINTS: Record<string, { icon: LucideIcon; sub: L10n }> = {
+  '/sherbimet': { icon: Sparkles, sub: { me: 'Pregled, prilagođavanje, popravke i još mnogo toga', sq: 'Kontroll, përshtatje, riparime dhe më shumë', en: 'Eye exams, fittings, repairs and more' } },
+  '/rezervo': { icon: CalendarCheck, sub: { me: 'Izaberite uslugu, dan i vreme online', sq: 'Zgjidhni shërbimin, ditën dhe orën online', en: 'Pick the service, day and time online' } },
+  '/klinika': { icon: Stethoscope, sub: { me: 'Specijalističke konsultacije za oči', sq: 'Konsulta specialistike për sytë', en: 'Specialist eye consultations' } },
+  '/optical-lab': { icon: FlaskConical, sub: { me: 'Dioptrijska sočiva · saradnja B2B', sq: 'Lente me recetë · bashkëpunim B2B', en: 'Prescription lenses · B2B partnerships' } },
+  '/gjej-kornizen': { icon: Glasses, sub: { me: 'Kratak kviz — tri okvira koja vam pristaju', sq: 'Kuiz i shkurtër — tri korniza që ju shkojnë', en: 'A short quiz — three frames that suit you' } },
+  '/lentet': { icon: Layers, sub: { me: 'Koja sočiva i koji indeks za vaš recept', sq: 'Cilat lente dhe cili indeks për recetën tuaj', en: 'Which lenses and index for your prescription' } },
+  '/gjurmo-porosine': { icon: PackageSearch, sub: { me: 'Gde je vaša porudžbina', sq: 'Ku ndodhet porosia juaj', en: 'See where your order is' } },
+  '/provo-virtualisht': { icon: ScanFace, sub: { me: 'Kamera, fotografija ili 3D', sq: 'Kamera, foto ose 3D', en: 'Camera, photo or 3D' } },
+};
+const hintFor = (to: string, external: boolean) => (external ? undefined : PAGE_HINTS[to.split(/[?#]/)[0]]);
 
 const toItem = (n: NavNode, l: (v: L10n) => string): NavItem => ({
   id: n.id,
@@ -41,7 +59,8 @@ const toItem = (n: NavNode, l: (v: L10n) => string): NavItem => ({
   external: n.external,
   type: n.type,
   image: n.entity?.image,
-  sub: n.entity?.subtitle ? l(n.entity.subtitle) || undefined : undefined,
+  sub: n.entity?.subtitle ? l(n.entity.subtitle) || undefined : (() => { const h = hintFor(n.to, n.external); return h ? l(h.sub) : undefined; })(),
+  icon: n.entity?.image ? undefined : hintFor(n.to, n.external)?.icon,
   children: n.children.map((c) => toItem(c, l)),
 });
 
@@ -56,7 +75,10 @@ function useMainNav(): { items: NavItem[]; fallback: boolean } {
   const t = useDict(site);
   return useMemo(() => {
     if (nodes.length) return { items: nodes.map((n) => toItem(n, l)), fallback: false };
-    const link = (id: string, to: string, label: string): NavItem => ({ id, label, to, external: false, type: 'url', children: [] });
+    const link = (id: string, to: string, label: string): NavItem => {
+      const h = hintFor(to, false);
+      return { id, label, to, external: false, type: 'url', sub: h ? l(h.sub) : undefined, icon: h?.icon, children: [] };
+    };
     return {
       fallback: true,
       items: [
@@ -64,11 +86,21 @@ function useMainNav(): { items: NavItem[]; fallback: boolean } {
           ...link('nav-products', '/produktet', t('nav_products')),
           children: [
             ...cats.map((c): NavItem => ({ id: c.id, label: l(c.name), to: `/produktet/${c.slug}`, external: false, type: 'category', image: c.image, sub: l(c.tagline), children: [] })),
+            link('nav-finder', '/gjej-kornizen', t('nav_finder')),
+            link('nav-lens-guide', '/lentet', t('nav_lensGuide')),
             link('nav-sale', '/produktet?akcija=1', t('sale')),
           ],
         },
         link('nav-tryon', TRYON, t('nav_tryon')),
-        link('nav-services', '/sherbimet', t('nav_services')),
+        {
+          ...link('nav-services', '/sherbimet', t('nav_services')),
+          children: [
+            link('nav-services-all', '/sherbimet', t('nav_ourServices')),
+            link('nav-book', '/rezervo', t('nav_book')),
+            link('nav-clinic', '/klinika', 'Klinika Miftari'),
+            link('nav-lab', '/optical-lab', 'Optical Lab'),
+          ],
+        },
         link('nav-projects', '/lookbook', t('nav_projects')),
         link('nav-about', '/rreth-nesh', t('nav_about')),
         link('nav-blog', '/keshilla', t('nav_blog')),
@@ -205,8 +237,8 @@ function MegaMenu({ item, onClose }: { item: NavItem; onClose: () => void }) {
                 {c.image ? (
                   <Img src={c.image} small alt={c.label} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
                 ) : (
-                  <span className="grid h-full w-full place-items-center text-ink-soft transition-colors group-hover:text-brand-700">
-                    <ArrowUpRight className="h-5 w-5" />
+                  <span className="grid h-full w-full place-items-center bg-brand-50 text-brand-700 transition-colors group-hover:bg-brand-100">
+                    {c.icon ? <c.icon className="h-7 w-7" strokeWidth={1.5} /> : <ArrowUpRight className="h-5 w-5" />}
                   </span>
                 )}
               </div>
@@ -350,9 +382,9 @@ export function Header({ transparentTop = false }: { transparentTop?: boolean })
             </button>
             {/* Wrapper carries the breakpoint: the button's own `inline-flex` would win over `hidden` (cn has no tailwind-merge). */}
             <span className="ml-2 hidden xl:inline-flex">
-              <Button type="button" onClick={() => openBooking()} variant={solid ? 'primary' : 'light'} size="sm" icon={<Eye className="h-4 w-4" />}>
+              <ButtonLink to="/rezervo" variant={solid ? 'primary' : 'light'} size="sm" icon={<Eye className="h-4 w-4" />}>
                 {t('freeMeasure')}
-              </Button>
+              </ButtonLink>
             </span>
           </div>
         </div>
@@ -455,18 +487,9 @@ function MobileMenu({ open, onClose, nav, fallback }: { open: boolean; onClose: 
             <Phone className="h-4 w-4" /> {settings.phone}
           </a>
         </div>
-        <Button
-          type="button"
-          onClick={() => {
-            onClose();
-            openBooking();
-          }}
-          className="mt-6 w-full"
-          size="lg"
-          icon={<Eye className="h-4 w-4" />}
-        >
+        <ButtonLink to="/rezervo" onClick={onClose} className="mt-6 w-full" size="lg" icon={<Eye className="h-4 w-4" />}>
           {t('freeMeasure')}
-        </Button>
+        </ButtonLink>
       </div>
     </Drawer>
   );

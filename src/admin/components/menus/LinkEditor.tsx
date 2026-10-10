@@ -35,7 +35,10 @@ interface Opt {
 }
 
 const MAX_OPTS = 40;
-const QUICK_PATHS = ['/produktet', '/produktet?akcija=1', '/provo-virtualisht', '/sherbimet', '/lookbook', '/rreth-nesh', '/keshilla', '/kontakt', '/#rezervo'];
+const QUICK_PATHS = [
+  '/produktet', '/produktet?akcija=1', '/provo-virtualisht', '/gjej-kornizen', '/lentet', '/sherbimet', '/rezervo', '/klinika', '/optical-lab',
+  '/lookbook', '/rreth-nesh', '/keshilla', '/kontakt', '/gjurmo-porosine', '/#rezervo',
+];
 
 function optionsFor(type: MenuItemType, src: LinkSources): Opt[] {
   const res = (id: string) => resolveLink({ type, target: id }, src);

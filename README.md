@@ -11,7 +11,14 @@ together with the **virtual try-on** (live camera, photo and 3D, processed on th
   lookbook, FAQ, advice), catalogue with filters, product pages with lens choices (frame only / single vision / screen /
   progressive / prescription sun) and the **Kujdes+** add-on (12-month breakage cover), cart, checkout (cash on delivery, bank
   transfer, simulated card) with a prescription step, order confirmation, eye-exam booking, services, lookbook, about,
-  contact, advice articles, CMS pages, search, wishlist and **Provo virtualisht** (`/provo-virtualisht`).
+  contact, advice articles, CMS pages, search (products, pages and advice), wishlist and **Provo virtualisht**
+  (`/provo-virtualisht`). Also:
+  - **Rezervo termin** (`/rezervo`) — real slot booking (service → day → time → details) against the CMS opening hours and
+    calendar, with an `.ics` calendar file on confirmation;
+  - **Gjurmo porosinë** (`/gjurmo-porosine`) — order tracking by order number + e-mail/phone;
+  - **Klinika Miftari** (`/klinika`) and **Optical Lab** (`/optical-lab`, with a B2B partner application);
+  - **Udhëzuesi i lenteve** (`/lentet`) — interactive lens chooser, lens-thickness comparison, coatings and prescription
+    explainer; **Gjeni kornizën tuaj** (`/gjej-kornizen`) — a five-step frame-finder quiz with shareable results.
 - **CMS** (`/admin`) — dashboard, orders, draft orders, returns, products, collections, inventory, purchasing, customers and
   segments, discounts and offer campaigns, homepage builder with live preview, slides and banners, pages, advice posts, lookbook,
   menus, media, appointments (eye exams, fittings, Klinika Miftari), B2B quotes for Optical Lab, markets, analytics, settings.
@@ -47,8 +54,10 @@ npm run build
 ## Deploy
 
 Every push to `main` builds the site with `BASE_PATH=/optika/` and publishes it to GitHub Pages
-(`.github/workflows/pages.yml`; `dist/404.html` is the SPA fallback). For a root deployment (Vercel, Netlify or a custom
-domain) build without `BASE_PATH`; `vercel.json` and `public/_redirects` handle client-side routes.
+(`.github/workflows/pages.yml`). After the build, `scripts/prerender-meta.mjs` writes an HTML shell for every known route
+with its own title, description, social preview image (`public/og/*.jpg`), canonical URL and JSON-LD, plus `sitemap.xml`
+and `robots.txt`; `dist/404.html` stays the SPA fallback. For a root deployment (Vercel, Netlify or a custom domain) build
+without `BASE_PATH` and set `SITE_URL`; `vercel.json` and `public/_redirects` handle client-side routes.
 
 ## The previous PHP site
 

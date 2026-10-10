@@ -14,6 +14,7 @@ import { EmptyState, plain } from '@/components/ui/misc';
 import { Card, PageHeader, SaveBar, confirmDialog } from '@/admin/components/kit';
 import { L10nInput } from '@/admin/components/L10nInput';
 import { adm } from '@/admin/i18n';
+import { site } from '@/i18n/site';
 import { LANGS, lt, useDict, useL, useLang } from '@/i18n';
 import { useDb } from '@/store/db';
 import { useCan, useSettings } from '@/store/hooks';
@@ -628,6 +629,11 @@ function Destination({ label, value, onChange, ctx }: { label: string; value: st
         { href: '/produktet', label: t('dest_all') },
         { href: '/#rezervo', label: t('dest_measure') },
         { href: '/provo-virtualisht', label: t('dest_tryon') },
+        { href: '/rezervo', label: site[lang].nav_book },
+        { href: '/gjej-kornizen', label: site[lang].nav_finder },
+        { href: '/lentet', label: site[lang].nav_lensGuide },
+        { href: '/klinika', label: 'Klinika Miftari' },
+        { href: '/optical-lab', label: 'Optical Lab' },
         { href: '/sherbimet', label: t('dest_services') },
         { href: '/lookbook', label: 'Lookbook' },
         { href: '/kontakt', label: t('dest_contact') },

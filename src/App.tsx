@@ -30,6 +30,12 @@ import Wishlist from '@/site/pages/Wishlist';
 import CollectionPage from '@/site/pages/CollectionPage';
 import OfferPage from '@/site/pages/OfferPage';
 import NotFound from '@/site/pages/NotFound';
+import Clinic from '@/site/pages/Clinic';
+import OpticalLab from '@/site/pages/OpticalLab';
+import LensGuide from '@/site/pages/LensGuide';
+import FrameFinder from '@/site/pages/FrameFinder';
+import BookingPage from '@/site/pages/BookingPage';
+import OrderTracking from '@/site/pages/OrderTracking';
 // Virtual try-on (lazy — three.js + MediaPipe load only on this route)
 const TryOn = lazy(() => import('@/site/pages/TryOn'));
 
@@ -236,6 +242,12 @@ const router = createBrowserRouter([
           { path: 'faqe/:slug', element: <CmsPageView /> },
           { path: 'kerko', element: <SearchPage /> },
           { path: 'te-preferuarat', element: <Wishlist /> },
+          { path: 'klinika', element: <Clinic /> },
+          { path: 'optical-lab', element: <OpticalLab /> },
+          { path: 'lentet', element: <LensGuide /> },
+          { path: 'gjej-kornizen', element: <FrameFinder /> },
+          { path: 'rezervo', element: <BookingPage /> },
+          { path: 'gjurmo-porosine', element: <OrderTracking /> },
           {
             path: 'provo-virtualisht',
             element: (

@@ -92,7 +92,7 @@ export function HrefField({ value, onChange, label }: { value: string; onChange:
   const t = useDict(B, 'admin');
   const cats = useCategories();
   const listId = useId();
-  const routes = ['/produktet', '/produktet?akcija=1', ...cats.map((c) => `/produktet/${c.slug}`), '/provo-virtualisht', '/sherbimet', '/lookbook', '/keshilla', '/rreth-nesh', '/kontakt', '/#rezervo'];
+  const routes = ['/produktet', '/produktet?akcija=1', ...cats.map((c) => `/produktet/${c.slug}`), '/provo-virtualisht', '/gjej-kornizen', '/lentet', '/sherbimet', '/rezervo', '/klinika', '/optical-lab', '/lookbook', '/keshilla', '/rreth-nesh', '/kontakt', '/gjurmo-porosine', '/#rezervo'];
   return (
     <>
       <TextField label={label ?? t('href')} value={value} onChange={onChange} leading={<Link2 className="h-4 w-4" />} list={listId} placeholder="/produktet" spellCheck={false} />

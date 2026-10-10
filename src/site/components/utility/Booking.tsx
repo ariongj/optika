@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
+import { Link } from 'react-router';
 import { create } from 'zustand';
-import { Clock, Eye, Phone, Ruler, X } from 'lucide-react';
+import { ArrowRight, CalendarDays, Clock, Eye, Phone, Ruler, X } from 'lucide-react';
 import { Button, ButtonLink, buttonClass, type ButtonSize, type ButtonVariant } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Overlay';
 import { Img } from '@/components/ui/misc';
@@ -103,6 +104,7 @@ const T = defineDict({
     p1: 'Stručan pregled i provera dioptrije',
     p2: 'Merenje PD-a i savet za sočiva — besplatno',
     p3: 'Pon–Sub 10:00–19:30',
+    calendar: 'Ili izaberite tačan termin u kalendaru',
   },
   sq: {
     eyebrow: 'Kontroll i syve',
@@ -111,6 +113,7 @@ const T = defineDict({
     p1: 'Kontroll profesional dhe verifikim i dioptrisë',
     p2: 'Matje e PD-së dhe këshillë për lentet — falas',
     p3: 'Hën–Sht 10:00–19:30',
+    calendar: 'Ose zgjidhni orarin e saktë në kalendar',
   },
   en: {
     eyebrow: 'Eye exam',
@@ -119,6 +122,7 @@ const T = defineDict({
     p1: 'Professional exam and prescription check',
     p2: 'PD measurement and lens advice — free',
     p3: 'Mon–Sat 10:00–19:30',
+    calendar: 'Or pick an exact time in the calendar',
   },
 });
 
@@ -165,6 +169,15 @@ export function BookingModal() {
             <div className="eyebrow">{t('eyebrow')}</div>
             <h2 className="display mt-2 text-[30px] leading-[1.06] text-ink sm:text-[36px]">{t('title')}</h2>
             <p className="mt-2.5 max-w-lg text-[14.5px] leading-relaxed text-muted">{t('text')}</p>
+            <Link
+              to={`/rezervo${service ? `?sherbimi=${encodeURIComponent(service)}` : ''}`}
+              onClick={hide}
+              className="mt-3 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-brand-700 underline-offset-4 hover:underline"
+            >
+              <CalendarDays className="h-4 w-4" />
+              {t('calendar')}
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
           </div>
           <MeasureForm key={`${open}-${service ?? ''}`} type="measurement" defaultService={service} className="rounded-none! p-6! ring-0! sm:p-8! sm:pt-6!" />
         </div>

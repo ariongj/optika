@@ -72,6 +72,7 @@ const T = defineDict({
     note: 'Napomena',
     summary: 'Pregled narudžbe',
     continue: 'Nastavi kupovinu',
+    track: 'Pratite porudžbinu',
     home: 'Početna',
     demo: 'Demo:',
     demoText: 'narudžba se upravo pojavila u CMS-u.',
@@ -133,6 +134,7 @@ const T = defineDict({
     note: 'Shënim',
     summary: 'Përmbledhja e porosisë',
     continue: 'Vazhdo blerjen',
+    track: 'Gjurmo porosinë',
     home: 'Ballina',
     demo: 'Demo:',
     demoText: 'porosia sapo u shfaq në CMS.',
@@ -194,6 +196,7 @@ const T = defineDict({
     note: 'Note',
     summary: 'Order summary',
     continue: 'Continue shopping',
+    track: 'Track your order',
     home: 'Home',
     demo: 'Demo:',
     demoText: 'the order has just landed in the CMS.',
@@ -499,6 +502,9 @@ function Success({ order }: { order: Order }) {
           <div className="flex flex-wrap gap-3 pt-2">
             <ButtonLink to="/produktet" size="lg" iconRight={<ArrowRight className="h-4 w-4" />}>
               {t('continue')}
+            </ButtonLink>
+            <ButtonLink to={`/gjurmo-porosine?nr=${encodeURIComponent(order.number)}`} size="lg" variant="outline" icon={<PackageSearch className="h-4 w-4" />}>
+              {t('track')}
             </ButtonLink>
             <ButtonLink to="/" size="lg" variant="outline" icon={<Home className="h-4 w-4" />}>
               {t('home')}

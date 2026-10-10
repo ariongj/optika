@@ -183,7 +183,7 @@ export interface LinkCtx {
   /** Slug of the offer being edited (valid even before it is saved) */
   selfSlug?: string;
 }
-const STATIC = new Set(['/', '/produktet', '/sherbimet', '/lookbook', '/rreth-nesh', '/kontakt', '/keshilla', '/shporta', '/kerko', '/te-preferuarat', '/provo-virtualisht']);
+const STATIC = new Set(['/', '/produktet', '/sherbimet', '/lookbook', '/rreth-nesh', '/kontakt', '/keshilla', '/shporta', '/kerko', '/te-preferuarat', '/provo-virtualisht', '/rezervo', '/klinika', '/optical-lab', '/lentet', '/gjej-kornizen', '/gjurmo-porosine']);
 
 export function linkOk(href: string, c: LinkCtx): boolean {
   const h = (href ?? '').trim();

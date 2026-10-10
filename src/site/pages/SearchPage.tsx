@@ -15,6 +15,8 @@ import { diverseBestsellers, pluralOne } from '@/site/components/utility/shared'
 import { defineDict, useDict, useL, useLang } from '@/i18n';
 import { useActiveProducts, useCategories, useSettings } from '@/store/hooks';
 import { searchProducts } from '@/lib/search';
+import { SiteHits, searchSite } from '@/site/components/search/siteSearch';
+import { useDb } from '@/store/db';
 import { basePrice } from '@/lib/pricing';
 import { cn } from '@/lib/utils';
 
@@ -188,6 +190,9 @@ export default function SearchPage() {
 
   const q = useDeferredValue(value.trim());
   const results = useMemo(() => searchProducts(products, cats, q, lang), [products, cats, q, lang]);
+  const pages = useDb((s) => s.pages);
+  const posts = useDb((s) => s.posts);
+  const siteHits = useMemo(() => searchSite(q, lang, pages, posts).slice(0, 6), [q, lang, pages, posts]);
 
   // Categories the results fall into, most hits first
   const groups = useMemo(() => {
@@ -328,6 +333,9 @@ export default function SearchPage() {
               )}
             </div>
           )}
+
+          {/* Pages and advice articles that match too */}
+          {hasQuery && <SiteHits hits={siteHits} className="mt-8" />}
         </div>
       </section>
 

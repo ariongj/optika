@@ -24,6 +24,8 @@ const T = defineDict({
     index: 'Pregled usluga',
     included: 'Šta je uključeno',
     bookVisit: 'Zakažite termin',
+    moreClinic: 'O klinici',
+    moreLab: 'O laboratoriji',
     askLab: 'Zatražite ponudu',
     fromRange: 'Proizvodi',
     faqHelp: 'Imate pitanje koje nije na listi? Pozovite nas — savet je uvek besplatan.',
@@ -51,6 +53,8 @@ const T = defineDict({
     index: 'Pasqyra e shërbimeve',
     included: 'Çfarë përfshihet',
     bookVisit: 'Rezervo termin',
+    moreClinic: 'Rreth klinikës',
+    moreLab: 'Rreth laboratorit',
     askLab: 'Kërko ofertë',
     fromRange: 'Produktet',
     faqHelp: 'Keni një pyetje që nuk është në listë? Na telefononi — këshilla është gjithmonë falas.',
@@ -78,6 +82,8 @@ const T = defineDict({
     index: 'Services at a glance',
     included: 'What’s included',
     bookVisit: 'Book a visit',
+    moreClinic: 'About the clinic',
+    moreLab: 'About the lab',
     askLab: 'Request a quote',
     fromRange: 'Shop',
     faqHelp: 'Got a question that isn’t listed? Give us a call — advice is always free.',
@@ -311,6 +317,14 @@ export default function Services() {
                         {t('bookVisit')}
                       </Button>
                     )}
+                    {(it.kind === 'clinic' || it.kind === 'lab' || it.kind === 'b2b') && (
+                      <Link
+                        to={it.kind === 'clinic' ? '/klinika' : '/optical-lab'}
+                        className="inline-flex h-11 items-center gap-1.5 rounded-full border border-line bg-white px-5 text-[14px] font-semibold text-ink transition hover:border-ink/30"
+                      >
+                        {t(it.kind === 'clinic' ? 'moreClinic' : 'moreLab')} <ArrowUpRight className="h-4 w-4" />
+                      </Link>
+                    )}
                     {rel.length > 0 && <span className="ml-1 text-[12px] font-semibold uppercase tracking-[0.16em] text-muted">{t('fromRange')}</span>}
                     {rel.map((c) => (
                       <Link
@@ -369,6 +383,9 @@ export default function Services() {
                     );
                   })}
                 </ul>
+                <Link to="/optical-lab" className="mt-8 inline-flex w-fit items-center gap-1.5 text-[15px] font-semibold text-brand-200 transition-colors hover:text-white">
+                  {t('moreLab')} <ArrowRight className="h-4 w-4" />
+                </Link>
                 <div className="mt-auto grid grid-cols-3 gap-2 pt-10">
                   {['/images/s/lab-laser.webp', '/images/s/lab-blank.webp', '/images/s/b2b.webp'].map((src) => (
                     <div key={src} className="aspect-[4/3] overflow-hidden rounded-2xl bg-ink-soft ring-1 ring-white/10">

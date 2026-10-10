@@ -12,6 +12,8 @@ import { useUi } from '@/store/ui';
 import { useActiveProducts, useCategories } from '@/store/hooks';
 import { searchProducts } from '@/lib/search';
 import { EYEWEAR_SEARCHES } from '@/site/components/shop/searches';
+import { SiteHits, searchSite } from '@/site/components/search/siteSearch';
+import { useDb } from '@/store/db';
 
 export function SearchOverlay() {
   const open = useUi((s) => s.searchOpen);
@@ -36,7 +38,10 @@ export function SearchOverlay() {
     }
   }, [open, setOpen]);
 
+  const pages = useDb((s) => s.pages);
+  const posts = useDb((s) => s.posts);
   const results = useMemo(() => searchProducts(products, cats, q, lang), [products, cats, q, lang]);
+  const siteHits = useMemo(() => searchSite(q, lang, pages, posts).slice(0, 4), [q, lang, pages, posts]);
   const popular = useMemo(() => EYEWEAR_SEARCHES[lang].filter((term) => searchProducts(products, cats, term, lang).length > 0), [products, cats, lang]);
   const close = () => setOpen(false);
   const submit = () => {
@@ -105,7 +110,11 @@ export function SearchOverlay() {
                   </div>
                 </div>
               ) : results.length === 0 ? (
-                <p className="py-12 text-center text-muted">{t('noResults', { q })}</p>
+                siteHits.length ? (
+                  <SiteHits hits={siteHits} onPick={close} cols={2} className="py-8" />
+                ) : (
+                  <p className="py-12 text-center text-muted">{t('noResults', { q })}</p>
+                )
               ) : (
                 <div className="py-6">
                   <div className="mb-4 flex items-center justify-between">
@@ -127,6 +136,7 @@ export function SearchOverlay() {
                       </Link>
                     ))}
                   </div>
+                  <SiteHits hits={siteHits} onPick={close} className="mt-8" />
                 </div>
               )}
             </div>

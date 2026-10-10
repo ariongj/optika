@@ -166,8 +166,8 @@ export default function About() {
 
   const group = [
     { name: 'Optika Miftari', text: t('g1'), image: '/images/lookbook/atelier-optical.webp', cta: t('g1cta'), to: '/produktet' },
-    { name: 'Optical Lab', text: t('g2'), image: '/images/s/laboratori.webp', cta: t('g2cta'), to: '/sherbimet#optical-lab' },
-    { name: 'Klinika Miftari', text: t('g3'), image: '/images/s/klinika.webp', cta: t('g3cta'), to: '' },
+    { name: 'Optical Lab', text: t('g2'), image: '/images/s/laboratori.webp', cta: t('g2cta'), to: '/optical-lab' },
+    { name: 'Klinika Miftari', text: t('g3'), image: '/images/s/klinika.webp', cta: t('g3cta'), to: '/klinika' },
   ];
 
   return (

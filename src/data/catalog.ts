@@ -783,7 +783,7 @@ const DRAFTS: Draft[] = [
     featured: false,
     leadDays: 4,
     warrantyYears: 1,
-    sold: 236,
+    sold: 88,
     age: 200,
   },
   {
@@ -829,7 +829,7 @@ const DRAFTS: Draft[] = [
     featured: false,
     leadDays: 6,
     warrantyYears: 1,
-    sold: 88,
+    sold: 47,
     age: 200,
   },
   {
@@ -874,7 +874,7 @@ const DRAFTS: Draft[] = [
     featured: false,
     leadDays: 4,
     warrantyYears: 1,
-    sold: 112,
+    sold: 61,
     age: 150,
   },
   {
@@ -916,7 +916,7 @@ const DRAFTS: Draft[] = [
     featured: false,
     leadDays: 5,
     warrantyYears: 1,
-    sold: 64,
+    sold: 35,
     age: 150,
   },
   {
@@ -971,7 +971,7 @@ const DRAFTS: Draft[] = [
     featured: false,
     leadDays: 6,
     warrantyYears: 1,
-    sold: 41,
+    sold: 26,
     age: 120,
   },
   {
@@ -1007,7 +1007,7 @@ const DRAFTS: Draft[] = [
     featured: false,
     leadDays: 7,
     warrantyYears: 1,
-    sold: 19,
+    sold: 12,
     age: 90,
   },
 ];
