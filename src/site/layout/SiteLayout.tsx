@@ -37,12 +37,14 @@ function PageLoading() {
 function DemoBadge() {
   const t = useDict(site);
   const settings = useSettings();
+  // The try-on stage fills the phone screen (status pill bottom-left) — keep the badge out of its way there.
+  const tryOn = useLocation().pathname.startsWith('/provo-virtualisht');
   if (!settings.demoBanner) return null;
   return (
     <Link
       to="/admin"
       aria-label={`${t('demoBanner')} ${t('demoBannerCta')}`}
-      className="group fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-3 z-30 flex items-center gap-2.5 rounded-full bg-ink/90 p-1.5 text-[12px] font-semibold text-paper shadow-xl ring-1 ring-white/10 backdrop-blur transition-all hover:bg-ink sm:left-4 sm:pr-4"
+      className={`group fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-3 z-30 ${tryOn ? 'hidden lg:flex' : 'flex'} items-center gap-2.5 rounded-full bg-ink/90 p-1.5 text-[12px] font-semibold text-paper shadow-xl ring-1 ring-white/10 backdrop-blur transition-all hover:bg-ink sm:left-4 sm:pr-4`}
     >
       <span className="grid h-8 w-8 place-items-center rounded-full bg-brand-600 sm:h-7 sm:w-7">
         <LayoutDashboard className="h-3.5 w-3.5" />
