@@ -1,6 +1,6 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import { ArrowRight, Clock, Mail, MapPin, Phone, ArrowUp, ScanFace } from 'lucide-react';
+import { ArrowRight, ChevronDown, Clock, Mail, MapPin, Phone, ArrowUp, ScanFace } from 'lucide-react';
 import { toast } from 'sonner';
 import { Logo } from '@/components/brand/Logo';
 import { InstagramIcon, FacebookIcon, WhatsAppIcon } from '@/components/brand/Social';
@@ -114,43 +114,43 @@ export function Footer() {
 
           <div className="lg:col-span-4">
             <h3 className={headCls}>{t('footer_contact')}</h3>
-            <ul className="space-y-4 text-[14.5px] text-paper/80">
-              <li className="flex gap-3">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand-300" />
-                <a href={settings.mapUrl} target="_blank" rel="noreferrer" className="hover:text-white">
+            <ul className="space-y-1 text-[14.5px] text-paper/80 sm:space-y-4">
+              <li className="flex items-center gap-3 sm:items-start">
+                <MapPin className="sm:mt-0.5 h-4 w-4 shrink-0 text-brand-300" />
+                <a href={settings.mapUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center hover:text-white sm:min-h-0">
                   {settings.address}, {settings.city}, {f('country')}
                 </a>
               </li>
-              <li className="flex gap-3">
-                <Phone className="mt-0.5 h-4 w-4 shrink-0 text-brand-300" />
+              <li className="flex items-center gap-3 sm:items-start">
+                <Phone className="h-4 w-4 shrink-0 text-brand-300 sm:mt-0.5" />
                 <span>
-                  <a href={`tel:${settings.phone.replace(/[^\d+]/g, '')}`} className="hover:text-white">
+                  <a href={`tel:${settings.phone.replace(/[^\d+]/g, '')}`} className="inline-flex min-h-10 items-center hover:text-white sm:min-h-0">
                     {settings.phone}
                   </a>
                   {wa && (
                     <>
                       <span className="text-paper/35"> · </span>
-                      <a href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer" className="hover:text-white">
+                      <a href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center hover:text-white sm:min-h-0">
                         WhatsApp
                       </a>
                     </>
                   )}
                 </span>
               </li>
-              <li className="flex gap-3">
-                <Mail className="mt-0.5 h-4 w-4 shrink-0 text-brand-300" />
-                <a href={`mailto:${settings.email}`} className="hover:text-white">
+              <li className="flex items-center gap-3 sm:items-start">
+                <Mail className="h-4 w-4 shrink-0 text-brand-300 sm:mt-0.5" />
+                <a href={`mailto:${settings.email}`} className="inline-flex min-h-10 items-center hover:text-white sm:min-h-0">
                   {settings.email}
                 </a>
               </li>
-              <li className="flex gap-3">
-                <Clock className="mt-0.5 h-4 w-4 shrink-0 text-brand-300" />
+              <li className="flex items-center gap-3 sm:items-start">
+                <Clock className="h-4 w-4 shrink-0 text-brand-300 sm:mt-0.5" />
                 <span>{l(settings.hours)}</span>
               </li>
               {ig && (
-                <li className="flex gap-3">
-                  <InstagramIcon className="mt-0.5 h-4 w-4 shrink-0 text-brand-300" />
-                  <a href={`https://www.instagram.com/${ig}/`} target="_blank" rel="noreferrer" className="hover:text-white">
+                <li className="flex items-center gap-3 sm:items-start">
+                  <InstagramIcon className="h-4 w-4 shrink-0 text-brand-300 sm:mt-0.5" />
+                  <a href={`https://www.instagram.com/${ig}/`} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center hover:text-white sm:min-h-0">
                     @{ig}
                   </a>
                 </li>
@@ -186,10 +186,10 @@ export function Footer() {
             · {t('rights')}
           </span>
           <span className="flex items-center gap-5">
-            <Link to="/admin" className="hover:text-white">
+            <Link to="/admin" className="inline-flex min-h-10 items-center hover:text-white sm:min-h-0">
               {t('adminLink')}
             </Link>
-            <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="inline-flex items-center gap-1.5 hover:text-white">
+            <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="inline-flex min-h-10 items-center gap-1.5 hover:text-white sm:min-h-0">
               {t('backToTop')} <ArrowUp className="h-3.5 w-3.5" />
             </button>
           </span>
@@ -260,6 +260,41 @@ function MenuColumns({ nodes }: { nodes: NavNode[] }) {
   }, [nodes, l]);
   const split = Math.floor(groups.length / 2);
   const slots = groups.length === 1 ? [groups] : [groups.slice(0, split), groups.slice(split)];
+  const wide = useWide();
+  if (!wide)
+    return (
+      <div className="-my-4 border-t border-white/10">
+        {groups.map((g) =>
+          g.heading ? (
+            <details key={g.id} className="group border-b border-white/10">
+              <summary className="flex h-14 cursor-pointer list-none items-center justify-between text-[12px] font-bold uppercase tracking-[0.2em] text-paper/70 [&::-webkit-details-marker]:hidden">
+                {g.heading}
+                <ChevronDown className="h-4 w-4 transition-transform duration-300 group-open:rotate-180" />
+              </summary>
+              <ul className="-mt-1 pb-4 text-[15px]">
+                {g.links.map((n) => (
+                  <li key={n.id}>
+                    <FooterLink node={n} className={cn('flex min-h-11 items-center', isPromo(n) ? 'font-semibold text-brand-200' : 'text-paper/80')}>
+                      {!n.external && isTryOn(n.to) ? <TryOnLabel label={l(n.label)} /> : l(n.label)}
+                    </FooterLink>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ) : (
+            <ul key={g.id} className="py-3 text-[15px]">
+              {g.links.map((n) => (
+                <li key={n.id}>
+                  <FooterLink node={n} className="flex min-h-11 items-center text-paper/80">
+                    {l(n.label)}
+                  </FooterLink>
+                </li>
+              ))}
+            </ul>
+          ),
+        )}
+      </div>
+    );
   return (
     <>
       {slots.map((slot, si) => (
@@ -291,6 +326,20 @@ function MenuColumns({ nodes }: { nodes: NavNode[] }) {
         </div>
       ))}
     </>
+  );
+}
+
+/** sm and up: link groups as columns; phones: collapsible groups with full-height tap rows. */
+const WIDE = '(min-width: 640px)';
+function useWide() {
+  return useSyncExternalStore(
+    (cb) => {
+      const mq = window.matchMedia(WIDE);
+      mq.addEventListener('change', cb);
+      return () => mq.removeEventListener('change', cb);
+    },
+    () => window.matchMedia(WIDE).matches,
+    () => true,
   );
 }
 

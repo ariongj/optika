@@ -33,9 +33,29 @@ function baseImages(prefix: string): Plugin {
   };
 }
 
+/**
+ * Preload the two fonts every page paints with first (Manrope text, Fraunces display — Latin subsets), so they
+ * download in parallel with the JavaScript instead of after it. Phones on slow networks see the real type sooner.
+ */
+function preloadFonts(prefix: string): Plugin {
+  const CRITICAL = /assets\/(?:manrope-latin-wght-normal|fraunces-latin-opsz-normal)-[\w-]+\.woff2$/;
+  return {
+    name: 'optika-preload-fonts',
+    apply: 'build',
+    transformIndexHtml: {
+      order: 'post',
+      handler(_html, ctx) {
+        return Object.keys(ctx.bundle ?? {})
+          .filter((f) => CRITICAL.test(f))
+          .map((f) => ({ tag: 'link', attrs: { rel: 'preload', as: 'font', type: 'font/woff2', href: `${prefix}${f}`, crossorigin: '' }, injectTo: 'head-prepend' as const }));
+      },
+    },
+  };
+}
+
 export default defineConfig({
   base,
-  plugins: [baseImages(base), react(), tailwindcss()],
+  plugins: [baseImages(base), preloadFonts(base), react(), tailwindcss()],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },

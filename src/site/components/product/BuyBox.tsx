@@ -62,7 +62,7 @@ export function BuyBox({
         ) : (
           <span />
         )}
-        <button type="button" onClick={share} className="-mr-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[12.5px] font-semibold text-muted transition-colors hover:bg-ink/[0.05] hover:text-ink">
+        <button type="button" onClick={share} className="-mr-2 inline-flex min-h-10 items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px] font-semibold text-muted sm:min-h-0 transition-colors hover:bg-ink/[0.05] hover:text-ink">
           <Share2 className="h-3.5 w-3.5" /> {t('share')}
         </button>
       </div>

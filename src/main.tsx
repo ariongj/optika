@@ -11,3 +11,11 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 );
+
+// Production only: the service worker keeps build files and photos on the device for fast repeat visits on phones
+// (pages are still fetched fresh — see public/sw.js).
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, { scope: import.meta.env.BASE_URL }).catch(() => {});
+  });
+}

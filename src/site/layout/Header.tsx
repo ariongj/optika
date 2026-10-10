@@ -174,7 +174,7 @@ function AnnouncementBar() {
   }, [items.length]);
   if (!items.length) return null;
   const cur = items[i % items.length];
-  const textCls = 'truncate font-medium';
+  const textCls = 'block h-9 max-w-full truncate font-medium leading-9';
   return (
     <div className="relative z-50 bg-ink text-paper">
       <div className="container-x flex h-9 items-center justify-between gap-4 text-[12.5px]">

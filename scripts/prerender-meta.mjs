@@ -69,7 +69,20 @@ const business = {
 const pages = new Map();
 const put = (route, meta) => pages.set(route, meta);
 
-put('', { title: s.seo.title, description: s.seo.description, image: '/images/hero/optical.webp', jsonld: business, raw: true });
+// Home: preload the first hero photo (portrait crop on phones) so it downloads in parallel with the JavaScript.
+const hero = db.home.find((h) => h.enabled && h.type === 'hero');
+const heroImg = hero?.data.slides?.[0]?.image;
+const heroRel = heroImg ? (BASE !== '/' && heroImg.startsWith(BASE) ? heroImg.slice(BASE.length) : heroImg).replace(/^\/+/, '') : '';
+const heroPortrait = /^images\/hero\/[^/]+\.webp$/.test(heroRel) ? heroRel.replace(/\.webp$/, '-m.webp') : '';
+const heroPreload = heroRel
+  ? heroPortrait && fs.existsSync(path.join(DIST, heroPortrait))
+    ? [
+        `<link rel="preload" as="image" href="${BASE}${heroPortrait}" media="(max-width: 767px)" fetchpriority="high" />`,
+        `<link rel="preload" as="image" href="${BASE}${heroRel}" media="(min-width: 768px)" fetchpriority="high" />`,
+      ]
+    : [`<link rel="preload" as="image" href="${BASE}${heroRel}" fetchpriority="high" />`]
+  : [];
+put('', { title: s.seo.title, description: s.seo.description, image: '/images/hero/optical.webp', jsonld: business, raw: true, preload: heroPreload });
 const STATIC = [
   ['produktet', 'Produktet — syze optike, syze dielli dhe lente', 'Korniza optike dhe syze dielli në titan dhe acetat, lente me recetë nga laboratori ynë. Dërgesë në gjithë Kosovën.', '/images/cat/optike.webp'],
   ['sherbimet', 'Shërbimet — kontroll i syve, laborator dhe klinikë', 'Kontroll profesional i syve, matje e PD-së dhe përshtatje, lente nga laboratori ynë, riparime, Klinika Miftari dhe Optical Lab për optikat.', '/images/s/kontrolli.webp'],
@@ -168,6 +181,7 @@ function render(route, m) {
     `<meta name="twitter:title" content="${esc(title)}" />`,
     `<meta name="twitter:description" content="${esc(desc)}" />`,
     `<meta name="twitter:image" content="${esc(image)}" />`,
+    ...(m.preload ?? []),
     m.jsonld ? `<script type="application/ld+json">${JSON.stringify(m.jsonld).replace(/</g, '\\u003c')}</script>` : '',
   ]
     .filter(Boolean)
@@ -190,7 +204,7 @@ for (const [route, meta] of pages) {
   n++;
 }
 // Fallback for anything unknown (CMS-created pages, typos): generic shell, not indexed.
-fs.writeFileSync(path.join(DIST, '404.html'), render('', { ...pages.get(''), noindex: true }));
+fs.writeFileSync(path.join(DIST, '404.html'), render('', { ...pages.get(''), noindex: true, preload: [] }));
 
 const urls = [...pages].filter(([, m]) => !m.noindex).map(([r]) => abs(r ? `${r}/` : ''));
 fs.writeFileSync(

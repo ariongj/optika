@@ -11,33 +11,16 @@ import { defineDict } from '@/i18n';
 import { RequirePerm } from '@/admin/layout/RequirePerm';
 import type { Action, Module } from '@/lib/permissions';
 
-// Storefront pages (eager — instant navigation)
+// Storefront pages: Home ships in the entry bundle; every other page is its own chunk, prefetched on link intent
+// and when idle (see site/pages/lazy.ts), so first load stays small on phones and navigation still feels instant.
 import Home from '@/site/pages/Home';
-import Shop from '@/site/pages/Shop';
-import ProductPage from '@/site/pages/ProductPage';
-import CartPage from '@/site/pages/CartPage';
-import Checkout from '@/site/pages/Checkout';
-import OrderSuccess from '@/site/pages/OrderSuccess';
-import Services from '@/site/pages/Services';
-import Projects from '@/site/pages/Projects';
-import About from '@/site/pages/About';
-import Contact from '@/site/pages/Contact';
-import Blog from '@/site/pages/Blog';
-import PostPage from '@/site/pages/PostPage';
-import CmsPageView from '@/site/pages/CmsPageView';
-import SearchPage from '@/site/pages/SearchPage';
-import Wishlist from '@/site/pages/Wishlist';
-import CollectionPage from '@/site/pages/CollectionPage';
-import OfferPage from '@/site/pages/OfferPage';
-import NotFound from '@/site/pages/NotFound';
-import Clinic from '@/site/pages/Clinic';
-import OpticalLab from '@/site/pages/OpticalLab';
-import LensGuide from '@/site/pages/LensGuide';
-import FrameFinder from '@/site/pages/FrameFinder';
-import BookingPage from '@/site/pages/BookingPage';
-import OrderTracking from '@/site/pages/OrderTracking';
-// Virtual try-on (lazy — three.js + MediaPipe load only on this route)
-const TryOn = lazy(() => import('@/site/pages/TryOn'));
+import { Pages as StorePages } from '@/site/pages/lazy';
+const {
+  shop: Shop, product: ProductPage, cart: CartPage, checkout: Checkout, orderSuccess: OrderSuccess, services: Services, projects: Projects,
+  about: About, contact: Contact, blog: Blog, post: PostPage, cmsPage: CmsPageView, search: SearchPage, wishlist: Wishlist,
+  collection: CollectionPage, offer: OfferPage, notFound: NotFound, clinic: Clinic, lab: OpticalLab, lensGuide: LensGuide,
+  frameFinder: FrameFinder, booking: BookingPage, tracking: OrderTracking, tryOn: TryOn,
+} = StorePages;
 
 // CMS (lazy — separate bundle)
 const AdminLayout = lazy(() => import('@/admin/layout/AdminLayout'));
@@ -248,14 +231,7 @@ const router = createBrowserRouter([
           { path: 'gjej-kornizen', element: <FrameFinder /> },
           { path: 'rezervo', element: <BookingPage /> },
           { path: 'gjurmo-porosine', element: <OrderTracking /> },
-          {
-            path: 'provo-virtualisht',
-            element: (
-              <Suspense fallback={<Loader />}>
-                <TryOn />
-              </Suspense>
-            ),
-          },
+          { path: 'provo-virtualisht', element: <TryOn /> },
           { path: '*', element: <NotFound /> },
         ],
       },

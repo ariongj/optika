@@ -49,7 +49,7 @@ export function Breadcrumbs({ items, tone = 'dark' }: { items: { label: string; 
         <span key={i} className="inline-flex items-center gap-1">
           {i > 0 && <ChevronRight className="h-3.5 w-3.5 opacity-60" />}
           {it.to && i < all.length - 1 ? (
-            <Link to={it.to} className={cn('hover:underline', tone === 'light' ? 'hover:text-white' : 'hover:text-ink')}>
+            <Link to={it.to} className={cn('-my-2.5 inline-flex py-2.5 hover:underline', tone === 'light' ? 'hover:text-white' : 'hover:text-ink')}>
               {it.label}
             </Link>
           ) : (
