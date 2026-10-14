@@ -12,7 +12,7 @@ import { usePageTitle } from '@/site/layout/SiteLayout';
 import { useDict, useL, useLang } from '@/i18n';
 import { useUi } from '@/store/ui';
 import { useActiveProducts, useCategory, useProduct } from '@/store/hooks';
-import { optionsLabel } from '@/lib/pricing';
+import { optionsLabel, priceOnRequest } from '@/lib/pricing';
 import { money, num, unitLabel } from '@/lib/format';
 import { PD, packWord } from '@/site/components/product/dict';
 import { useConfigurator } from '@/site/components/product/useConfigurator';
@@ -105,7 +105,11 @@ function ProductView({ product }: { product: Product }) {
   };
 
   const opts = optionsLabel(product, cfg.options, lang);
-  const quoteMessage = t('quoteMsg', { name: l(product.name), opts: opts ? ` (${opts})` : '' });
+  // Smart glasses (no online price): an availability request tagged for the CMS inbox instead of a price quote.
+  const onReq = priceOnRequest(product);
+  const quoteMessage = onReq
+    ? t('sg_msg', { name: l(product.name), opts: opts ? ` · ${opts}` : '' })
+    : t('quoteMsg', { name: l(product.name), opts: opts ? ` (${opts})` : '' });
 
   return (
     <div>
@@ -145,7 +149,13 @@ function ProductView({ product }: { product: Product }) {
 
       <StickyBar cfg={cfg} visible={sticky} onAdd={add} onQuote={() => setQuoteOpen(true)} />
 
-      <Modal open={quoteOpen} onClose={() => setQuoteOpen(false)} title={t('quoteTitle')} description={t('quoteText')} size="lg">
+      <Modal
+        open={quoteOpen}
+        onClose={() => setQuoteOpen(false)}
+        title={onReq ? t('sg_request') : t('quoteTitle')}
+        description={onReq ? t('sg_requestText') : t('quoteText')}
+        size="lg"
+      >
         <div className="p-4 sm:p-6">
           <div className="mb-4 flex items-center gap-3 rounded-2xl bg-sand/60 p-3">
             <Img src={product.images[0]} small alt="" className="h-14 w-14 rounded-xl object-cover" />
@@ -154,7 +164,19 @@ function ProductView({ product }: { product: Product }) {
               <div className="truncate text-[12.5px] text-muted">{opts || `${t('sku')}: ${product.sku}`}</div>
             </div>
           </div>
-          <MeasureForm type="quote" productId={product.id} defaultMessage={quoteMessage} className="p-0! ring-0! sm:p-0!" />
+          {onReq ? (
+            <MeasureForm
+              key={quoteMessage}
+              type="contact"
+              productId={product.id}
+              defaultService={t('sg_service')}
+              defaultMessage={quoteMessage}
+              tags={['smart-glasses']}
+              className="p-0! ring-0! sm:p-0!"
+            />
+          ) : (
+            <MeasureForm type="quote" productId={product.id} defaultMessage={quoteMessage} className="p-0! ring-0! sm:p-0!" />
+          )}
         </div>
       </Modal>
     </div>

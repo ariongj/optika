@@ -11,10 +11,26 @@ const delta = (v: number | undefined, lang: Parameters<typeof money>[1]) => {
   return `${v > 0 ? '+' : '−'}${money(Math.abs(v), lang, { decimals: v % 1 !== 0 })}`;
 };
 
-const LENS_ICON: Record<string, LucideIcon> = { frame: Glasses, single: Eye, screen: MonitorSmartphone, progressive: Layers, original: Sun, rx: SunMedium };
+const LENS_ICON: Record<string, LucideIcon> = {
+  frame: Glasses, single: Eye, screen: MonitorSmartphone, progressive: Layers, original: Sun, rx: SunMedium,
+  'sg-original': Sun, 'sg-rx': Eye, 'sg-photo': SunMedium,
+};
 
-/** Swatch circles / button pills for every product option; the `lenses` option renders as lens cards. The selection drives the price. */
-export function OptionPicker({ options, value, onChange }: { options: ProductOption[]; value: Record<string, string>; onChange: (optionId: string, valueId: string) => void }) {
+/**
+ * Swatch circles / button pills for every product option; the `lenses` option renders as lens cards. The selection drives the price.
+ * `onRequest`: product without an online price — no price differences or "included" labels, a preference note instead.
+ */
+export function OptionPicker({
+  options,
+  value,
+  onChange,
+  onRequest = false,
+}: {
+  options: ProductOption[];
+  value: Record<string, string>;
+  onChange: (optionId: string, valueId: string) => void;
+  onRequest?: boolean;
+}) {
   const l = useL();
   const lang = useLang();
   if (!options.length) return null;
@@ -31,7 +47,7 @@ export function OptionPicker({ options, value, onChange }: { options: ProductOpt
               {d && <span className={cn('text-[12.5px] font-semibold', (selected?.priceDelta ?? 0) > 0 ? 'text-brand-700' : 'text-emerald-700')}>({d})</span>}
             </legend>
             {o.id === 'lenses' ? (
-              <LensCards option={o} value={value[o.id]} onChange={(v) => onChange(o.id, v)} />
+              <LensCards option={o} value={value[o.id]} onChange={(v) => onChange(o.id, v)} onRequest={onRequest} />
             ) : o.type === 'swatch' ? (
               <div className="flex flex-wrap gap-x-3 gap-y-2">
                 {o.values.map((v) => {
@@ -91,7 +107,7 @@ export function OptionPicker({ options, value, onChange }: { options: ProductOpt
 }
 
 /** The key upsell: one card per lens choice with its price difference and a one-line explanation. */
-function LensCards({ option, value, onChange }: { option: ProductOption; value: string | undefined; onChange: (valueId: string) => void }) {
+function LensCards({ option, value, onChange, onRequest }: { option: ProductOption; value: string | undefined; onChange: (valueId: string) => void; onRequest: boolean }) {
   const t = useDict(PD);
   const l = useL();
   const lang = useLang();
@@ -123,7 +139,7 @@ function LensCards({ option, value, onChange }: { option: ProductOption; value: 
                 <span className="block text-[14px] font-bold leading-snug text-ink">{l(v.label)}</span>
                 {info && <span className="mt-0.5 block text-[12.5px] leading-snug text-muted">{l(info)}</span>}
               </span>
-              <span className={cn('shrink-0 text-[13px] font-bold tabular-nums', vd ? 'text-ink' : 'text-emerald-700')}>{vd ?? t('lensIncluded')}</span>
+              {!onRequest && <span className={cn('shrink-0 text-[13px] font-bold tabular-nums', vd ? 'text-ink' : 'text-emerald-700')}>{vd ?? t('lensIncluded')}</span>}
               <span
                 aria-hidden
                 className={cn(
@@ -137,7 +153,11 @@ function LensCards({ option, value, onChange }: { option: ProductOption; value: 
           );
         })}
       </div>
-      {hasRx && <p className="mt-2.5 text-[12.5px] leading-snug text-muted">{t('lensesHint')}</p>}
+      {onRequest ? (
+        <p className="mt-2.5 text-[12.5px] leading-snug text-muted">{t('sg_lensHint')}</p>
+      ) : (
+        hasRx && <p className="mt-2.5 text-[12.5px] leading-snug text-muted">{t('lensesHint')}</p>
+      )}
     </div>
   );
 }

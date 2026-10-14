@@ -39,6 +39,8 @@ export interface InquiryInput {
   preferredDate?: string;
   source?: Inquiry['source'];
   company?: string;
+  /** Inbox tags set by the form (e.g. "smart-glasses") */
+  tags?: string[];
 }
 
 /** CMS v2 lists that support the generic upsert/remove actions. */

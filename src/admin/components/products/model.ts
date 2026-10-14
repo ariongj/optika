@@ -216,12 +216,16 @@ export function applyPricing(price: number | null, compareAt: number | null): Pi
 /* ------------------------------------------------------------------ */
 export type Requirement = 'name' | 'category' | 'price' | 'image';
 
-export function missingForPublish(p: Pick<Product, 'name' | 'categoryId' | 'price' | 'images'>, categories: Pick<Category, 'id'>[]): Requirement[] {
+export function missingForPublish(
+  p: Pick<Product, 'name' | 'categoryId' | 'price' | 'images'> & Partial<Pick<Product, 'quoteOnly' | 'template'>>,
+  categories: Pick<Category, 'id'>[],
+): Requirement[] {
   const out: Requirement[] = [];
   // Albanian is the source language of the catalogue (the `me` slot holds the optional Serbian copy).
   if (!p.name.sq.trim()) out.push('name');
   if (!p.categoryId || !categories.some((c) => c.id === p.categoryId)) out.push('category');
-  if (!(p.price > 0)) out.push('price');
+  // "request a quote" products may go live without a price — the storefront shows "price on request" (smart glasses)
+  if (!(p.price > 0) && !(p.quoteOnly || p.template === 'quote')) out.push('price');
   if (!p.images.length) out.push('image');
   return out;
 }

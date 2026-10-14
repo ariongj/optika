@@ -122,16 +122,20 @@ export function FilterPanel({ filters, setFilters, sale, setSale, facets, catego
         </Section>
       )}
 
-      <Section title={t('price')}>
-        <PriceRange bounds={facets.bounds} value={filters.price} onChange={(price) => set({ price })} prices={facets.prices} />
-        <p className="mt-3 text-[12px] leading-snug text-muted">{t('priceNote')}</p>
-      </Section>
+      {facets.priced && (
+        <Section title={t('price')}>
+          <PriceRange bounds={facets.bounds} value={filters.price} onChange={(price) => set({ price })} prices={facets.prices} />
+          <p className="mt-3 text-[12px] leading-snug text-muted">{t('priceNote')}</p>
+        </Section>
+      )}
 
-      <Section title={t('offer')}>
-        <div className="flex flex-col">
-          <CheckRow checked={sale} onChange={setSale} label={t('onSale')} count={facets.sale} icon={<Percent className="h-3.5 w-3.5 text-brand-600" />} />
-        </div>
-      </Section>
+      {(facets.priced || sale) && (
+        <Section title={t('offer')}>
+          <div className="flex flex-col">
+            <CheckRow checked={sale} onChange={setSale} label={t('onSale')} count={facets.sale} icon={<Percent className="h-3.5 w-3.5 text-brand-600" />} />
+          </div>
+        </Section>
+      )}
 
       {facets.shapes.length > 1 && (
         <Section title={t('shape')}>
@@ -219,15 +223,16 @@ export function FilterPanel({ filters, setFilters, sale, setSale, facets, catego
 
       <Section title={t('availability')}>
         <div className="flex flex-col">
-          {AVAILS.map((a) => (
+          {/* "on request" only where such products exist (smart glasses) */}
+          {AVAILS.filter((a) => a !== 'request' || facets.avail.request > 0 || filters.avail.includes(a)).map((a) => (
             <CheckRow
               key={a}
               checked={filters.avail.includes(a)}
               onChange={() => set({ avail: toggle(filters.avail, a) })}
               label={
                 <span className="inline-flex items-center gap-2">
-                  <span className={cn('h-2 w-2 rounded-full', a === 'stock' ? 'bg-emerald-500' : 'bg-amber-500')} />
-                  {t(a === 'stock' ? 'inStock' : 'toOrder')}
+                  <span className={cn('h-2 w-2 rounded-full', a === 'stock' ? 'bg-emerald-500' : a === 'request' ? 'bg-brand-500' : 'bg-amber-500')} />
+                  {t(a === 'stock' ? 'inStock' : a === 'request' ? 'onRequestAvail' : 'toOrder')}
                 </span>
               }
               count={facets.avail[a]}

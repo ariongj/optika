@@ -1,5 +1,5 @@
 import type { Badge, Category, L10n, Lang, Product } from '@/lib/types';
-import { basePrice, isOnSale } from '@/lib/pricing';
+import { basePrice, isOnSale, priceOnRequest } from '@/lib/pricing';
 import { rxReady } from '@/site/components/product/optical';
 
 /* ------------------------------------------------------------------ */
@@ -25,10 +25,11 @@ export function sortProducts(list: Product[], sort: SortKey, name: (v: L10n) => 
   switch (sort) {
     case 'new':
       return out.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    // products without an online price ("price on request") go last in both price orders
     case 'priceAsc':
-      return out.sort((a, b) => basePrice(a) - basePrice(b));
+      return out.sort((a, b) => Number(priceOnRequest(a)) - Number(priceOnRequest(b)) || basePrice(a) - basePrice(b));
     case 'priceDesc':
-      return out.sort((a, b) => basePrice(b) - basePrice(a));
+      return out.sort((a, b) => Number(priceOnRequest(a)) - Number(priceOnRequest(b)) || basePrice(b) - basePrice(a));
     case 'name': {
       const coll = new Intl.Collator(COLLATOR[lang], { sensitivity: 'base' });
       return out.sort((a, b) => coll.compare(name(a.name), name(b.name)));
@@ -41,13 +42,13 @@ export function sortProducts(list: Product[], sort: SortKey, name: (v: L10n) => 
 /* ------------------------------------------------------------------ */
 /* Product facets                                                      */
 /* ------------------------------------------------------------------ */
-export type Avail = 'stock' | 'order';
+export type Avail = 'stock' | 'order' | 'request';
 /** Eyewear features — each one narrows the list (AND). */
 export type Feature = 'rx' | 'polarised' | 'care';
 export type BadgeKey = Extract<Badge, 'new' | 'bestseller' | 'premium'>;
 
-/** In stock vs. made to order (prescription lenses: stock ≥ 999 marks "made in our lab on demand"). */
-export const availOf = (p: Product): Avail => (!p.quoteOnly && p.stock > 0 && p.stock < 999 ? 'stock' : 'order');
+/** In stock vs. made to order (prescription lenses: stock ≥ 999 marks "made in our lab on demand") vs. on request (no online price). */
+export const availOf = (p: Product): Avail => (priceOnRequest(p) ? 'request' : !p.quoteOnly && p.stock > 0 && p.stock < 999 ? 'stock' : 'order');
 export const hasCare = (p: Product) => !!p.installation?.available;
 
 const specText = (p: Product, re: RegExp) =>
@@ -64,7 +65,7 @@ export function hasFeature(p: Product, f: Feature) {
   return hasCare(p);
 }
 
-export const AVAILS: Avail[] = ['stock', 'order'];
+export const AVAILS: Avail[] = ['stock', 'order', 'request'];
 export const FEATURES: Feature[] = ['rx', 'polarised', 'care'];
 export const BADGES: BadgeKey[] = ['new', 'bestseller', 'premium'];
 
@@ -199,6 +200,8 @@ export function passes(p: Product, f: Filters, ctx: MatchCtx, skip?: Facet) {
   if (skip !== 'cats' && f.cats.length && !f.cats.includes(p.categoryId)) return false;
   if (skip !== 'sale' && ctx.sale && !isOnSale(p)) return false;
   if (skip !== 'price' && f.price) {
+    // a price range only keeps products that have a price
+    if (priceOnRequest(p)) return false;
     const v = basePrice(p);
     if (v < f.price[0] || v > f.price[1]) return false;
   }
@@ -225,6 +228,8 @@ export interface FacetData {
   /** Effective prices of products matching every filter except price — feeds the histogram */
   prices: number[];
   bounds: [number, number];
+  /** Any product in scope with an online price (no price filter / sale facet for "price on request" ranges) */
+  priced: boolean;
 }
 
 /**
@@ -243,21 +248,23 @@ export function computeFacets(scope: Product[], f: Filters, ctx: MatchCtx, categ
   }
   const shapeKeys = [...shapes.keys()].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
 
-  const priced = (ctx.sale ? scope.filter(isOnSale) : scope).map(basePrice);
+  const withPrice = scope.filter((p) => !priceOnRequest(p));
+  const priced = (ctx.sale ? withPrice.filter(isOnSale) : withPrice).map(basePrice);
   const lo = priced.length ? Math.floor(Math.min(...priced)) : 0;
   const hi = priced.length ? Math.ceil(Math.max(...priced)) : 0;
 
   return {
     cats: categories.map((c) => ({ id: c.id, count: count('cats', (p) => p.categoryId === c.id) })),
-    avail: { stock: count('avail', (p) => availOf(p) === 'stock'), order: count('avail', (p) => availOf(p) === 'order') },
+    avail: { stock: count('avail', (p) => availOf(p) === 'stock'), order: count('avail', (p) => availOf(p) === 'order'), request: count('avail', (p) => availOf(p) === 'request') },
     sale: count('sale', isOnSale),
     // features are AND-ed: a feature's count keeps the other selected features applied
     feats: FEATURES.filter((x) => scope.some((p) => hasFeature(p, x))).map((x) => ({ id: x, count: count('feats', (p) => [...f.feats, x].every((y) => hasFeature(p, y))) })),
     badges: BADGES.filter((b) => scope.some((p) => p.badges.includes(b))).map((b) => ({ id: b, count: count('badges', (p) => p.badges.includes(b)) })),
     colors: FAMILY_ORDER.filter((c) => famPresent.has(c)).map((c) => ({ id: c, count: count('colors', (p) => (ctx.colors.get(p.id) ?? []).includes(c)) })),
     shapes: shapeKeys.map((k) => ({ id: k, label: shapes.get(k)!, count: count('shapes', (p) => shapeOf(p)?.key === k) })),
-    prices: scope.filter((p) => passes(p, f, ctx, 'price')).map(basePrice),
+    prices: withPrice.filter((p) => passes(p, f, ctx, 'price')).map(basePrice),
     bounds: [lo, Math.max(hi, lo + 1)],
+    priced: withPrice.length > 0,
   };
 }
 

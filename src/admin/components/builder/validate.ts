@@ -141,6 +141,16 @@ export function validateSection(s: HomeSection, ctx: ValidateCtx): Issue[] {
       if (!s.data.image) out.push({ level: 'warning', key: 'v_imageMissing' });
       break;
     }
+    case 'spotlight': {
+      checkTitle(s.data.title, out);
+      if (!s.data.image) out.push({ level: 'error', key: 'v_imageMissing' });
+      checkMax(s.data.points.length, maxItems, 'points', out);
+      s.data.points.forEach((it, i) => !filled(it.text) && out.push({ level: 'error', key: 'v_itemTitle', vars: { list: 'points', n: i + 1 } }));
+      if (!s.data.primary.href.trim() && !s.data.secondary.href.trim()) out.push({ level: 'warning', key: 'v_noButtons' });
+      checkCta(s.data.primary, out);
+      checkCta(s.data.secondary, out);
+      break;
+    }
   }
 
   // Translations: a text filled in one language but empty in another

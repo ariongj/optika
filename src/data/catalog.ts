@@ -23,6 +23,20 @@ export const CATEGORIES: Category[] = [
     featured: true,
   },
   {
+    id: 'cat-smart',
+    slug: 'syze-inteligjente',
+    name: T('Pametne naočare', 'Syze inteligjente', 'Smart glasses'),
+    tagline: T('Kamera, zvuk i AI asistent', 'Kamerë, audio dhe asistent AI', 'Camera, audio and an AI assistant'),
+    description: T(
+      'Naočare sa kamerom, otvorenim zvučnicima i glasovnim asistentom — Ray-Ban Meta, Oakley Meta i Meta Ray-Ban Display. Probajte ih u optici; dioptrijska sočiva izrađujemo u našoj laboratoriji, kada model to dozvoljava.',
+      'Syze me kamerë, altoparlantë të hapur dhe asistent zanor — Ray-Ban Meta, Oakley Meta dhe Meta Ray-Ban Display. Provojini në optikë; lentet me dioptri i punojmë në laboratorin tonë, kur modeli e lejon.',
+      'Glasses with a camera, open-ear speakers and a voice assistant — Ray-Ban Meta, Oakley Meta and Meta Ray-Ban Display. Try them in store; we make prescription lenses in our own lab where the model allows.',
+    ),
+    image: '/images/cat/smart.webp',
+    order: 2,
+    featured: true,
+  },
+  {
     id: 'cat-dielli',
     slug: 'syze-dielli',
     name: T('Naočare za sunce', 'Syze dielli', 'Sunglasses'),
@@ -33,7 +47,7 @@ export const CATEGORIES: Category[] = [
       'Sunglasses with full UV400 protection — from classic aviators to sport wraps. Most models can be made with prescription lenses.',
     ),
     image: '/images/cat/dielli.webp',
-    order: 2,
+    order: 3,
     featured: true,
   },
   {
@@ -47,7 +61,7 @@ export const CATEGORIES: Category[] = [
       'Single-vision, progressive, screen and photochromic lenses — centred, fitted and verified in our lab in Mitrovica.',
     ),
     image: '/images/cat/lente.webp',
-    order: 3,
+    order: 4,
     featured: true,
   },
 ];
@@ -107,6 +121,56 @@ const optSunLenses: ProductOption = {
     { id: 'rx', label: T('Sa dioptrijom', 'Me dioptri', 'With prescription'), priceDelta: 180 },
   ],
 };
+
+/* ---- Smart glasses: sold on request (no online price), so nothing below carries a price difference ---- */
+const sgLensesName = T('Sočiva (želja)', 'Lentet (preferenca)', 'Lenses (preference)');
+const optSmartLenses: ProductOption = {
+  id: 'lenses',
+  name: sgLensesName,
+  type: 'button',
+  values: [
+    { id: 'sg-original', label: T('Originalna sočiva (sunčana/providna)', 'Lente origjinale (dielli/të qarta)', 'Original lenses (sun/clear)'), priceDelta: 0 },
+    { id: 'sg-rx', label: T('Sa dioptrijom iz naše laboratorije', 'Me dioptri nga laboratori ynë', 'Prescription, made in our lab'), priceDelta: 0 },
+    { id: 'sg-photo', label: T('Fotohromatska (Transitions)', 'Fotokromatike (Transitions)', 'Photochromic (Transitions)'), priceDelta: 0 },
+  ],
+};
+const sgColor = (...values: { id: string; label: L10n; swatch: string; priceDelta: number }[]): ProductOption => ({ id: 'color', name: L.color, type: 'swatch', values });
+const SG = {
+  style: T('Stil', 'Stili', 'Style'),
+  camera: T('Kamera', 'Kamera', 'Camera'),
+  video: T('Video', 'Video', 'Video'),
+  battery: T('Baterija', 'Bateria', 'Battery'),
+  mics: T('Mikrofoni', 'Mikrofonat', 'Microphones'),
+  audio: T('Zvuk', 'Audio', 'Audio'),
+  assistant: T('Asistent', 'Asistenti', 'Assistant'),
+  display: T('Ekran', 'Ekrani', 'Display'),
+  features: T('Funkcije', 'Funksionet', 'Features'),
+  control: T('Upravljanje', 'Kontrolli', 'Controls'),
+  range: T('Sočiva i boje', 'Lentet dhe ngjyrat', 'Lenses & colours'),
+  rx: T('Sočiva sa dioptrijom', 'Lentet me dioptri', 'Prescription lenses'),
+  recording: T('Snimanje', 'Incizimi', 'Recording'),
+  app: T('Aplikacija', 'Aplikacioni', 'App'),
+  markets: T('Tržišta', 'Tregjet', 'Markets'),
+  specs: T('Specifikacije', 'Specifikimet', 'Specifications'),
+  avail: T('Dostupnost', 'Disponueshmëria', 'Availability'),
+};
+const sgGen3 = [
+  spec(SG.camera, '12 MP'),
+  spec(SG.video, '3K'),
+  spec(SG.battery, T('do ~9 sati', 'deri ~9 orë', 'up to ~9 h')),
+  spec(SG.mics, T('6 mikrofona, smanjenje pozadinske buke', '6 mikrofona, me reduktim të zhurmës së sfondit', 'Six mics with background-noise reduction')),
+  spec(SG.audio, T('Otvoreni zvučnici (open-ear)', 'Altoparlantë të hapur (open-ear)', 'Open-ear speakers')),
+  spec(SG.assistant, T('Meta AI, glasovni — funkcije i jezici zavise od zemlje', 'Meta AI, zanor — funksionet dhe gjuhët varen nga vendi', 'Meta AI voice assistant — features and languages vary by country')),
+  spec(SG.range, T('Više kombinacija, uklj. Transitions', 'Shumë kombinime, përfshirë Transitions', 'Many combinations, incl. Transitions')),
+  spec(SG.rx, T('Da — potvrđuje se prema receptu i modelu', 'Po — konfirmohet sipas recetës dhe modelit', 'Yes — confirmed per prescription and model')),
+];
+const sgAskRx = spec(SG.rx, T('Pitajte u optici — zavisi od recepta i modela', 'Pyetni në optikë — varet nga receta dhe modeli', 'Ask in store — depends on prescription and model'));
+const sgLed = spec(SG.recording, T('Vidljiva LED lampica tokom snimanja', 'LED i dukshëm gjatë incizimit', 'Visible LED while recording'));
+const sgApp = spec(SG.app, T('Povezuje se sa aplikacijom na telefonu', 'Çiftohet me aplikacionin në telefon', 'Pairs with a phone app'));
+const sgAvail = spec(SG.avail, T('Na upit — potvrđuje optika', 'Sipas kërkesës — e konfirmon optika', 'On request — confirmed by the store'));
+const sgImg = (name: string) => [`/images/smart/${name}.webp`];
+/** On-request listing: no online price, made-to-order stock, no Care+ add-on. */
+const onRequest = { price: 0, quoteOnly: true, stock: 999, installation: null, unit: 'kom' as const, sold: 0 };
 
 type Draft = Omit<Product, 'createdAt' | 'status' | 'featured' | 'badges' | 'sold' | 'options' | 'specs' | 'unit'> &
   Partial<Pick<Product, 'status' | 'featured' | 'badges' | 'sold' | 'options' | 'specs' | 'unit'>> & { age: number };
@@ -1009,6 +1073,218 @@ const DRAFTS: Draft[] = [
     warrantyYears: 1,
     sold: 12,
     age: 90,
+  },
+
+  // ------------------------------------------------------------ SMART GLASSES (on request — price & availability confirmed by the store)
+  {
+    id: 'p-rayban-meta-wayfarer',
+    slug: 'ray-ban-meta-gen-3-wayfarer',
+    sku: 'OM-SG-RBM-WF',
+    categoryId: 'cat-smart',
+    name: same('Ray-Ban Meta Wayfarer (Gen 3)'),
+    short: T(
+      'Klasični Wayfarer sa kamerom od 12 MP, 3K videom i Meta AI — za svaki dan.',
+      'Wayfarer-i klasik me kamerë 12 MP, video 3K dhe Meta AI — për çdo ditë.',
+      'The classic Wayfarer with a 12 MP camera, 3K video and Meta AI — for every day.',
+    ),
+    description: T(
+      'Ray-Ban Meta (Gen 3) Wayfarer zadržava oblik koji svi znaju, a dodaje kameru od 12 MP za fotografije i 3K video bez ruku, otvorene zvučnike za muziku i pozive i šest mikrofona koji smanjuju pozadinsku buku. Baterija traje do oko 9 sati, u zavisnosti od korišćenja.\n\nProbajte ih u optici, povezaćemo ih sa vašim telefonom i — kada model to dozvoljava — izraditi dioptrijska sočiva u našoj laboratoriji. Cena, boje i dostupnost potvrđuju se na upit.',
+      'Ray-Ban Meta (Gen 3) Wayfarer e ruan formën që e njeh të gjithë, por shton një kamerë 12 MP për foto dhe video 3K pa i përdorur duart, altoparlantë të hapur për muzikë e thirrje dhe gjashtë mikrofona që e ulin zhurmën e sfondit. Bateria zgjat deri në rreth 9 orë, varësisht nga përdorimi.\n\nProvojini në optikë: ua lidhim me telefonin dhe — kur modeli e lejon — ua punojmë lentet me dioptri në laboratorin tonë. Çmimi, ngjyrat dhe disponueshmëria konfirmohen sipas kërkesës.',
+      'Ray-Ban Meta (Gen 3) Wayfarer keeps the shape everyone knows and adds a 12 MP camera for hands-free photos and 3K video, open-ear speakers for music and calls, and six microphones that cut background noise. The battery lasts up to about 9 hours, depending on use.\n\nTry them on in store: we pair them with your phone and — where the model allows — make prescription lenses in our own lab. Price, colours and availability are confirmed on request.',
+    ),
+    ...onRequest,
+    images: sgImg('rayban-meta-wayfarer'),
+    options: [
+      sgColor(
+        sw('shiny-black', T('Sjajna crna', 'E zezë me shkëlqim', 'Shiny black'), '#1d1c1a'),
+        sw('matte-black', T('Mat crna', 'E zezë mat', 'Matte black'), '#3a3a3a'),
+        sw('havana', T('Havana', 'Havana (breshkë)', 'Havana'), '#5a3a26'),
+      ),
+      optSmartLenses,
+    ],
+    specs: [spec(SG.style, 'Wayfarer'), ...sgGen3, sgLed, sgApp, sgAvail],
+    badges: ['new'],
+    featured: true,
+    age: 19,
+  },
+  {
+    id: 'p-rayban-meta-aviator',
+    slug: 'ray-ban-meta-gen-3-aviator',
+    sku: 'OM-SG-RBM-AV',
+    categoryId: 'cat-smart',
+    name: same('Ray-Ban Meta Aviator (Gen 3)'),
+    short: T(
+      'Avijator sa kamerom od 12 MP, otvorenim zvukom i glasovnim asistentom Meta AI.',
+      'Aviatori me kamerë 12 MP, audio të hapur dhe asistentin zanor Meta AI.',
+      'The aviator with a 12 MP camera, open-ear audio and the Meta AI voice assistant.',
+    ),
+    description: T(
+      'Avijatorska silueta sa sočivima u obliku kapi, sada sa kamerom od 12 MP, 3K videom i šest mikrofona. Fotografišite i snimajte bez ruku, slušajte muziku bez zatvaranja ušiju i pitajte glasovnog asistenta — njegove funkcije i jezici zavise od zemlje. Baterija: do oko 9 sati.\n\nU optici podešavamo okvir prema vašem licu, povezujemo naočare sa telefonom i pokazujemo koja sočiva — sunčana, dioptrijska ili Transitions — odgovaraju modelu.',
+      'Silueta aviator me lente në formë pike, tani me kamerë 12 MP, video 3K dhe gjashtë mikrofona. Bëni foto e video pa duar, dëgjoni muzikë pa i mbyllur veshët dhe pyetni asistentin zanor — funksionet dhe gjuhët e tij varen nga vendi. Bateria: deri në rreth 9 orë.\n\nNë optikë ua rregullojmë kornizën sipas fytyrës, i lidhim me telefonin dhe ju tregojmë cilat lente — dielli, me dioptri apo Transitions — përshtaten me modelin.',
+      'The teardrop aviator silhouette, now with a 12 MP camera, 3K video and six microphones. Take photos and video hands-free, listen to music without covering your ears and ask the voice assistant — its features and languages vary by country. Battery: up to about 9 hours.\n\nIn store we adjust the frame to your face, pair the glasses with your phone and show you which lenses — sun, prescription or Transitions — work with the model.',
+    ),
+    ...onRequest,
+    images: sgImg('rayban-meta-aviator'),
+    options: [
+      sgColor(
+        sw('gold', T('Zlatna', 'Ar', 'Gold'), '#c9a457'),
+        sw('black', T('Mat crna', 'E zezë mat', 'Matte black'), '#2f2f2f'),
+        sw('silver', T('Srebrna', 'Argjend', 'Silver'), '#c2c4c4'),
+      ),
+      optSmartLenses,
+    ],
+    specs: [spec(SG.style, T('Avijator', 'Aviator', 'Aviator')), ...sgGen3, sgLed, sgApp, sgAvail],
+    badges: ['new'],
+    featured: false,
+    age: 19,
+  },
+  {
+    id: 'p-rayban-meta-zena',
+    slug: 'ray-ban-meta-gen-3-zena',
+    sku: 'OM-SG-RBM-ZN',
+    categoryId: 'cat-smart',
+    name: same('Ray-Ban Meta Zena (Gen 3)'),
+    short: T(
+      'Elegantni cat-eye sa kamerom od 12 MP i 3K videom.',
+      'Cat-eye elegante me kamerë 12 MP dhe video 3K.',
+      'An elegant cat-eye with a 12 MP camera and 3K video.',
+    ),
+    description: T(
+      'Zena je cat-eye silueta treće generacije Ray-Ban Meta: nežna na licu, sa kamerom od 12 MP, 3K videom, otvorenim zvučnicima i šest mikrofona za jasnije pozive. Baterija traje do oko 9 sati.\n\nO brojnim kombinacijama sočiva i boja — uključujući Transitions — pitajte u optici; ako nosite dioptriju, proverićemo da li možemo da izradimo dioptrijska sočiva za ovaj model.',
+      'Zena është silueta cat-eye e gjeneratës së tretë Ray-Ban Meta: e butë në fytyrë, me kamerë 12 MP, video 3K, altoparlantë të hapur dhe gjashtë mikrofona për thirrje më të qarta. Bateria zgjat deri në rreth 9 orë.\n\nPër kombinimet e shumta të lenteve dhe ngjyrave — përfshirë Transitions — pyetni në optikë; nëse mbani dioptri, kontrollojmë nëse mund t’i punojmë lentet me recetë për këtë model.',
+      'Zena is the cat-eye silhouette of the third Ray-Ban Meta generation: soft on the face, with a 12 MP camera, 3K video, open-ear speakers and six microphones for clearer calls. The battery lasts up to about 9 hours.\n\nAsk in store about the many lens and colour combinations — Transitions included; if you wear a prescription, we check whether we can make prescription lenses for this model.',
+    ),
+    ...onRequest,
+    images: sgImg('rayban-meta-zena'),
+    options: [
+      sgColor(
+        sw('shiny-black', T('Sjajna crna', 'E zezë me shkëlqim', 'Shiny black'), '#1d1c1a'),
+        sw('havana', T('Havana', 'Havana (breshkë)', 'Havana'), '#5a3a26'),
+        sw('brown', T('Providna braon', 'Kafe transparente', 'Transparent brown'), '#8a6a4f'),
+      ),
+      optSmartLenses,
+    ],
+    specs: [spec(SG.style, T('Zena (cat-eye)', 'Zena (cat-eye)', 'Zena (cat-eye)')), ...sgGen3, sgLed, sgApp, sgAvail],
+    badges: ['new'],
+    featured: false,
+    age: 19,
+  },
+  {
+    id: 'p-meta-rayban-display',
+    slug: 'meta-ray-ban-display',
+    sku: 'OM-SG-MRD',
+    categoryId: 'cat-smart',
+    name: same('Meta Ray-Ban Display'),
+    short: T(
+      'Naočare sa malim ekranom u sočivu — navigacija, poruke i titlovi, uz narukvicu.',
+      'Syze me ekran të vogël në lente — navigim, mesazhe dhe titra, me byzylyk.',
+      'Glasses with a small in-lens display — navigation, messages and captions, with a wristband.',
+    ),
+    description: T(
+      'Meta Ray-Ban Display dodaje mali ekran u sočivu: navigaciju, poruke, titlove uživo i pregled fotografija, bez vađenja telefona. Upravlja se narukvicom.\n\nPojavile su se u SAD, Velikoj Britaniji i Kanadi i stižu u Nemačku, Francusku i Italiju. Dostupnost za Kosovo i uslove potvrđujemo na upit — ostavite kontakt i javićemo vam.',
+      'Meta Ray-Ban Display shton një ekran të vogël brenda lentes: udhëzime për navigim, mesazhe, titra të drejtpërdrejta dhe parapamje të fotove, pa e nxjerrë telefonin. Kontrollohen me një byzylyk në dorë.\n\nKanë dalë në SHBA, Britani dhe Kanada dhe po vijnë në Gjermani, Francë e Itali. Disponueshmërinë për Kosovën dhe kushtet ua konfirmojmë sipas kërkesës — lini kontaktin dhe ju njoftojmë.',
+      'Meta Ray-Ban Display adds a small display inside the lens: directions, messages, live captions and photo previews, without reaching for your phone. You control them with a wristband.\n\nThey launched in the US, UK and Canada and are arriving in Germany, France and Italy. We confirm availability for Kosovo and terms on request — leave your details and we’ll let you know.',
+    ),
+    ...onRequest,
+    images: sgImg('meta-rayban-display'),
+    options: [
+      sgColor(sw('black', T('Crna', 'E zezë', 'Black'), '#1d1c1a'), sw('sand', T('Peščana', 'Rërë', 'Sand'), '#cdbb9f')),
+      optSmartLenses,
+    ],
+    specs: [
+      spec(SG.display, T('Mali ekran u sočivu (heads-up)', 'Ekran i vogël në lente (heads-up)', 'Small in-lens heads-up display')),
+      spec(SG.features, T('Navigacija, poruke, titlovi uživo, pregled fotografija', 'Navigim, mesazhe, titra live, parapamje e fotove', 'Navigation, messages, live captions, photo preview')),
+      spec(SG.control, T('Narukvica (wristband)', 'Me byzylyk (wristband)', 'Wristband')),
+      spec(SG.markets, T('SAD, UK i Kanada; stižu u Nemačku, Francusku i Italiju', 'SHBA, MB dhe Kanada; po vijnë në Gjermani, Francë dhe Itali', 'US, UK and Canada; arriving in Germany, France and Italy')),
+      spec(SG.assistant, T('Funkcije i jezici zavise od zemlje', 'Funksionet dhe gjuhët varen nga vendi', 'Features and languages vary by country')),
+      sgAskRx,
+      sgLed,
+      sgApp,
+      spec(SG.avail, T('Na upit — dostupnost za Kosovo se potvrđuje', 'Sipas kërkesës — disponueshmëria për Kosovën konfirmohet', 'On request — availability for Kosovo to be confirmed')),
+    ],
+    badges: ['new'],
+    featured: false,
+    age: 16,
+  },
+  {
+    id: 'p-rayban-meta-audio',
+    slug: 'ray-ban-meta-audio',
+    sku: 'OM-SG-RBM-AU',
+    categoryId: 'cat-smart',
+    name: same('Ray-Ban Meta Audio'),
+    short: T(
+      'Bez kamere: muzika, podkasti i pozivi — do oko 12 sati.',
+      'Pa kamerë: muzikë, podkaste dhe thirrje — deri në rreth 12 orë.',
+      'No camera: music, podcasts and calls — up to about 12 hours.',
+    ),
+    description: T(
+      'Za one koji žele zvuk i glasovnog asistenta, ali ne i kameru. Ray-Ban Meta Audio pušta muziku i podkaste i prima pozive preko otvorenih zvučnika, a baterija traje do oko 12 sati — uz kutiju za punjenje i duže. Teži oko 43 g i podržava dioptrijska sočiva.\n\nMiran izbor za kancelariju, školu ili mesta gde kamera nije dobrodošla. U optici izrađujemo sočiva po vašem receptu i povezujemo naočare sa telefonom.',
+      'Për ata që duan audio dhe asistent zanor, por jo kamerë. Ray-Ban Meta Audio luan muzikë e podkaste dhe merr thirrje me altoparlantë të hapur, ndërsa bateria zgjat deri në rreth 12 orë — me kutinë e karikimit edhe më gjatë. Peshon rreth 43 g dhe mbështet lente me recetë.\n\nZgjedhje e qetë për zyrë, shkollë apo vende ku kamera nuk është e mirëpritur. Në optikë ua punojmë lentet sipas recetës dhe ua lidhim syzet me telefonin.',
+      'For anyone who wants audio and a voice assistant, but no camera. Ray-Ban Meta Audio plays music and podcasts and takes calls through open-ear speakers, with up to about 12 hours of battery — longer with the charging case. It weighs about 43 g and supports prescription lenses.\n\nA calm choice for the office, school or places where cameras aren’t welcome. In store we make lenses to your prescription and pair the glasses with your phone.',
+    ),
+    ...onRequest,
+    images: sgImg('rayban-meta-audio'),
+    options: [
+      sgColor(
+        sw('matte-black', T('Mat crna', 'E zezë mat', 'Matte black'), '#2f2f2f'),
+        sw('havana', T('Havana', 'Havana (breshkë)', 'Havana'), '#5a3a26'),
+        sw('grey', T('Providna siva', 'Gri transparente', 'Transparent grey'), '#b9b6b0'),
+      ),
+      optSmartLenses,
+    ],
+    specs: [
+      spec(SG.camera, T('Ne — bez kamere', 'Jo — pa kamerë', 'No — no camera')),
+      spec(SG.battery, T('do ~12 sati (+ kutija za punjenje)', 'deri ~12 orë (+ kuti karikimi)', 'up to ~12 h (+ charging case)')),
+      spec(L.weight, '~43 g'),
+      spec(SG.audio, T('Muzika, podkasti i pozivi (open-ear)', 'Muzikë, podkaste dhe thirrje (open-ear)', 'Music, podcasts and calls (open-ear)')),
+      spec(SG.assistant, T('Glasovni — funkcije i jezici zavise od zemlje', 'Zanor — funksionet dhe gjuhët varen nga vendi', 'Voice — features and languages vary by country')),
+      spec(SG.rx, T('Da, podržana — potvrđuje se prema receptu', 'Po, mbështeten — konfirmohet sipas recetës', 'Yes, supported — confirmed per prescription')),
+      sgApp,
+      sgAvail,
+    ],
+    badges: ['new'],
+    featured: false,
+    age: 19,
+  },
+  {
+    id: 'p-oakley-meta-hstn',
+    slug: 'oakley-meta-hstn',
+    sku: 'OM-SG-OKM-HS',
+    categoryId: 'cat-smart',
+    name: same('Oakley Meta HSTN'),
+    short: T(
+      'Oakley Meta sa kamerom, zvukom i glasovnim asistentom — lifestyle silueta HSTN.',
+      'Oakley Meta me kamerë, audio dhe asistent zanor — silueta lifestyle HSTN.',
+      'Oakley Meta with a camera, audio and a voice assistant — the HSTN lifestyle silhouette.',
+    ),
+    description: T(
+      'HSTN je lifestyle model Oakley Meta: kamera, zvuk i glasovni asistent u okviru sportskog karaktera. Tačne specifikacije zavise od verzije — potvrdićemo ih kada nam se javite.\n\nZa intenzivnije aktivnosti Oakley Meta ima i sportski model Vanguard; pitajte za dostupnost. U optici ih probajte, podesićemo ih i proveriti mogućnosti za dioptrijska sočiva.',
+      'HSTN është modeli lifestyle i Oakley Meta: kamerë, audio dhe asistent zanor në një kornizë me karakter sportiv. Specifikimet e sakta ndryshojnë sipas versionit — ua konfirmojmë kur të na kontaktoni.\n\nPër aktivitete më intensive Oakley Meta ka edhe modelin sportiv Vanguard; pyetni për disponueshmërinë. Në optikë i provoni, ua rregullojmë dhe kontrollojmë mundësitë për lente me dioptri.',
+      'HSTN is the lifestyle model from Oakley Meta: a camera, audio and a voice assistant in a frame with a sporty character. Exact specifications vary by version — we confirm them when you get in touch.\n\nFor more intense activity Oakley Meta also makes the Vanguard sport wrap; ask us about availability. Try them on in store, let us adjust them and check the options for prescription lenses.',
+    ),
+    ...onRequest,
+    images: sgImg('oakley-meta-hstn'),
+    options: [
+      sgColor(
+        sw('black', T('Crna', 'E zezë', 'Black'), '#1d1c1a'),
+        sw('brown', T('Tamno braon', 'Kafe e errët', 'Dark brown'), '#4b3022'),
+        sw('clear', T('Providna', 'Transparente', 'Clear'), '#d9d4c9'),
+      ),
+      optSmartLenses,
+    ],
+    specs: [
+      spec(SG.style, 'Lifestyle (HSTN)'),
+      spec(SG.features, T('Kamera, zvuk i glasovni asistent', 'Kamerë, audio dhe asistent zanor', 'Camera, audio and voice assistant')),
+      spec(SG.specs, T('Prema modelu — potvrđuje optika', 'Sipas modelit — i konfirmon optika', 'Per model — confirmed by the store')),
+      spec(SG.assistant, T('Funkcije i jezici zavise od zemlje', 'Funksionet dhe gjuhët varen nga vendi', 'Features and languages vary by country')),
+      sgAskRx,
+      sgLed,
+      sgApp,
+      sgAvail,
+    ],
+    badges: [],
+    featured: false,
+    age: 70,
   },
 ];
 

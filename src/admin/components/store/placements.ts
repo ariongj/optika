@@ -148,6 +148,7 @@ export function resolveHref(href: string, ctx: LinkCtx, lang: Lang): { type: Lin
   const fixed: Record<string, keyof (typeof site)['sq']> = {
     '/sherbimet': 'nav_services', '/kontakt': 'nav_contact', '/lookbook': 'nav_projects', '/rreth-nesh': 'nav_about', '/keshilla': 'nav_blog',
     '/provo-virtualisht': 'nav_tryon', '/rezervo': 'nav_book', '/gjej-kornizen': 'nav_finder', '/lentet': 'nav_lensGuide', '/gjurmo-porosine': 'nav_track',
+    '/syze-inteligjente': 'nav_smart',
   };
   if (fixed[path]) return { type: 'page', label: site[lang][fixed[path]] };
   if (path === '/klinika') return { type: 'page', label: 'Klinika Miftari' };

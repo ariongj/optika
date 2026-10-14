@@ -43,6 +43,8 @@ export function SectionForm({ section, onChange }: { section: HomeSection; onCha
       return <InstagramForm data={section.data} set={(data) => onChange({ ...section, data })} />;
     case 'cta':
       return <CtaForm data={section.data} set={(data) => onChange({ ...section, data })} />;
+    case 'spotlight':
+      return <SpotlightForm data={section.data} set={(data) => onChange({ ...section, data })} />;
     default:
       return null;
   }
@@ -387,6 +389,40 @@ function InstagramForm({ data, set }: { data: DataOf<'instagram'>; set: SetData<
         <GalleryField value={data.images} onChange={(images) => set({ ...data, images })} />
         <p className="-mt-2 text-xs text-muted">{t('photosHint')}</p>
         <SourceNote text={t('src_instagram')} to="/admin/konfiguracija" linkLabel={t('openSettings')} />
+      </Group>
+    </Stack>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+function SpotlightForm({ data, set }: { data: DataOf<'spotlight'>; set: SetData<'spotlight'> }) {
+  const t = useDict(B, 'admin');
+  const l = useL('admin');
+  return (
+    <Stack>
+      <Group title={t('grpHeading')}>
+        <L10nInput label={t('eyebrow')} value={data.eyebrow} onChange={(eyebrow) => set({ ...data, eyebrow })} />
+        <TitleField value={data.title} onChange={(title) => set({ ...data, title })} multiline />
+        <L10nInput label={t('text')} value={data.text} onChange={(text) => set({ ...data, text })} multiline rows={3} />
+      </Group>
+      <Group title={t('grpImage')}>
+        <ImageField value={data.image} onChange={(image) => set({ ...data, image })} aspect="aspect-[3/2]" />
+      </Group>
+      <Group title={t('points')}>
+        <ListEditor
+          items={data.points}
+          onChange={(points) => set({ ...data, points })}
+          max={4}
+          addLabel={t('addPoint')}
+          newItem={() => ({ text: emptyL10n() })}
+          title={(it, i) => l(it.text) || t('point', { n: i + 1 })}
+          render={(it, up) => <L10nInput label={t('text')} value={it.text} onChange={(text) => up({ text })} />}
+        />
+        <p className="-mt-2 text-xs text-muted">{t('pointsHint')}</p>
+      </Group>
+      <Group title={t('grpButton')}>
+        <CtaFields title={t('primaryCta')} value={data.primary} onChange={(primary) => set({ ...data, primary })} />
+        <CtaFields title={t('secondaryCta')} value={data.secondary} onChange={(secondary) => set({ ...data, secondary })} />
       </Group>
     </Stack>
   );

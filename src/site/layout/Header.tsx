@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
 import {
-  ArrowRight, ArrowUpRight, CalendarCheck, Eye, FlaskConical, Glasses, Heart, Layers, Menu, PackageSearch, Phone, ScanFace, Search, ShoppingBag,
+  Aperture, ArrowRight, ArrowUpRight, CalendarCheck, Eye, FlaskConical, Glasses, Heart, Layers, Menu, PackageSearch, Phone, ScanFace, Search, ShoppingBag,
   Sparkles, Stethoscope, type LucideIcon,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -36,11 +36,16 @@ interface NavItem {
   sub?: string;
   /** Icon for picture-less pages in the dropdown (see PAGE_HINTS) */
   icon?: LucideIcon;
+  /** A page link shown as an image tile (its picture comes from PAGE_HINTS) */
+  tile?: boolean;
   children: NavItem[];
 }
 
-/** Built-in pages have no picture: a dropdown tile gets an icon and a one-line description instead. */
-const PAGE_HINTS: Record<string, { icon: LucideIcon; sub: L10n }> = {
+/**
+ * Built-in pages have no picture: a dropdown tile gets an icon and a one-line description instead. A page with an
+ * `image` (the smart-glasses landing page) is shown as an image tile, like a category.
+ */
+const PAGE_HINTS: Record<string, { icon: LucideIcon; sub: L10n; image?: string }> = {
   '/sherbimet': { icon: Sparkles, sub: { me: 'Pregled, prilagođavanje, popravke i još mnogo toga', sq: 'Kontroll, përshtatje, riparime dhe më shumë', en: 'Eye exams, fittings, repairs and more' } },
   '/rezervo': { icon: CalendarCheck, sub: { me: 'Izaberite uslugu, dan i vreme online', sq: 'Zgjidhni shërbimin, ditën dhe orën online', en: 'Pick the service, day and time online' } },
   '/klinika': { icon: Stethoscope, sub: { me: 'Specijalističke konsultacije za oči', sq: 'Konsulta specialistike për sytë', en: 'Specialist eye consultations' } },
@@ -49,23 +54,32 @@ const PAGE_HINTS: Record<string, { icon: LucideIcon; sub: L10n }> = {
   '/lentet': { icon: Layers, sub: { me: 'Koja sočiva i koji indeks za vaš recept', sq: 'Cilat lente dhe cili indeks për recetën tuaj', en: 'Which lenses and index for your prescription' } },
   '/gjurmo-porosine': { icon: PackageSearch, sub: { me: 'Gde je vaša porudžbina', sq: 'Ku ndodhet porosia juaj', en: 'See where your order is' } },
   '/provo-virtualisht': { icon: ScanFace, sub: { me: 'Kamera, fotografija ili 3D', sq: 'Kamera, foto ose 3D', en: 'Camera, photo or 3D' } },
+  '/syze-inteligjente': {
+    icon: Aperture,
+    image: '/images/cat/smart.webp',
+    sub: { me: 'Kamera, zvuk i asistent — probajte ih u optici', sq: 'Kamerë, audio dhe asistent — provojini në optikë', en: 'Camera, audio and assistant — try them in store' },
+  },
 };
 const hintFor = (to: string, external: boolean) => (external ? undefined : PAGE_HINTS[to.split(/[?#]/)[0]]);
 
-const toItem = (n: NavNode, l: (v: L10n) => string): NavItem => ({
-  id: n.id,
-  label: l(n.label),
-  to: n.to,
-  external: n.external,
-  type: n.type,
-  image: n.entity?.image,
-  sub: n.entity?.subtitle ? l(n.entity.subtitle) || undefined : (() => { const h = hintFor(n.to, n.external); return h ? l(h.sub) : undefined; })(),
-  icon: n.entity?.image ? undefined : hintFor(n.to, n.external)?.icon,
-  children: n.children.map((c) => toItem(c, l)),
-});
+const toItem = (n: NavNode, l: (v: L10n) => string): NavItem => {
+  const hint = n.entity?.image ? undefined : hintFor(n.to, n.external);
+  return {
+    id: n.id,
+    label: l(n.label),
+    to: n.to,
+    external: n.external,
+    type: n.type,
+    image: n.entity?.image ?? hint?.image,
+    tile: !!hint?.image,
+    sub: n.entity?.subtitle ? l(n.entity.subtitle) || undefined : hint ? l(hint.sub) : undefined,
+    icon: n.entity?.image || hint?.image ? undefined : hint?.icon,
+    children: n.children.map((c) => toItem(c, l)),
+  };
+};
 
-/** Image tile in the mega menu / mobile grid (category, collection, product, offer). */
-const isTile = (n: NavItem) => !!n.image && n.type !== 'url' && n.type !== 'page' && !isPromo(n);
+/** Image tile in the mega menu / mobile grid (category, collection, product, offer — or a page with a hint picture). */
+const isTile = (n: NavItem) => !!n.image && (n.tile || (n.type !== 'url' && n.type !== 'page')) && !isPromo(n);
 
 /** Header main menu: the CMS menu when it has visible links, otherwise the built-in navigation. */
 function useMainNav(): { items: NavItem[]; fallback: boolean } {

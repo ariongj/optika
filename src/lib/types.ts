@@ -351,7 +351,9 @@ export type HomeSection =
   | { id: string; type: 'instagram'; enabled: boolean; data: { title: L10n; images: string[] } }
   | { id: string; type: 'faq'; enabled: boolean; data: { eyebrow: L10n; title: L10n; items: { q: L10n; a: L10n }[] } }
   | { id: string; type: 'blog'; enabled: boolean; data: { eyebrow: L10n; title: L10n } }
-  | { id: string; type: 'cta'; enabled: boolean; data: { eyebrow: L10n; title: L10n; text: L10n; image: string } };
+  | { id: string; type: 'cta'; enabled: boolean; data: { eyebrow: L10n; title: L10n; text: L10n; image: string } }
+  /** Spotlight on a new range or page (e.g. smart glasses): image, short copy, up to 4 points and two buttons. */
+  | { id: string; type: 'spotlight'; enabled: boolean; data: { eyebrow: L10n; title: L10n; text: L10n; image: string; points: { text: L10n }[]; primary: Cta; secondary: Cta } };
 
 export type HomeSectionType = HomeSection['type'];
 

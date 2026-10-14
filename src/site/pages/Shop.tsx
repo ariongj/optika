@@ -138,7 +138,7 @@ function ShopView({ slug }: { slug?: string }) {
   }
   for (const f of filters.feats) pills.push({ key: `f-${f}`, label: t(`feat_${f}`), onRemove: () => setFilters({ ...filters, feats: filters.feats.filter((x) => x !== f) }) });
   for (const b of filters.badges) pills.push({ key: `b-${b}`, label: tc(`badge_${b}`), onRemove: () => setFilters({ ...filters, badges: filters.badges.filter((x) => x !== b) }) });
-  for (const a of filters.avail) pills.push({ key: `a-${a}`, label: t(a === 'stock' ? 'inStock' : 'toOrder'), onRemove: () => setFilters({ ...filters, avail: filters.avail.filter((x) => x !== a) }) });
+  for (const a of filters.avail) pills.push({ key: `a-${a}`, label: t(a === 'stock' ? 'inStock' : a === 'request' ? 'onRequestAvail' : 'toOrder'), onRemove: () => setFilters({ ...filters, avail: filters.avail.filter((x) => x !== a) }) });
   for (const c of filters.colors)
     pills.push({
       key: `col-${c}`,

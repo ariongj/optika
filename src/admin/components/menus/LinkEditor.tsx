@@ -36,7 +36,7 @@ interface Opt {
 
 const MAX_OPTS = 40;
 const QUICK_PATHS = [
-  '/produktet', '/produktet?akcija=1', '/provo-virtualisht', '/gjej-kornizen', '/lentet', '/sherbimet', '/rezervo', '/klinika', '/optical-lab',
+  '/produktet', '/produktet?akcija=1', '/syze-inteligjente', '/provo-virtualisht', '/gjej-kornizen', '/lentet', '/sherbimet', '/rezervo', '/klinika', '/optical-lab',
   '/lookbook', '/rreth-nesh', '/keshilla', '/kontakt', '/gjurmo-porosine', '/#rezervo',
 ];
 

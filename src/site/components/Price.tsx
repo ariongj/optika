@@ -1,5 +1,5 @@
 import type { Product } from '@/lib/types';
-import { basePrice, isOnSale } from '@/lib/pricing';
+import { basePrice, isOnSale, priceOnRequest } from '@/lib/pricing';
 import { money, perUnit } from '@/lib/format';
 import { useDict, useLang } from '@/i18n';
 import { common } from '@/i18n/common';
@@ -13,6 +13,14 @@ export function hasPriceRange(p: Product) {
 export function Price({ product, size = 'md', className, showUnit = true }: { product: Product; size?: 'sm' | 'md' | 'lg' | 'xl'; className?: string; showUnit?: boolean }) {
   const lang = useLang();
   const tc = useDict(common);
+  if (priceOnRequest(product)) {
+    const text = { sm: 'text-[14.5px]', md: 'text-[16px]', lg: 'text-xl', xl: 'text-[28px] leading-tight' };
+    return (
+      <div className={cn('flex flex-wrap items-baseline gap-x-2 gap-y-0.5', className)}>
+        <span className={cn('font-semibold tracking-tight text-ink', text[size])}>{tc('priceOnRequest')}</span>
+      </div>
+    );
+  }
   const sale = isOnSale(product);
   const price = basePrice(product);
   const from = product.quoteOnly || hasPriceRange(product);

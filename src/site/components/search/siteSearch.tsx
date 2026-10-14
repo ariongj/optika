@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import {
-  ArrowUpRight, BookOpen, CalendarCheck, FileText, FlaskConical, Glasses, Images, Layers, MapPin, PackageSearch, ScanFace, Sparkles, Stethoscope, Users,
+  Aperture, ArrowUpRight, BookOpen, CalendarCheck, FileText, FlaskConical, Glasses, Images, Layers, MapPin, PackageSearch, ScanFace, Sparkles, Stethoscope, Users,
   type LucideIcon,
 } from 'lucide-react';
 import { defineDict, lt, useDict } from '@/i18n';
@@ -29,6 +29,7 @@ const STATIC_PAGES: StaticPage[] = [
   { to: '/optical-lab', icon: FlaskConical, title: T('Optical Lab', 'Optical Lab', 'Optical Lab'), sub: T('Dioptrijska sočiva · B2B', 'Lente me recetë · B2B për optikat', 'Prescription lenses · B2B'), keys: 'laborator laboratorija lab b2b optika partner bashkepunim saradnja partnership lente sociva lenses' },
   { to: '/lentet', icon: Layers, title: T('Vodič kroz sočiva', 'Udhëzuesi i lenteve', 'Lens guide'), sub: T('Koja sočiva i koji indeks', 'Cilat lente dhe cili indeks', 'Which lenses and which index'), keys: 'lente lentet sociva lenses progresive progressive njevizore single indeks index 1.67 1.74 antirefleks fotokromatike photochromic drita blu blue light' },
   { to: '/gjej-kornizen', icon: Glasses, title: T('Pronađite svoj okvir', 'Gjeni kornizën tuaj', 'Find your frame'), sub: T('Kviz za oblik lica i stil', 'Kuiz për formën e fytyrës dhe stilin', 'Face-shape and style quiz'), keys: 'kuiz quiz kviz forma fytyres lice face shape kornize okvir frame stil style madhesia size' },
+  { to: '/syze-inteligjente', icon: Aperture, title: T('Pametne naočare', 'Syze inteligjente', 'Smart glasses'), sub: T('Ray-Ban Meta, Oakley Meta i Meta Ray-Ban Display', 'Ray-Ban Meta, Oakley Meta dhe Meta Ray-Ban Display', 'Ray-Ban Meta, Oakley Meta and Meta Ray-Ban Display'), keys: 'smart glasses inteligjente syze pametne naocare meta ray-ban rayban oakley display kamere kamera camera ai asistent assistant audio wayfarer aviator zena hstn' },
   { to: '/provo-virtualisht', icon: ScanFace, title: T('Virtuelna proba', 'Provo virtualisht', 'Virtual try-on'), sub: T('Kamera, fotografija ili 3D', 'Kamera, foto ose 3D', 'Camera, photo or 3D'), keys: 'provo virtual virtuelno try on kamera camera foto selfie 3d' },
   { to: '/gjurmo-porosine', icon: PackageSearch, title: T('Pratite porudžbinu', 'Gjurmo porosinë', 'Track your order'), sub: T('Status porudžbine', 'Statusi i porosisë', 'Order status'), keys: 'gjurmo porosi porosine status order track narudzba porudzbina dergesa delivery dostava' },
   { to: '/kontakt', icon: MapPin, title: T('Kontakt', 'Kontakt', 'Contact'), sub: T('Mbretëresha Teutë 182, Mitrovica', 'Mbretëresha Teutë 182, Mitrovicë', 'Mbretëresha Teutë 182, Mitrovica'), keys: 'kontakt contact adresa address telefon phone whatsapp orari hours mitrovice mitrovica' },

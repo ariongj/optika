@@ -45,6 +45,11 @@
     {
       "name": "Syze dielli",
       "url": "produktet/syze-dielli/"
+    },
+    {
+      "name": "Syze inteligjente",
+      "short_name": "Inteligjente",
+      "url": "syze-inteligjente/"
     }
   ]
 }

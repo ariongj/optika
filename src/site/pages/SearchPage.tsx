@@ -17,7 +17,7 @@ import { useActiveProducts, useCategories, useSettings } from '@/store/hooks';
 import { searchProducts } from '@/lib/search';
 import { SiteHits, searchSite } from '@/site/components/search/siteSearch';
 import { useDb } from '@/store/db';
-import { basePrice } from '@/lib/pricing';
+import { basePrice, priceOnRequest } from '@/lib/pricing';
 import { cn } from '@/lib/utils';
 
 const T = defineDict({
@@ -136,9 +136,9 @@ function sortProducts(list: Product[], sort: Sort) {
     case 'popular':
       return [...list].sort((a, b) => b.sold - a.sold);
     case 'priceAsc':
-      return [...list].sort((a, b) => basePrice(a) - basePrice(b));
+      return [...list].sort((a, b) => Number(priceOnRequest(a)) - Number(priceOnRequest(b)) || basePrice(a) - basePrice(b));
     case 'priceDesc':
-      return [...list].sort((a, b) => basePrice(b) - basePrice(a));
+      return [...list].sort((a, b) => Number(priceOnRequest(a)) - Number(priceOnRequest(b)) || basePrice(b) - basePrice(a));
     default:
       return list;
   }

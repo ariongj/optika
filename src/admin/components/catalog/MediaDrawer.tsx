@@ -86,6 +86,7 @@ export const MEDIA_T = defineDict({
     sec_faq: 'Česta pitanja',
     sec_blog: 'Savjeti',
     sec_cta: 'Poziv na akciju',
+    sec_spotlight: 'Istaknuto',
   },
   sq: {
     details: 'Detajet e skedarit',
@@ -152,6 +153,7 @@ export const MEDIA_T = defineDict({
     sec_faq: 'Pyetjet e shpeshta',
     sec_blog: 'Këshillat',
     sec_cta: 'Thirrje për veprim',
+    sec_spotlight: 'Në fokus',
   },
   en: {
     details: 'File details',
@@ -218,6 +220,7 @@ export const MEDIA_T = defineDict({
     sec_faq: 'FAQ',
     sec_blog: 'Advice',
     sec_cta: 'Call to action',
+    sec_spotlight: 'Spotlight',
   },
 });
 

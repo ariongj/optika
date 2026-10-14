@@ -1,9 +1,9 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { Link } from 'react-router';
-import { FileText, ScanFace, ShoppingBag } from 'lucide-react';
+import { FileText, ScanFace, Send, ShoppingBag } from 'lucide-react';
 import { Img } from '@/components/ui/misc';
 import { useDict, useL, useLang } from '@/i18n';
-import { basePrice, optionsLabel } from '@/lib/pricing';
+import { basePrice, optionsLabel, priceOnRequest } from '@/lib/pricing';
 import { money, num, unitLabel } from '@/lib/format';
 import { common } from '@/i18n/common';
 import { PD, eur, packWord } from './dict';
@@ -20,7 +20,8 @@ export function StickyBar({ cfg, visible, onAdd, onQuote }: { cfg: Configurator;
   const p = cfg.product;
   const total = useTweenedNumber(cfg.total);
   const opts = optionsLabel(p, cfg.options, lang);
-  const fromPrice = `${tc('from')} ${money(basePrice(p), lang, { decimals: false })}`;
+  const onReq = priceOnRequest(p);
+  const fromPrice = onReq ? tc('priceOnRequest') : `${tc('from')} ${money(basePrice(p), lang, { decimals: false })}`;
   const qtyText =
     p.unit === 'm2' && p.packSize
       ? `${cfg.qty} ${packWord(cfg.qty, lang, t('pack_one'), t('pack_many'))} · ${num(cfg.units, lang)} ${unitLabel('m2', lang)}`
@@ -42,7 +43,12 @@ export function StickyBar({ cfg, visible, onAdd, onQuote }: { cfg: Configurator;
             </div>
             <div className="min-w-0 flex-1">
               <div className="hidden truncate text-[14.5px] font-semibold text-ink sm:block">{l(p.name)}</div>
-              {p.quoteOnly ? (
+              {onReq ? (
+                <>
+                  <div className="truncate text-[15px] font-bold leading-tight text-ink sm:hidden">{l(p.name)}</div>
+                  <div className="truncate text-[12.5px] font-semibold text-oak">{fromPrice}</div>
+                </>
+              ) : p.quoteOnly ? (
                 <>
                   <div className="text-[18px] font-bold leading-tight tabular-nums text-ink sm:hidden">{fromPrice}</div>
                   <div className="truncate text-[12.5px] text-muted">
@@ -78,8 +84,17 @@ export function StickyBar({ cfg, visible, onAdd, onQuote }: { cfg: Configurator;
               onClick={p.quoteOnly ? onQuote : onAdd}
               className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-brand-600 px-5 text-[14.5px] font-bold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.14),0_10px_24px_-14px_var(--color-brand-700)] transition-[background,transform] hover:bg-brand-700 active:scale-[0.98] sm:px-7"
             >
-              {p.quoteOnly ? <FileText className="h-[18px] w-[18px]" /> : <ShoppingBag className="h-[18px] w-[18px]" />}
-              {p.quoteOnly ? t('requestQuote') : t('addToCart')}
+              {onReq ? <Send className="h-[18px] w-[18px]" /> : p.quoteOnly ? <FileText className="h-[18px] w-[18px]" /> : <ShoppingBag className="h-[18px] w-[18px]" />}
+              {onReq ? (
+                <>
+                  <span className="sm:hidden">{t('sg_requestShort')}</span>
+                  <span className="max-sm:hidden">{t('sg_request')}</span>
+                </>
+              ) : p.quoteOnly ? (
+                t('requestQuote')
+              ) : (
+                t('addToCart')
+              )}
             </button>
           </div>
         </motion.div>

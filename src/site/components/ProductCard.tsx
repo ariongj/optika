@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { toast } from 'sonner';
-import { Heart, Plus, ArrowUpRight, Glasses, FlaskConical } from 'lucide-react';
+import { Heart, Plus, ArrowUpRight, CalendarCheck, Glasses, FlaskConical } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import { Badge, Img } from '@/components/ui/misc';
 import { Price } from './Price';
@@ -9,14 +9,15 @@ import { site } from '@/i18n/site';
 import { common } from '@/i18n/common';
 import { useUi } from '@/store/ui';
 import { useDb } from '@/store/db';
-import { defaultOptions, discountPct } from '@/lib/pricing';
+import { defaultOptions, discountPct, priceOnRequest } from '@/lib/pricing';
 import { cn } from '@/lib/utils';
 import { isLensPackage, labDays, rxReady } from './product/optical';
+import { IllustrationChip, isIllustration } from './smart/illustration';
 
 const C = defineDict({
-  me: { rxReady: 'Moguće sa dioptrijom', labDays: 'Laboratorija: {days} dana' },
-  sq: { rxReady: 'Gati për dioptri', labDays: 'Laboratori: {days} ditë' },
-  en: { rxReady: 'Prescription-ready', labDays: 'Lab time: {days} days' },
+  me: { rxReady: 'Moguće sa dioptrijom', labDays: 'Laboratorija: {days} dana', request: 'Proverite dostupnost', tryIn: 'Besplatna proba u optici' },
+  sq: { rxReady: 'Gati për dioptri', labDays: 'Laboratori: {days} ditë', request: 'Kërko disponueshmërinë', tryIn: 'Provë falas në optikë' },
+  en: { rxReady: 'Prescription-ready', labDays: 'Lab time: {days} days', request: 'Request availability', tryIn: 'Free try-on in store' },
 });
 
 export function ProductBadges({ product, className }: { product: Product; className?: string }) {
@@ -46,7 +47,8 @@ export function ProductCard({ product, className, priority }: { product: Product
   // frame colour first; any other swatch option (e.g. a lens tint) as a fallback
   const swatches = product.options.find((o) => o.id === 'color') ?? product.options.find((o) => o.type === 'swatch');
   const lensPack = isLensPackage(product);
-  const rx = !lensPack && rxReady(product);
+  const onReq = priceOnRequest(product);
+  const rx = !lensPack && !onReq && rxReady(product);
 
   const quickAdd = () => {
     addToCart({ productId: product.id, qty: 1, options: defaultOptions(product), installation: false });
@@ -63,6 +65,7 @@ export function ProductCard({ product, className, priority }: { product: Product
           )}
         </Link>
         <ProductBadges product={product} className="pointer-events-none absolute left-3 top-3" />
+        {isIllustration(product.images[0]) && <IllustrationChip className="absolute bottom-3 left-3 transition-opacity duration-300 md:group-hover:opacity-0" />}
         <button
           type="button"
           onClick={() => toggleWishlist(product.id)}
@@ -82,7 +85,7 @@ export function ProductCard({ product, className, priority }: { product: Product
             </button>
           ) : (
             <Link to={href} className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-white/95 text-sm font-semibold text-ink shadow-lg backdrop-blur hover:bg-ink hover:text-white">
-              {product.quoteOnly ? t('requestQuote') : t('chooseOptions')} <ArrowUpRight className="h-4 w-4" />
+              {onReq ? tp('request') : product.quoteOnly ? t('requestQuote') : t('chooseOptions')} <ArrowUpRight className="h-4 w-4" />
             </Link>
           )}
         </div>
@@ -105,8 +108,14 @@ export function ProductCard({ product, className, priority }: { product: Product
           </Link>
         </h3>
         <div className="mt-auto pt-2.5">
-          {product.quoteOnly && <div className="mb-0.5 text-[12px] font-medium text-oak">{t('quoteOnly')}</div>}
+          {product.quoteOnly && !onReq && <div className="mb-0.5 text-[12px] font-medium text-oak">{t('quoteOnly')}</div>}
           <Price product={product} size="sm" />
+          {onReq && (
+            <div className="mt-1 flex items-center gap-1.5 text-[12px] text-muted">
+              <CalendarCheck className="h-3 w-3" />
+              {tp('tryIn')}
+            </div>
+          )}
           {(rx || lensPack) && (
             <div className="mt-1 flex items-center gap-1.5 text-[12px] text-muted">
               {lensPack ? <FlaskConical className="h-3 w-3" /> : <Glasses className="h-3 w-3" />}

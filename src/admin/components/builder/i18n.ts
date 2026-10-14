@@ -113,6 +113,7 @@ export const B = defineDict({
     desc_faq: 'Pitanja i odgovori na harmonici.',
     desc_blog: 'Tri najnovija savjeta iz bloga.',
     desc_cta: 'Poziv na akciju sa formom za zakazivanje pregleda vida.',
+    desc_spotlight: 'Istaknuta novina (npr. pametne naočare): slika, kratak tekst, do 4 stavke i dva dugmeta.',
     newFeaturedEyebrow: 'Novo',
     newFeaturedTitle: 'Novo u *ponudi*',
 
@@ -137,6 +138,7 @@ export const B = defineDict({
     v_figure: 'Brojka {n}: nedostaje vrijednost.',
     v_maxItems: '{list}: najviše {max} stavki.',
     v_hiddenNote: 'Sekcija je skrivena — njene greške ne blokiraju objavu.',
+    v_noButtons: 'Nema nijednog dugmeta — posetioci ne mogu dalje.',
 
     /* ---- versions ---- */
     verTitle: 'Verzije',
@@ -198,6 +200,7 @@ export const B = defineDict({
     type_faq: 'Česta pitanja',
     type_blog: 'Savjeti (blog)',
     type_cta: 'Zakazivanje pregleda',
+    type_spotlight: 'Istaknuto (novo)',
 
     count_slides: 'Slajdovi: {n}',
     count_items: 'Stavke: {n}',
@@ -255,6 +258,10 @@ export const B = defineDict({
     questions: 'Pitanja',
     question: 'Pitanje {n}',
     addQuestion: 'Dodaj pitanje',
+    points: 'Stavke',
+    point: 'Stavka {n}',
+    addPoint: 'Dodaj stavku',
+    pointsHint: 'Kratke prednosti sa kvačicom — do 4.',
     q: 'Pitanje',
     a: 'Odgovor',
     photos: 'Fotografije',
@@ -404,6 +411,7 @@ export const B = defineDict({
     desc_faq: 'Pyetje dhe përgjigje në formë fizarmonike.',
     desc_blog: 'Tri këshillat më të reja nga blogu.',
     desc_cta: 'Thirrje për veprim me formularin për rezervimin e kontrollit të syve.',
+    desc_spotlight: 'Risi në fokus (p.sh. syzet inteligjente): imazh, tekst i shkurtër, deri në 4 pika dhe dy butona.',
     newFeaturedEyebrow: 'Të reja',
     newFeaturedTitle: 'Të rejat në *dyqan*',
 
@@ -427,6 +435,7 @@ export const B = defineDict({
     v_figure: 'Shifra {n}: mungon vlera.',
     v_maxItems: '{list}: maksimumi {max} elemente.',
     v_hiddenNote: 'Seksioni është i fshehur — gabimet e tij nuk bllokojnë publikimin.',
+    v_noButtons: 'Nuk ka asnjë buton — vizitorët nuk kanë ku të vazhdojnë.',
 
     verTitle: 'Versionet',
     verText: 'Çdo publikim ruan versionin e mëparshëm (deri në 10). Rikthimi e ngarkon versionin në draft — faqja ndryshon vetëm kur klikoni „Publiko“.',
@@ -485,6 +494,7 @@ export const B = defineDict({
     type_faq: 'Pyetje të shpeshta',
     type_blog: 'Këshilla (blog)',
     type_cta: 'Rezervo kontrollin',
+    type_spotlight: 'Në fokus (e re)',
 
     count_slides: 'Slajde: {n}',
     count_items: 'Elemente: {n}',
@@ -541,6 +551,10 @@ export const B = defineDict({
     questions: 'Pyetjet',
     question: 'Pyetja {n}',
     addQuestion: 'Shto pyetje',
+    points: 'Pikat',
+    point: 'Pika {n}',
+    addPoint: 'Shto pikë',
+    pointsHint: 'Avantazhe të shkurtra me shenjë ✓ — deri në 4.',
     q: 'Pyetja',
     a: 'Përgjigjja',
     photos: 'Fotografitë',
@@ -690,6 +704,7 @@ export const B = defineDict({
     desc_faq: 'Questions and answers in an accordion.',
     desc_blog: 'The three latest articles from the blog.',
     desc_cta: 'Call to action with the eye-exam booking form.',
+    desc_spotlight: 'A new range in focus (e.g. smart glasses): image, short copy, up to 4 points and two buttons.',
     newFeaturedEyebrow: 'New',
     newFeaturedTitle: 'New in *store*',
 
@@ -713,6 +728,7 @@ export const B = defineDict({
     v_figure: 'Figure {n}: value missing.',
     v_maxItems: '{list}: at most {max} items.',
     v_hiddenNote: 'The section is hidden — its errors don’t block publishing.',
+    v_noButtons: 'No buttons — visitors have nowhere to go next.',
 
     verTitle: 'Versions',
     verText: 'Each publish keeps the previous version (up to 10). Restoring loads it into the draft — the site changes only when you click “Publish”.',
@@ -771,6 +787,7 @@ export const B = defineDict({
     type_faq: 'FAQ',
     type_blog: 'Advice (blog)',
     type_cta: 'Book an eye exam',
+    type_spotlight: 'Spotlight (new)',
 
     count_slides: 'Slides: {n}',
     count_items: 'Items: {n}',
@@ -827,6 +844,10 @@ export const B = defineDict({
     questions: 'Questions',
     question: 'Question {n}',
     addQuestion: 'Add question',
+    points: 'Points',
+    point: 'Point {n}',
+    addPoint: 'Add point',
+    pointsHint: 'Short benefits with a tick — up to 4.',
     q: 'Question',
     a: 'Answer',
     photos: 'Photos',

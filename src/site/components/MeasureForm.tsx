@@ -110,6 +110,7 @@ export function MeasureForm({
   defaultService,
   defaultMessage,
   b2b = false,
+  tags,
   className,
   onDone,
 }: {
@@ -120,6 +121,8 @@ export function MeasureForm({
   defaultMessage?: string;
   /** Optical Lab partner request: shows the company field and a lab-order placeholder */
   b2b?: boolean;
+  /** Inbox tags for the CMS (e.g. ["smart-glasses"]) */
+  tags?: string[];
   className?: string;
   onDone?: () => void;
 }) {
@@ -196,6 +199,7 @@ export function MeasureForm({
       productId,
       message: message || '—',
       preferredDate: form.date || undefined,
+      ...(tags?.length ? { tags } : {}),
     });
     const slot = exam && form.date ? bookSlot(inq.id, form.date, [service, message].filter(Boolean).join(' — ')) : undefined;
     setBusy(false);

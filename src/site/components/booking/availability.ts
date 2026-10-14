@@ -18,6 +18,9 @@ const ALIASES: Record<string, string> = {
   klinika: 'sv-klinika',
   repair: 'sv-marrja',
   pickup: 'sv-marrja',
+  smart: 'sv-smart',
+  'smart-glasses': 'sv-smart',
+  inteligjente: 'sv-smart',
 };
 
 /** Name match for services renamed / re-created in the CMS (same idea as MeasureForm). */
@@ -28,6 +31,7 @@ const NAME_MATCH: Record<string, RegExp> = {
   'sv-femije': /fëmij|child|dec/i,
   'sv-klinika': /klinik|clinic/i,
   'sv-marrja': /marrja|riparim|repair|popravk/i,
+  'sv-smart': /inteligjent|smart|pametn/i,
 };
 
 /** Resolve `?sherbimi=<id | alias | id without "sv-">` to a bookable service. */
@@ -53,6 +57,7 @@ export const SERVICE_IMAGE: Record<string, string> = {
   'sv-femije': '/images/hero/family.webp',
   'sv-klinika': '/images/s/klinika.webp',
   'sv-marrja': '/images/s/riparime.webp',
+  'sv-smart': '/images/smart/hero.webp',
 };
 
 /** The store a service is performed at (service.location → settings.locations, else the default store). */

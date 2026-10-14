@@ -2,7 +2,9 @@ import { useState, type Ref } from 'react';
 import { Link } from 'react-router';
 import { toast } from 'sonner';
 import { AnimatePresence, motion } from 'motion/react';
-import { CalendarCheck, Check, Clock, Eye, FileText, FlaskConical, Heart, Phone, ScanFace, Share2, ShieldCheck, ShieldPlus, ShoppingBag, Truck, Wrench } from 'lucide-react';
+import {
+  ArrowRight, CalendarCheck, Check, Clock, Eye, FileText, FlaskConical, Heart, Phone, ScanFace, Send, Share2, ShieldCheck, ShieldPlus, ShoppingBag, Smartphone, Truck, Wrench,
+} from 'lucide-react';
 import type { Category } from '@/lib/types';
 import { WhatsAppIcon } from '@/components/brand/Social';
 import { ProductBadges } from '@/site/components/ProductCard';
@@ -10,7 +12,7 @@ import { Price } from '@/site/components/Price';
 import { useDict, useL, useLang } from '@/i18n';
 import { useUi } from '@/store/ui';
 import { useSettings } from '@/store/hooks';
-import { basePrice } from '@/lib/pricing';
+import { basePrice, priceOnRequest } from '@/lib/pricing';
 import { money, num, perUnit, unitLabel } from '@/lib/format';
 import { cn, round2 } from '@/lib/utils';
 import { PD, eur, packWord } from './dict';
@@ -81,7 +83,9 @@ export function BuyBox({
 
       <div className="my-7 h-px bg-line" />
 
-      {p.quoteOnly ? (
+      {priceOnRequest(p) ? (
+        <SmartPanel cfg={cfg} onRequest={onQuote} ctaRef={ctaRef} />
+      ) : p.quoteOnly ? (
         <QuotePanel cfg={cfg} onQuote={onQuote} ctaRef={ctaRef} />
       ) : (
         <div className="space-y-6">
@@ -94,7 +98,7 @@ export function BuyBox({
       )}
 
       <HelpLine />
-      <TrustRow warrantyYears={p.warrantyYears} onBook={onBook} />
+      {priceOnRequest(p) ? <SmartTrustRow /> : <TrustRow warrantyYears={p.warrantyYears} onBook={onBook} />}
     </div>
   );
 }
@@ -107,6 +111,16 @@ function PriceBlock({ cfg }: { cfg: Configurator }) {
   const price = useTweenedNumber(cfg.unitPrice, 0.45);
   const sale = cfg.regularUnitPrice > cfg.unitPrice;
   const perPack = p.unit === 'm2' && p.packSize ? round2(cfg.unitPrice * p.packSize) : 0;
+
+  if (priceOnRequest(p)) {
+    return (
+      <div className="mt-6">
+        <div className="text-[12px] font-bold uppercase tracking-[0.16em] text-oak">{t('sg_eyebrow')}</div>
+        <Price product={p} size="xl" className="mt-2" />
+        <div className="mt-2 text-[12.5px] text-muted">{t('sg_priceNote')}</div>
+      </div>
+    );
+  }
 
   if (p.quoteOnly) {
     return (
@@ -147,6 +161,13 @@ function StockLine({ cfg }: { cfg: Configurator }) {
   const days = p.leadDays ?? 0;
   const toOrder = p.stock >= 999 || p.stock <= 0;
   const low = !toOrder && p.stock <= 5;
+  if (priceOnRequest(p))
+    return (
+      <div className="mt-5 flex items-center gap-2 text-[13.5px] font-semibold text-oak">
+        <CalendarCheck className="h-4 w-4 shrink-0" />
+        {t('sg_stock')}
+      </div>
+    );
   return (
     <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13.5px] font-semibold">
       {toOrder ? (
@@ -411,6 +432,85 @@ function QuotePanel({ cfg, onQuote, ctaRef }: { cfg: Configurator; onQuote: () =
           <Phone className="h-4 w-4" /> {settings.phone}
         </a>
       </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/** Smart glasses (no online price): options as a preference, then "request availability" + "book a try-on". */
+function SmartPanel({ cfg, onRequest, ctaRef }: { cfg: Configurator; onRequest: () => void; ctaRef?: Ref<HTMLDivElement> }) {
+  const t = useDict(PD);
+  const p = cfg.product;
+  const steps = [t('sg_step1'), t('sg_step2'), t('sg_step3')];
+  return (
+    <div className="space-y-6">
+      <OptionPicker options={p.options} value={cfg.options} onChange={cfg.setOption} onRequest />
+      <div className="rounded-3xl bg-ink p-5 text-paper shadow-[0_30px_60px_-30px_rgba(28,26,23,0.55)] sm:p-6">
+        <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-200">{t('sg_eyebrow')}</div>
+        <p className="mt-2.5 text-[14px] leading-relaxed text-paper/75">{t('sg_lead')}</p>
+        <ol className="mt-5 space-y-3">
+          {steps.map((s, i) => (
+            <li key={i} className="flex items-center gap-3 text-[14px] font-semibold">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/10 text-[12px] font-bold tabular-nums text-brand-200">{i + 1}</span>
+              {s}
+            </li>
+          ))}
+        </ol>
+        <div ref={ctaRef} className="mt-6 flex gap-2.5">
+          <button
+            type="button"
+            onClick={onRequest}
+            className="inline-flex h-14 min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-brand-600 px-4 text-[14px] font-bold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.14)] transition-[background,transform] duration-200 hover:bg-brand-500 active:scale-[0.98] sm:gap-2.5 sm:px-6 sm:text-[15.5px]"
+          >
+            <Send className="hidden h-5 w-5 shrink-0 min-[380px]:block" /> <span className="truncate">{t('sg_request')}</span>
+          </button>
+          <WishButton productId={p.id} />
+        </div>
+        <Link
+          to="/rezervo?sherbimi=sv-smart"
+          className="mt-3 flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/15 px-5 py-2 text-center text-[14px] font-semibold text-paper/90 transition-colors hover:border-white/30 hover:bg-white/10 hover:text-white"
+        >
+          <CalendarCheck className="h-4 w-4 shrink-0 text-brand-200" /> {t('sg_book')}
+        </Link>
+        <Link to="/syze-inteligjente" className="group mt-4 flex min-h-10 items-center justify-center gap-1.5 text-[13px] font-semibold text-paper/70 hover:text-white">
+          {t('sg_guide')} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function SmartTrustRow() {
+  const t = useDict(PD);
+  const items = [
+    { icon: CalendarCheck, title: t('sg_trust_try'), text: t('sg_trust_tryText'), to: '/rezervo?sherbimi=sv-smart' },
+    { icon: FlaskConical, title: t('sg_trust_lab'), text: t('sg_trust_labText'), to: '/optical-lab' },
+    { icon: Smartphone, title: t('sg_trust_setup'), text: t('sg_trust_setupText') },
+    { icon: Wrench, title: t('sg_trust_service'), text: t('sg_trust_serviceText') },
+  ];
+  return (
+    <div className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-line ring-1 ring-line">
+      {items.map(({ icon: Icon, title, text, to }) => {
+        const inner = (
+          <>
+            <Icon className="h-5 w-5 shrink-0 text-brand-600" />
+            <span className="min-w-0">
+              <span className="block text-[13px] font-bold leading-tight text-ink">{title}</span>
+              <span className="mt-0.5 block text-[12px] leading-snug text-muted">{text}</span>
+            </span>
+          </>
+        );
+        const cls = 'flex items-start gap-3 bg-white p-3.5 text-left sm:p-4';
+        return to ? (
+          <Link key={title} to={to} className={cn(cls, 'transition-colors hover:bg-paper')}>
+            {inner}
+          </Link>
+        ) : (
+          <div key={title} className={cls}>
+            {inner}
+          </div>
+        );
+      })}
     </div>
   );
 }

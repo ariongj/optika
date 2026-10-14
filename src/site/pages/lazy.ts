@@ -78,6 +78,7 @@ const LOADERS = {
   booking: () => import('@/site/pages/BookingPage'),
   tracking: () => import('@/site/pages/OrderTracking'),
   tryOn: () => import('@/site/pages/TryOn'),
+  smart: () => import('@/site/pages/SmartGlasses'),
 } satisfies Record<string, Loader>;
 
 type Key = keyof typeof LOADERS;
@@ -114,6 +115,7 @@ const BY_SEGMENT: Record<string, Key> = {
   'gjej-kornizen': 'frameFinder',
   rezervo: 'booking',
   'gjurmo-porosine': 'tracking',
+  'syze-inteligjente': 'smart',
 };
 
 /** Prefetch the chunk for an app path such as "/produkt/prism-m2". The try-on (three.js) only loads on demand. */

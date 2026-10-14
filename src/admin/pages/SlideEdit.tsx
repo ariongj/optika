@@ -628,6 +628,7 @@ function Destination({ label, value, onChange, ctx }: { label: string; value: st
       items: [
         { href: '/produktet', label: t('dest_all') },
         { href: '/#rezervo', label: t('dest_measure') },
+        { href: '/syze-inteligjente', label: site[lang].nav_smart },
         { href: '/provo-virtualisht', label: t('dest_tryon') },
         { href: '/rezervo', label: site[lang].nav_book },
         { href: '/gjej-kornizen', label: site[lang].nav_finder },

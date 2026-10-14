@@ -6,7 +6,7 @@ import { usePageTitle } from '@/site/layout/SiteLayout';
 import { HeroSection } from '@/site/sections/Hero';
 import {
   BlogSection, CategoriesSection, CtaSection, FaqSection, FeaturedSection, InstagramSection, ProcessSection,
-  ProjectsSection, PromoSection, ServicesSection, StatsSection, TrustSection,
+  ProjectsSection, PromoSection, ServicesSection, SpotlightSection, StatsSection, TrustSection,
 } from '@/site/sections/HomeSections';
 
 function renderSection(s: HomeSection, prev: HomeSection | undefined): ReactNode {
@@ -37,6 +37,8 @@ function renderSection(s: HomeSection, prev: HomeSection | undefined): ReactNode
       return <InstagramSection data={s.data} />;
     case 'cta':
       return <CtaSection data={s.data} />;
+    case 'spotlight':
+      return <SpotlightSection data={s.data} />;
     default:
       return null;
   }

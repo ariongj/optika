@@ -190,9 +190,9 @@ export function buildHome(now = new Date()): HomeSection[] {
         eyebrow: T('Kolekcije', 'Koleksionet', 'Collections'),
         title: T('Pronađite *svoj* par.', 'Gjeni palën *tuaj*.', 'Find *your* pair.'),
         subtitle: T(
-          'Dioptrijski okviri, naočare za sunce i sočiva po receptu — birani sa ukusom, prilagođeni lično vama.',
-          'Syze optike, syze dielli dhe lente me recetë — të zgjedhura me shije, të përshtatura personalisht për ju.',
-          'Optical frames, sunglasses and prescription lenses — chosen with taste, fitted personally for you.',
+          'Dioptrijski okviri, pametne naočare, naočare za sunce i sočiva po receptu — birani sa ukusom, prilagođeni lično vama.',
+          'Syze optike, inteligjente dhe dielli, lente me recetë — të zgjedhura me shije, të përshtatura personalisht për ju.',
+          'Optical frames, smart glasses, sunglasses and prescription lenses — chosen with taste, fitted personally for you.',
         ),
       },
     },
@@ -205,6 +205,28 @@ export function buildHome(now = new Date()): HomeSection[] {
         title: T('Najprodavanije ove *sezone*', 'Më të shiturat e *sezonit*', 'This season’s *bestsellers*'),
         mode: 'bestsellers',
         productIds: [],
+      },
+    },
+    {
+      id: 'spotlight-smart',
+      type: 'spotlight',
+      enabled: true,
+      data: {
+        eyebrow: T('Novo u Optici Miftari', 'E re te Optika Miftari', 'New at Optika Miftari'),
+        title: T('*Pametne* naočare — sada u Optici Miftari', 'Syze *inteligjente* — tani te Optika Miftari', '*Smart* glasses — now at Optika Miftari'),
+        text: T(
+          'Ray-Ban Meta, Oakley Meta i Meta Ray-Ban Display: naočare sa kamerom, otvorenim zvučnicima i glasovnim asistentom. Probajte ih u optici — kada model to dozvoljava, izrađujemo ih i sa dioptrijom.',
+          'Ray-Ban Meta, Oakley Meta dhe Meta Ray-Ban Display: syze me kamerë, altoparlantë të hapur dhe asistent zanor. Provojini në optikë — kur modeli e lejon, ua punojmë edhe me dioptri.',
+          'Ray-Ban Meta, Oakley Meta and Meta Ray-Ban Display: glasses with a camera, open-ear speakers and a voice assistant. Try them in store — where the model allows, we make them to your prescription too.',
+        ),
+        image: '/images/smart/hero.webp',
+        points: [
+          { text: T('Fotografije i video bez ruku', 'Foto dhe video pa duar', 'Hands-free photos and video') },
+          { text: T('Muzika, pozivi i asistent', 'Muzikë, thirrje dhe asistent', 'Music, calls and an assistant') },
+          { text: T('Dioptrija iz naše laboratorije — prema modelu', 'Dioptri nga laboratori ynë — sipas modelit', 'Prescription from our lab — model permitting') },
+        ],
+        primary: { label: T('Upoznajte pametne naočare', 'Njihuni me syzet inteligjente', 'Discover smart glasses'), href: '/syze-inteligjente' },
+        secondary: { label: T('Zakažite probu', 'Rezervo një provë', 'Book a try-on'), href: '/rezervo?sherbimi=sv-smart' },
       },
     },
     {

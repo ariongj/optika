@@ -158,6 +158,7 @@ function BookingFlow({ onDone }: { onDone: (d: { booking: Booking; service: Serv
       service: lt(svc.name, lang),
       message: message || '—',
       preferredDate: dayKey(fresh.start),
+      ...(svc.id === 'sv-smart' ? { tags: ['smart-glasses'] } : {}),
     });
     const store = st.settings.locations?.find((x) => x.isDefault)?.id;
     const res = st.addBooking({

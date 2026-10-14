@@ -24,6 +24,7 @@ import { useActiveProducts, useCategories, useSettings } from '@/store/hooks';
 import { isOnSale } from '@/lib/pricing';
 import { date } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { IllustrationChip, isIllustration } from '@/site/components/smart/illustration';
 
 type DataOf<T extends HomeSection['type']> = Extract<HomeSection, { type: T }>['data'];
 
@@ -164,6 +165,7 @@ export function CategoriesSection({ data }: { data: DataOf<'categories'> }) {
   const h = useDict(H);
   const cats = useCategories();
   const products = useActiveProducts();
+  const cols = cats.length === 4 ? 4 : 3;
   return (
     <section className="py-24 sm:py-28">
       <div className="container-x">
@@ -179,22 +181,25 @@ export function CategoriesSection({ data }: { data: DataOf<'categories'> }) {
             }
           />
         </Reveal>
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:mt-14 lg:grid-cols-3 lg:gap-6 lg:pb-14">
+        {/* four categories → one row of four (staggered pairs); otherwise rows of three */}
+        <div className={cn('mt-12 grid gap-4 sm:grid-cols-2 lg:mt-14 lg:gap-6 lg:pb-14', cols === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3')}>
           {cats.map((c, i) => {
             const n = products.filter((p) => p.categoryId === c.id).length;
+            // line-art illustration (smart glasses) → light tile with dark text instead of a dark photo overlay
+            const light = isIllustration(c.image);
             return (
-              <Reveal key={c.id} delay={(i % 3) * 90} className={cn(i % 3 === 1 && 'lg:translate-y-14')}>
-                <Link to={`/produktet/${c.slug}`} className="group relative block aspect-[4/5] overflow-hidden rounded-3xl bg-ink">
+              <Reveal key={c.id} delay={(i % cols) * 90} className={cn(cols === 4 ? i % 2 === 1 && 'lg:translate-y-14' : i % 3 === 1 && 'lg:translate-y-14')}>
+                <Link to={`/produktet/${c.slug}`} className={cn('group relative block aspect-[4/5] overflow-hidden rounded-3xl', light ? 'bg-paper ring-1 ring-line' : 'bg-ink')}>
                   <Img src={c.image} alt={l(c.name)} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1.4s] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-[1.07]" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/15 to-transparent" />
-                  <div className="absolute left-5 top-5 rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold tracking-[0.18em] text-white backdrop-blur-md">{String(i + 1).padStart(2, '0')}</div>
+                  <div className={cn('absolute inset-0 bg-gradient-to-t', light ? 'from-paper via-paper/40 to-transparent' : 'from-ink/85 via-ink/15 to-transparent')} />
+                  <div className={cn('absolute left-5 top-5 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] backdrop-blur-md', light ? 'bg-ink/[0.07] text-ink' : 'bg-white/15 text-white')}>{String(i + 1).padStart(2, '0')}</div>
                   <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-6 sm:p-7">
                     <div>
-                      <h3 className="display text-[34px] leading-none text-white sm:text-[40px]">{l(c.name)}</h3>
-                      <p className="mt-2 text-[14px] text-white/75">{l(c.tagline)}</p>
-                      <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.18em] text-white/55">{h(pluralOne(n, lang) ? 'productsOne' : 'productsMany', { n })}</p>
+                      <h3 className={cn('display leading-none', light ? 'text-ink' : 'text-white', cols === 4 ? 'text-[34px] sm:text-[40px] lg:text-[32px] xl:text-[38px]' : 'text-[34px] sm:text-[40px]')}>{l(c.name)}</h3>
+                      <p className={cn('mt-2 text-[14px]', light ? 'text-ink-soft' : 'text-white/75')}>{l(c.tagline)}</p>
+                      <p className={cn('mt-3 text-[11px] font-bold uppercase tracking-[0.18em]', light ? 'text-muted' : 'text-white/55')}>{h(pluralOne(n, lang) ? 'productsOne' : 'productsMany', { n })}</p>
                     </div>
-                    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white text-ink transition-transform duration-500 group-hover:-rotate-45 group-hover:bg-brand-600 group-hover:text-white">
+                    <span className={cn('grid h-12 w-12 shrink-0 place-items-center rounded-full transition-transform duration-500 group-hover:-rotate-45 group-hover:bg-brand-600 group-hover:text-white', light ? 'bg-ink text-white' : 'bg-white text-ink')}>
                       <ArrowRight className="h-5 w-5" />
                     </span>
                   </div>
@@ -693,6 +698,58 @@ export function CtaSection({ data }: { data: DataOf<'cta'> }) {
               </div>
             </div>
             <MeasureForm type="measurement" className="shadow-none ring-0! lg:p-10!" />
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/** Spotlight on a new range or page (smart glasses): light card, image + copy, points and two buttons. */
+export function SpotlightSection({ data }: { data: DataOf<'spotlight'> }) {
+  const l = useL();
+  const points = data.points.map((p) => l(p.text)).filter(Boolean);
+  return (
+    <section className="pb-24 sm:pb-28">
+      <div className="container-x">
+        <Reveal>
+          <div className="grid items-center gap-4 overflow-hidden rounded-[36px] bg-sand/70 p-3 ring-1 ring-inset ring-line/60 sm:p-4 lg:grid-cols-[1.08fr_1fr] lg:gap-10">
+            <div className="relative aspect-[3/2] overflow-hidden rounded-[28px] bg-paper">
+              <Img src={data.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
+              {isIllustration(data.image) && <IllustrationChip className="absolute left-4 top-4" />}
+            </div>
+            <div className="px-3 pb-5 pt-2 sm:px-5 lg:py-8 lg:pl-0 lg:pr-10">
+              <div className="eyebrow">{l(data.eyebrow)}</div>
+              <h2 className="display mt-3 text-[34px] leading-[1.04] text-ink sm:text-5xl">
+                <Accent text={l(data.title)} />
+              </h2>
+              {l(data.text) && <p className="mt-4 max-w-xl text-[15.5px] leading-relaxed text-ink-soft sm:text-[16.5px]">{l(data.text)}</p>}
+              {points.length > 0 && (
+                <ul className="mt-6 space-y-2.5">
+                  {points.map((pt) => (
+                    <li key={pt} className="flex items-start gap-3 text-[15px] font-medium text-ink">
+                      <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-600 text-white">
+                        <Check className="h-3.5 w-3.5" />
+                      </span>
+                      {pt}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                {data.primary.href && l(data.primary.label) && (
+                  <CtaLink to={data.primary.href} size="lg" iconRight={<ArrowRight className="h-4 w-4" />}>
+                    {l(data.primary.label)}
+                  </CtaLink>
+                )}
+                {data.secondary.href && l(data.secondary.label) && (
+                  <CtaLink to={data.secondary.href} variant="outline" size="lg" icon={<CalendarCheck className="h-4 w-4" />}>
+                    {l(data.secondary.label)}
+                  </CtaLink>
+                )}
+              </div>
+            </div>
           </div>
         </Reveal>
       </div>

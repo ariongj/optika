@@ -27,6 +27,7 @@ export const SECTION_META: Record<HomeSectionType, { icon: IconC; tone: string }
   faq: { icon: HelpCircle, tone: ICON_TILE },
   blog: { icon: BookOpen, tone: ICON_TILE },
   cta: { icon: CalendarCheck, tone: ICON_TILE },
+  spotlight: { icon: Sparkles, tone: ICON_TILE },
 };
 
 /** Icons the storefront trust bar knows how to render (see site/sections/HomeSections ICONS). */
@@ -89,6 +90,8 @@ export function sectionSummary(s: HomeSection, l: (v: L10n) => string, t: (k: BK
       return { line: stripStars(l(s.data.title)), meta: t('count_photos', { n: s.data.images.length }) };
     case 'promo':
       return { line: stripStars(l(s.data.title)), meta: s.data.code ? s.data.code : '' };
+    case 'spotlight':
+      return { line: stripStars(l(s.data.title)), meta: s.data.primary.href || s.data.secondary.href };
     default:
       return { line: stripStars(l(s.data.title)), meta: '' };
   }

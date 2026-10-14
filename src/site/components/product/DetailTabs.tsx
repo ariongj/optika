@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
-import { ArrowRight, Banknote, CalendarCheck, Clock, FlaskConical, MapPin, Ruler, RotateCcw, ShieldCheck, ShieldPlus, Sparkles, Store, Truck, Wrench } from 'lucide-react';
+import {
+  ArrowRight, Banknote, CalendarCheck, CircleDot, Clock, FlaskConical, MapPin, Ruler, RotateCcw, ShieldCheck, ShieldPlus, Smartphone, Sparkles, Store, Truck, Wrench,
+} from 'lucide-react';
 import type { Category, Product } from '@/lib/types';
 import { Img, Tabs } from '@/components/ui/misc';
 import { useDict, useL, useLang } from '@/i18n';
 import { useSettings } from '@/store/hooks';
 import { money, num, unitLabel } from '@/lib/format';
+import { priceOnRequest } from '@/lib/pricing';
 import { cn } from '@/lib/utils';
 import { PD } from './dict';
 import { frameSize, isLensPackage, labDays } from './optical';
@@ -16,6 +19,7 @@ type Tab = 'desc' | 'specs' | 'shipping' | 'care';
 export function DetailTabs({ product, category }: { product: Product; category?: Category }) {
   const t = useDict(PD);
   const [tab, setTab] = useState<Tab>('desc');
+  const onReq = priceOnRequest(product);
   return (
     <section id="detalji" className="scroll-mt-28">
       <Tabs<Tab>
@@ -25,7 +29,7 @@ export function DetailTabs({ product, category }: { product: Product; category?:
         tabs={[
           { id: 'desc', label: <span className="text-[15px] sm:text-base">{t('tab_desc')}</span> },
           { id: 'specs', label: <span className="text-[15px] sm:text-base">{t('tab_specs')}</span> },
-          { id: 'shipping', label: <span className="text-[15px] sm:text-base">{t('tab_shipping')}</span> },
+          { id: 'shipping', label: <span className="text-[15px] sm:text-base">{onReq ? t('sg_tab') : t('tab_shipping')}</span> },
           { id: 'care', label: <span className="text-[15px] sm:text-base">{t('tab_care')}</span> },
         ]}
       />
@@ -33,7 +37,7 @@ export function DetailTabs({ product, category }: { product: Product; category?:
         <motion.div key={tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} className="pt-8 sm:pt-10">
           {tab === 'desc' && <Description product={product} />}
           {tab === 'specs' && <Specs product={product} category={category} />}
-          {tab === 'shipping' && <Shipping />}
+          {tab === 'shipping' && (onReq ? <SmartOrderInfo /> : <Shipping />)}
           {tab === 'care' && <Care product={product} />}
         </motion.div>
       </AnimatePresence>
@@ -48,7 +52,16 @@ function Description({ product: p }: { product: Product }) {
   const lang = useLang();
   const size = frameSize(p);
   const lens = isLensPackage(p);
+  const onReq = priceOnRequest(p);
   const facts = [
+    ...(onReq
+      ? [
+          { icon: Store, label: t('sg_fact_price'), value: t('sg_fact_priceValue') },
+          { icon: CalendarCheck, label: t('sg_fact_try'), value: t('sg_fact_tryValue') },
+          { icon: FlaskConical, label: t('sg_fact_rx'), value: t('sg_fact_rxValue') },
+          { icon: Smartphone, label: t('sg_trust_setup'), value: t('sg_trust_setupText') },
+        ]
+      : []),
     p.warrantyYears ? { icon: ShieldCheck, label: t('spec_warranty'), value: t('years', { n: p.warrantyYears }) } : null,
     lens
       ? { icon: FlaskConical, label: t('spec_lead'), value: t('daysValue', { days: labDays(p) }) }
@@ -305,6 +318,48 @@ function Shipping() {
             </Link>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/** Smart glasses (no online price): how a request turns into a pair, plus the recording / privacy note. */
+function SmartOrderInfo() {
+  const t = useDict(PD);
+  const steps = [t('sg_order1'), t('sg_order2'), t('sg_order3'), t('sg_order4')];
+  return (
+    <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
+      <div>
+        <h3 className="display text-[26px] leading-tight text-ink sm:text-[30px]">{t('sg_orderTitle')}</h3>
+        <ol className="mt-6 space-y-3">
+          {steps.map((step, i) => (
+            <li key={i} className="flex items-start gap-4 rounded-2xl bg-white p-4 ring-1 ring-line sm:p-5">
+              <span className="display grid h-9 w-9 shrink-0 place-items-center rounded-full bg-sand text-[17px] text-ink">{i + 1}</span>
+              <span className="pt-1.5 text-[15px] leading-snug text-ink-soft">{step}</span>
+            </li>
+          ))}
+        </ol>
+        <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2">
+          <Link to="/rezervo?sherbimi=sv-smart" className="group inline-flex min-h-10 items-center gap-1.5 text-[13.5px] font-semibold text-ink hover:text-brand-700">
+            <CalendarCheck className="h-4 w-4 text-brand-600" /> {t('sg_book')} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+          <Link to="/syze-inteligjente" className="group inline-flex min-h-10 items-center gap-1.5 text-[13.5px] font-semibold text-ink hover:text-brand-700">
+            {t('sg_guide')} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        </div>
+      </div>
+      <div>
+        <div className="rounded-3xl bg-ink p-6 text-paper sm:p-7">
+          <div className="flex items-center gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/10 text-brand-200">
+              <CircleDot className="h-[18px] w-[18px]" />
+            </span>
+            <h3 className="text-[16px] font-bold text-white">{t('sg_privacyTitle')}</h3>
+          </div>
+          <p className="mt-4 text-[14.5px] leading-relaxed text-paper/75">{t('sg_privacyText')}</p>
+        </div>
+        <p className="mt-4 px-1 text-[12.5px] leading-snug text-muted">{t('sg_note')}</p>
       </div>
     </div>
   );

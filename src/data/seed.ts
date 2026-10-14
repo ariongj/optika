@@ -9,22 +9,23 @@ import {
 } from './cms';
 
 /** Bump to force every browser to reload fresh demo data. */
-export const DB_VERSION = 7;
+export const DB_VERSION = 8;
 
 /** Every bundled image (besides product shots), exposed in the CMS media library. */
 const IMAGE_PATHS = [
   'hero/optical', 'hero/sun', 'hero/exam', 'hero/family',
-  'cat/optike', 'cat/dielli', 'cat/lente', 'cat/sport',
+  'cat/optike', 'cat/dielli', 'cat/lente', 'cat/sport', 'cat/smart',
   's/kontrolli', 's/pershtatja', 's/laboratori', 's/riparime', 's/klinika', 's/b2b', 's/lab-polish', 's/lab-laser', 's/lab-blank',
   'lookbook/riviera', 'lookbook/atelier-sun', 'lookbook/editorial', 'lookbook/generations', 'lookbook/generations-craft',
   'lookbook/craft', 'lookbook/sun-terrace', 'lookbook/still-life', 'lookbook/atelier-optical', 'lookbook/sun-portrait',
   'lookbook/optical-portrait',
   'misc/about', 'misc/contact', 'misc/promo', 'misc/craft', 'misc/sun-collection', 'misc/lens',
+  'smart/hero',
 ];
 
 /** Media-library folder per image directory (stored in Albanian, the primary admin language). */
 const OTHER = 'Të ndryshme';
-const FOLDER: Record<string, string> = { hero: 'Hero', cat: 'Kategoritë', s: 'Shërbimet', lookbook: 'Lookbook', misc: OTHER, p: 'Produktet' };
+const FOLDER: Record<string, string> = { hero: 'Hero', cat: 'Kategoritë', s: 'Shërbimet', lookbook: 'Lookbook', misc: OTHER, p: 'Produktet', smart: 'Syze inteligjente' };
 
 function buildMedia(productImages: string[], now: Date): MediaItem[] {
   const all = [...IMAGE_PATHS.map((p) => `/images/${p}.webp`), ...productImages];

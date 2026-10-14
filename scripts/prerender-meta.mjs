@@ -95,6 +95,7 @@ const STATIC = [
   ['optical-lab', 'Optical Lab — lente me recetë dhe partneritet B2B', 'Laboratori optik i Miftari Holding Group: punim, centrim, montim dhe kontroll i lenteve me recetë — edhe për optikat partnere në Kosovë dhe BE.', '/images/s/lab-polish.webp'],
   ['lentet', 'Udhëzuesi i lenteve — zgjidhni lentet e duhura', 'Njëvizore, progresive, për ekran, fotokromatike apo me dioptri dielli? Gjeni lentet dhe indeksin e duhur për recetën tuaj.', '/images/misc/lens.webp'],
   ['gjej-kornizen', 'Gjeni kornizën tuaj — kuiz i shpejtë', 'Pesë pyetje për formën e fytyrës, stilin dhe madhësinë — dhe tri korniza që ju shkojnë, me provë virtuale.', '/images/cat/optike.webp'],
+  ['syze-inteligjente', 'Syze inteligjente — Ray-Ban Meta, Oakley Meta dhe Meta Ray-Ban Display', 'Syze me kamerë, audio dhe asistent zanor. Provojini në Optika Miftari në Mitrovicë; lente me dioptri nga laboratori ynë, kur modeli e lejon. Çmimi dhe disponueshmëria sipas kërkesës.', '/images/smart/hero.webp'],
   ['rezervo', 'Rezervo kontrollin e syve', 'Zgjidhni shërbimin, ditën dhe orën — kontroll i syve, përshtatje, lente kontakti ose konsultë në Klinikën Miftari.', '/images/hero/exam.webp'],
 ];
 for (const [r, t, d, img] of STATIC) put(r, { title: t, description: d, image: img });
@@ -105,9 +106,11 @@ const catName = new Map(db.categories.map((c) => [c.id, c.name.sq]));
 for (const c of db.categories) put(`produktet/${c.slug}`, { title: `${c.name.sq} — ${c.tagline.sq}`, description: c.description.sq, image: c.image });
 for (const p of db.products.filter((x) => x.status === 'active')) {
   const price = p.salePrice ?? p.price;
+  // "price on request" listings (smart glasses): no price in the text and no Offer in the structured data
+  const onRequest = !!p.quoteOnly && !(p.price > 0);
   put(`produkt/${p.slug}`, {
     title: p.seo?.title || `${p.name.sq} — ${catName.get(p.categoryId) ?? ''}`,
-    description: p.seo?.description || `${plain(p.short.sq)} ${price} € · ${brand}, Mitrovicë.`,
+    description: p.seo?.description || `${plain(p.short.sq)} ${onRequest ? 'Çmimi sipas kërkesës' : `${price} €`} · ${brand}, Mitrovicë.`,
     image: p.images[0],
     type: 'product',
     jsonld: {
@@ -119,14 +122,14 @@ for (const p of db.products.filter((x) => x.status === 'active')) {
       description: plain(p.description.sq),
       image: p.images.map((i) => abs(i)),
       category: catName.get(p.categoryId),
-      offers: {
+      ...(onRequest ? {} : { offers: {
         '@type': 'Offer',
         price: String(price),
         priceCurrency: 'EUR',
         availability: p.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/PreOrder',
         url: abs(`produkt/${p.slug}`),
         seller: { '@type': 'Organization', name: brand },
-      },
+      } }),
     },
   });
 }

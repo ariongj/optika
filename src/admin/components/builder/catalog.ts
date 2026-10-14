@@ -20,6 +20,7 @@ export const SCHEMA: Record<HomeSectionType, SectionSchema> = {
   categories: { max: 1, fields: ['eyebrow', 'title', 'subtitle'] },
   featured: { max: 3, fields: ['eyebrow', 'title', 'mode', 'picked'] },
   promo: { max: 2, fields: ['eyebrow', 'title', 'text', 'endsAt', 'code', 'image', 'grpButton'] },
+  spotlight: { max: 3, maxItems: 4, fields: ['eyebrow', 'title', 'text', 'image', 'points', 'primaryCta', 'secondaryCta'] },
   process: { max: 1, maxItems: 8, fields: ['eyebrow', 'title', 'steps'] },
   services: { max: 1, maxItems: 12, fields: ['eyebrow', 'title', 'subtitle', 'servicesList'] },
   projects: { max: 1, fields: ['eyebrow', 'title', 'subtitle'] },
@@ -31,7 +32,7 @@ export const SCHEMA: Record<HomeSectionType, SectionSchema> = {
 };
 
 /** Catalogue order (roughly top-to-bottom of a typical homepage). */
-export const CATALOG: HomeSectionType[] = ['hero', 'trust', 'categories', 'featured', 'promo', 'process', 'services', 'projects', 'stats', 'faq', 'blog', 'instagram', 'cta'];
+export const CATALOG: HomeSectionType[] = ['hero', 'trust', 'categories', 'featured', 'spotlight', 'promo', 'process', 'services', 'projects', 'stats', 'faq', 'blog', 'instagram', 'cta'];
 
 const tr = (k: BKey) => ({ me: B.me[k], sq: B.sq[k], en: B.en[k] });
 

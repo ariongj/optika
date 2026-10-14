@@ -17,6 +17,14 @@ export function basePrice(p: Product) {
   return p.salePrice != null && p.salePrice > 0 && p.salePrice < p.price ? p.salePrice : p.price;
 }
 
+/**
+ * Listed without an online price (e.g. smart glasses): "price on request" instead of a number, never in a cart,
+ * left out of price sorting, price filters and "from …" figures. Quote products WITH a price ("from 120 €") are not.
+ */
+export function priceOnRequest(p: Pick<Product, 'quoteOnly' | 'price'>) {
+  return !!p.quoteOnly && !(p.price > 0);
+}
+
 export function isOnSale(p: Product) {
   return p.salePrice != null && p.salePrice > 0 && p.salePrice < p.price;
 }

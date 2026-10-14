@@ -52,6 +52,13 @@ const EXTRAS: Record<string, { tags: string[]; vendor: string; incoming?: number
   'p-lens-photochromic': { tags: ['lente', 'laborator', 'fotokromatike'], vendor: LAB, channels: OMNI },
   'p-lens-sun-rx': { tags: ['lente', 'laborator', 'dielli-me-dioptri'], vendor: LAB, channels: OMNI },
   'p-lens-thin': { tags: ['lente', 'laborator', 'dioptri-te-larta'], vendor: LAB, channels: OMNI },
+  // smart glasses — listed on request (price & availability confirmed by the store; brand names belong to their owners)
+  'p-rayban-meta-wayfarer': { tags: ['smart', 'kamere', 'meta-ai', 'wayfarer'], vendor: 'Ray-Ban Meta' },
+  'p-rayban-meta-aviator': { tags: ['smart', 'kamere', 'meta-ai', 'aviator'], vendor: 'Ray-Ban Meta' },
+  'p-rayban-meta-zena': { tags: ['smart', 'kamere', 'meta-ai', 'cat-eye'], vendor: 'Ray-Ban Meta' },
+  'p-meta-rayban-display': { tags: ['smart', 'ekran', 'byzylyk'], vendor: 'Meta' },
+  'p-rayban-meta-audio': { tags: ['smart', 'audio', 'pa-kamere'], vendor: 'Ray-Ban Meta' },
+  'p-oakley-meta-hstn': { tags: ['smart', 'kamere', 'oakley'], vendor: 'Oakley Meta' },
 };
 
 /**
@@ -894,10 +901,26 @@ export const SERVICES: Service[] = [
     staffIds: ['st-milica', 'st-arta', 'st-blerim'],
     location: 'loc-mitrovice',
   },
+  {
+    id: 'sv-smart',
+    name: T('Proba pametnih naočara', 'Provë e syzeve inteligjente', 'Smart glasses try-on'),
+    description: T(
+      'Probajte pametne naočare u optici: oblik i veličina, povezivanje sa telefonom i pitanja o dioptrijskim sočivima. Oko 20–30 minuta, besplatno.',
+      'Provoni syzet inteligjente në optikë: forma dhe madhësia, lidhja me telefonin dhe pyetjet për lentet me dioptri. Rreth 20–30 minuta, falas.',
+      'Try smart glasses in store: shape and size, pairing with your phone and questions about prescription lenses. About 20–30 minutes, free.',
+    ),
+    durationMin: 30,
+    capacity: 1,
+    price: 0,
+    color: '#3f6b57',
+    staffIds: ['st-arta', 'st-milica'],
+    location: 'loc-mitrovice',
+  },
 ];
 
 /** The appointment service a scheduled inquiry is booked into. */
 const SERVICE_FOR_INQUIRY: [RegExp, string][] = [
+  [/inteligjent|smart|pametn/i, 'sv-smart'],
   [/klinik/i, 'sv-klinika'],
   [/kontakt|contact/i, 'sv-lente-kontakti'],
   [/pd|përshtat|fitting|prilago/i, 'sv-pershtatja'],
@@ -951,6 +974,8 @@ const SLOTS: [number, number, number, string, string, string][] = [
   [11, 10, 0, 'sv-kontrolli', 'st-arta', 'Recetë e re — syze për lexim'],
   [11, 11, 0, 'sv-marrja', 'st-milica', 'Marrja e syzeve — lente fotokromatike'],
   [12, 10, 30, 'sv-kontrolli', 'st-gent', 'Kontroll i syve — student'],
+  [4, 12, 0, 'sv-smart', 'st-arta', 'Provë e Ray-Ban Meta Wayfarer — pyetje për lente me dioptri'],
+  [9, 14, 0, 'sv-smart', 'st-milica', 'Syze inteligjente — krahasim Wayfarer / Audio'],
 ];
 
 function mondayOf(now: Date) {
@@ -1028,6 +1053,7 @@ export function buildBookings(now: Date, inquiries: Inquiry[]): { bookings: Book
 /* Inquiries — CMS v2 fields + two extra (B2B lab order, delivery question) */
 /* ================================================================== */
 const SERVICE_TAG: [RegExp, string][] = [
+  [/inteligjent|smart|pametn/i, 'smart-glasses'],
   [/klinik/i, 'klinika'],
   [/kontakt|contact/i, 'lente-kontakti'],
   [/pd|përshtat|fitting|prilago/i, 'pershtatje'],
@@ -1091,6 +1117,25 @@ export function enrichInquiries(now: Date, inquiries: Inquiry[]): Inquiry[] {
       seen: false,
       source: 'web-form',
       tags: ['dergesa', 'lente'],
+    },
+    {
+      id: 'inq_122',
+      createdAt: iso(now, -1, -6),
+      type: 'contact',
+      name: 'Leutrim Krasniqi',
+      phone: '+383 49 615 228',
+      email: 'leutrim.krasniqi@example.com',
+      city: 'Vushtrri',
+      service: 'Syze inteligjente',
+      productId: 'p-rayban-meta-wayfarer',
+      message:
+        'Kërkoj disponueshmërinë: Ray-Ban Meta Wayfarer (Gen 3) · Ngjyra e kornizës: E zezë mat · Lentet: Me dioptri nga laboratori ynë.\nMbaj syze −2.50. A mund t’i provoj në optikë të shtunën?',
+      status: 'contacted',
+      seen: true,
+      source: 'web-form',
+      assignee: 'st-arta',
+      tags: ['smart-glasses'],
+      followUpAt: iso(now, 1),
     },
   );
   return out.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -1438,6 +1483,7 @@ export function buildMenus(): Menu[] {
   const page = (id: string, label: L10n) => ({ id: `mi-${id}`, label, type: 'page' as const, target: id });
   const L = {
     optical: T('Optičke naočare', 'Syze optike', 'Optical frames'),
+    smart: T('Pametne naočare', 'Syze inteligjente', 'Smart glasses'),
     sun: T('Naočare za sunce', 'Syze dielli', 'Sunglasses'),
     lenses: T('Sočiva po receptu', 'Lente me recetë', 'Prescription lenses'),
     finder: T('Pronađite svoj okvir', 'Gjeni kornizën tuaj', 'Find your frame'),
@@ -1463,6 +1509,8 @@ export function buildMenus(): Menu[] {
       items: [
         url('mi-products', T('Proizvodi', 'Produktet', 'Products'), '/produktet', [
           cat('cat-optike', L.optical),
+          // smart glasses → the landing page (models, three kinds, FAQ, availability request); shown as an image tile
+          url('mi-smart', L.smart, '/syze-inteligjente'),
           cat('cat-dielli', L.sun),
           cat('cat-lente', L.lenses),
           url('mi-finder', L.finder, '/gjej-kornizen'),
@@ -1489,6 +1537,8 @@ export function buildMenus(): Menu[] {
       items: [
         url('mi-f-shop', T('Kupovina', 'Blerja', 'Shop'), '/produktet', [
           cat('cat-optike', L.optical, 'mi-f'),
+          // the landing page (models, guide, request) — the category listing is one click from there
+          url('mi-f-smart', L.smart, '/syze-inteligjente'),
           cat('cat-dielli', L.sun, 'mi-f'),
           cat('cat-lente', L.lenses, 'mi-f'),
           url('mi-f-try-on', L.tryOn, '/provo-virtualisht'),

@@ -44,6 +44,10 @@ export const LENS_INFO: Record<string, L10n> = {
   progressive: T('Blizu, ekran i daljina u jednom paru — bez vidljive linije', 'Afër, ekran dhe larg në një palë — pa vijë të dukshme', 'Near, screen and distance in one pair — no visible line'),
   original: T('Originalna sunčana sočiva sa punom zaštitom UV400', 'Lentet origjinale të diellit, me mbrojtje të plotë UV400', 'The original sun lenses with full UV400 protection'),
   rx: T('Sa dioptrijom, u istoj nijansi za sunce', 'Me dioptri, në të njëjtën ngjyrë dielli', 'Made to your prescription in the same sun tint'),
+  // smart glasses (on request — a preference for the enquiry, confirmed per model)
+  'sg-original': T('Sočiva sa kojima model dolazi — sunčana ili providna', 'Lentet me të cilat vjen modeli — dielli ose të qarta', 'The lenses the model comes with — sun or clear'),
+  'sg-rx': T('Po vašem receptu, iz naše laboratorije — prema modelu', 'Sipas recetës suaj, nga laboratori ynë — sipas modelit', 'To your prescription, from our lab — depending on the model'),
+  'sg-photo': T('Tamne na suncu, svetle u zatvorenom — prema dostupnosti', 'Errësohen në diell, zbardhen brenda — sipas disponueshmërisë', 'Darken in the sun, clear indoors — subject to availability'),
 };
 
 /** Working days the lab needs per lens choice (shown under the lens cards). */
