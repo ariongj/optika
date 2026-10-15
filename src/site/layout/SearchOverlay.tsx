@@ -53,7 +53,7 @@ export function SearchOverlay() {
   return createPortal(
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-[85]">
+        <div className="fixed inset-0 z-[85]" role="dialog" aria-modal="true" aria-label={t('searchPlaceholder')}>
           <motion.div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={close} />
           <motion.div
             className="relative max-h-[88vh] overflow-y-auto bg-paper shadow-2xl"
@@ -73,10 +73,13 @@ export function SearchOverlay() {
                 <Search className="h-6 w-6 shrink-0 text-muted" />
                 <input
                   ref={input}
+                  type="search"
+                  enterKeyHint="search"
+                  aria-label={t('searchPlaceholder')}
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder={t('searchPlaceholder')}
-                  className="min-w-0 flex-1 bg-transparent font-display text-2xl outline-none placeholder:text-muted/60 sm:text-4xl"
+                  className="min-w-0 flex-1 appearance-none bg-transparent font-display text-2xl outline-none [&::-webkit-search-cancel-button]:hidden placeholder:text-muted/60 sm:text-4xl"
                 />
                 <button type="button" onClick={close} className="grid h-11 w-11 shrink-0 place-items-center rounded-full hover:bg-ink/5" aria-label={tc('close')}>
                   <X className="h-6 w-6" />
