@@ -1,22 +1,21 @@
-import { useMemo, type ComponentType } from 'react';
+import { useId, useMemo, useState, type ComponentType } from 'react';
 import { Link } from 'react-router';
-import { ArrowRight, CalendarCheck, Check, FlaskConical, Ruler, Send, ShieldPlus, Smartphone, UserCheck, Wrench } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { ArrowRight, CalendarCheck, Check, FlaskConical, Phone, Plus, Ruler, Send, ShieldPlus, Smartphone, UserCheck, Wrench } from 'lucide-react';
 import type { Product } from '@/lib/types';
-import { Accordion, Img, Reveal } from '@/components/ui/misc';
-import { ButtonLink } from '@/components/ui/Button';
+import { Img, Reveal } from '@/components/ui/misc';
 import { WhatsAppIcon } from '@/components/brand/Social';
-import { SectionHeading } from '@/site/components/SectionHeading';
 import { MeasureForm } from '@/site/components/MeasureForm';
-import { waHref } from '@/site/components/company/data';
+import { telHref, waHref } from '@/site/components/company/data';
 import { useDict, useL } from '@/i18n';
 import { common } from '@/i18n/common';
 import { useSettings } from '@/store/hooks';
 import { cn } from '@/lib/utils';
 import { RenderChip } from './render';
 import { SG } from './dict';
-import { BOOK_SMART, kindOf } from './data';
+import { BOOK_SMART, POSTER, kindOf } from './data';
 import { kindLabels } from './Hero';
-import { Backdrop, Headline, Kicker, glowMove } from './ui';
+import { Backdrop, Headline, Kicker, LiveDot, glowMove } from './ui';
 
 /** The dark render of a product (second image) where there is one. */
 const darkImage = (p: Product) => p.images.find((i) => /-dark\.webp$/.test(i)) ?? p.images[0];
@@ -31,7 +30,7 @@ export function SmartModels({ products, categorySlug, onAsk }: { products: Produ
   const kinds = kindLabels(t);
   if (!products.length) return null;
   return (
-    <section id="modelet" className="relative isolate scroll-mt-20 overflow-hidden rounded-b-[40px] bg-[#07090a] pb-20 pt-20 text-white sm:rounded-b-[64px] sm:pb-28 sm:pt-28">
+    <section id="modelet" className="relative isolate scroll-mt-20 overflow-hidden bg-[#07090a] pb-20 pt-20 text-white sm:pb-28 sm:pt-28">
       <Backdrop glow="center" grid={false} />
       <div className="container-x relative">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
@@ -106,7 +105,7 @@ export function SmartModels({ products, categorySlug, onAsk }: { products: Produ
 }
 
 /* ------------------------------------------------------------------ */
-/* 6 — Why buy them at an optician (back to the warm paper style)       */
+/* 6 — Why buy them at an optician                                     */
 /* ------------------------------------------------------------------ */
 export function WhyOptician() {
   const t = useDict(SG);
@@ -119,28 +118,32 @@ export function WhyOptician() {
     { icon: ShieldPlus, title: t('why6Title'), text: t('why6Text') },
   ];
   return (
-    <section className="py-20 sm:py-28">
-      <div className="container-x grid gap-10 lg:grid-cols-12 lg:gap-14">
+    <section className="relative isolate overflow-hidden bg-[#07090a] py-20 text-white sm:py-28">
+      <Backdrop glow="left" grid={false} />
+      <div className="container-x relative grid gap-10 lg:grid-cols-12 lg:gap-14">
         <div className="lg:col-span-5">
           <Reveal>
-            <SectionHeading eyebrow={t('whyEyebrow')} title={t('whyTitle')} subtitle={t('whyText')} />
-            <div className="relative mt-8 aspect-[16/9] overflow-hidden rounded-3xl bg-ink sm:mt-10 lg:aspect-[4/3]">
-              <Img src="/images/s/pershtatja.webp" alt="" className="absolute inset-0 h-full w-full object-cover" />
+            <Kicker n="05">{t('whyEyebrow')}</Kicker>
+            <Headline text={t('whyTitle')} className="mt-5 text-[36px] leading-[1.04] sm:text-[48px]" />
+            <p className="mt-5 max-w-md text-[15.5px] leading-relaxed text-white/55">{t('whyText')}</p>
+            <div className="relative mt-8 aspect-[16/9] overflow-hidden rounded-[28px] ring-1 ring-white/10 sm:mt-10 lg:aspect-[4/3]">
+              <Img src="/images/s/pershtatja.webp" alt="" className="absolute inset-0 h-full w-full object-cover opacity-80 saturate-[0.85]" />
+              <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#07090a]/70 via-transparent to-transparent" />
             </div>
           </Reveal>
         </div>
         <ul className="grid content-start gap-3 sm:grid-cols-2 lg:col-span-7 lg:gap-4">
           {items.map(({ icon: Icon, title, text, to, link }, i) => (
             <Reveal key={title} as="li" delay={(i % 2) * 70}>
-              <div className="flex h-full items-start gap-4 rounded-3xl bg-white p-4 ring-1 ring-line sm:flex-col sm:gap-0 sm:p-6">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brand-50 text-brand-700">
+              <div onPointerMove={glowMove} className="sg-card flex h-full items-start gap-4 rounded-[24px] p-4 sm:flex-col sm:gap-0 sm:p-6">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#6fd3a5]/10 text-[#6fd3a5] ring-1 ring-inset ring-[#6fd3a5]/20">
                   <Icon className="h-5 w-5" />
                 </span>
                 <div className="flex min-w-0 flex-1 flex-col self-stretch sm:mt-4">
-                  <h3 className="text-[16px] font-bold leading-snug text-ink sm:text-[16.5px]">{title}</h3>
-                  <p className="mt-1 text-[14px] leading-relaxed text-muted sm:mt-1.5 sm:text-[14.5px]">{text}</p>
+                  <h3 className="text-[16px] font-semibold leading-snug text-white sm:text-[16.5px]">{title}</h3>
+                  <p className="mt-1 text-[14px] leading-relaxed text-white/55 sm:mt-1.5 sm:text-[14.5px]">{text}</p>
                   {to && link && (
-                    <Link to={to} className="group mt-auto inline-flex min-h-10 items-center gap-1.5 pt-2 text-[13.5px] font-semibold text-ink hover:text-brand-700 sm:pt-3">
+                    <Link to={to} className="group mt-auto inline-flex min-h-10 items-center gap-1.5 pt-2 text-[13.5px] font-semibold text-white hover:text-[#b5f0d3] sm:pt-3">
                       {link} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                     </Link>
                   )}
@@ -155,16 +158,16 @@ export function WhyOptician() {
 }
 
 /* ------------------------------------------------------------------ */
-/* 7 — Privacy & etiquette (dark again, short) with a recording LED     */
+/* 7 — Privacy & etiquette, with a recording LED                       */
 /* ------------------------------------------------------------------ */
 export function PrivacyBlock() {
   const t = useDict(SG);
   const items = [t('priv1'), t('priv2'), t('priv3'), t('priv4')];
   return (
-    <section className="pb-20 sm:pb-28">
+    <section className="relative bg-[#07090a] pb-20 text-white sm:pb-28">
       <div className="container-x">
         <Reveal>
-          <div className="relative isolate overflow-hidden rounded-[36px] bg-[#07090a] px-6 py-12 text-white sm:px-10 sm:py-14 lg:grid lg:grid-cols-12 lg:items-center lg:gap-12 lg:px-16 lg:py-16">
+          <div className="relative isolate overflow-hidden rounded-[36px] border border-white/[0.08] bg-gradient-to-br from-[#0e1512] via-[#090c0b] to-[#070909] px-6 py-12 sm:px-10 sm:py-14 lg:grid lg:grid-cols-12 lg:items-center lg:gap-12 lg:px-16 lg:py-16">
             <Backdrop glow="left" grid={false} />
             <div className="relative lg:col-span-5">
               {/* the recording LED */}
@@ -176,7 +179,7 @@ export function PrivacyBlock() {
                 </span>
               </div>
               <div className="sg-mono mt-4 text-[10.5px] text-white/45">{t('privLed')}</div>
-              <Kicker n="05" className="mt-8">
+              <Kicker n="06" className="mt-8">
                 {t('privEyebrow')}
               </Kicker>
               <Headline text={t('privTitle')} className="mt-4 text-[34px] leading-[1.05] sm:text-[44px]" />
@@ -184,7 +187,7 @@ export function PrivacyBlock() {
             </div>
             <ol className="relative mt-10 grid gap-3 sm:grid-cols-2 lg:col-span-7 lg:mt-0">
               {items.map((it, i) => (
-                <li key={i} className="sg-card rounded-[22px] p-5">
+                <li key={i} onPointerMove={glowMove} className="sg-card rounded-[22px] p-5">
                   <span className="sg-mono text-[11px] text-[#6fd3a5]">{String(i + 1).padStart(2, '0')}</span>
                   <p className="mt-3 text-[15px] leading-relaxed text-white/80">{it}</p>
                 </li>
@@ -197,6 +200,59 @@ export function PrivacyBlock() {
   );
 }
 
+/** FAQ list in the page's glass style: numbered rows, a mint "+" that turns into "×". */
+function FaqList({ items }: { items: { title: string; content: string }[] }) {
+  const [open, setOpen] = useState<number | null>(0);
+  const uid = useId();
+  return (
+    <ul className="space-y-2.5">
+      {items.map((it, i) => {
+        const on = open === i;
+        return (
+          <li key={i} className={cn('rounded-[22px] border transition-colors duration-300', on ? 'border-[#6fd3a5]/30 bg-white/[0.045]' : 'border-white/[0.08] bg-white/[0.015] hover:border-white/20')}>
+            <button
+              type="button"
+              id={`${uid}-q${i}`}
+              aria-expanded={on}
+              aria-controls={`${uid}-a${i}`}
+              onClick={() => setOpen(on ? null : i)}
+              className="flex w-full items-center gap-4 px-5 py-5 text-left sm:gap-5 sm:px-6"
+            >
+              <span className={cn('sg-mono w-6 shrink-0 text-[11px] transition-colors', on ? 'text-[#6fd3a5]' : 'text-white/35')}>{String(i + 1).padStart(2, '0')}</span>
+              <span className={cn('flex-1 text-[16px] font-semibold leading-snug tracking-[-0.01em] transition-colors sm:text-[17.5px]', on ? 'text-white' : 'text-white/80')}>{it.title}</span>
+              <span
+                aria-hidden
+                className={cn(
+                  'grid h-9 w-9 shrink-0 place-items-center rounded-full ring-1 ring-inset transition-[transform,background-color,color] duration-300',
+                  on ? 'rotate-45 bg-[#6fd3a5] text-[#06110c] ring-[#6fd3a5]' : 'text-white/70 ring-white/15',
+                )}
+              >
+                <Plus className="h-4 w-4" strokeWidth={2.25} />
+              </span>
+            </button>
+            <AnimatePresence initial={false}>
+              {on && (
+                <motion.div
+                  id={`${uid}-a${i}`}
+                  role="region"
+                  aria-labelledby={`${uid}-q${i}`}
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                  className="overflow-hidden"
+                >
+                  <p className="pb-6 pl-[60px] pr-6 text-[15px] leading-relaxed text-white/60 sm:pl-[70px] sm:pr-16">{it.content}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /* 8 — FAQ                                                             */
 /* ------------------------------------------------------------------ */
@@ -205,16 +261,48 @@ export function SmartFaq() {
   const settings = useSettings();
   const address = `${settings.address}, ${settings.city}`;
   const qa = ([1, 2, 3, 4, 5, 6, 7, 8] as const).map((n) => ({ title: t(`q${n}`), content: t(`a${n}`, { address }) }));
+  const wa = settings.whatsapp ? waHref(settings.whatsapp) : '';
   return (
-    <section className="border-t border-line py-20 sm:py-28">
-      <div className="container-x grid gap-10 lg:grid-cols-12 lg:gap-14">
+    <section className="relative isolate overflow-hidden bg-[#07090a] py-20 text-white sm:py-28">
+      <div aria-hidden className="absolute inset-x-0 top-0 mx-auto h-px max-w-5xl bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+      <Backdrop glow="right" grid={false} className="opacity-60" />
+      <div className="container-x relative grid gap-10 lg:grid-cols-12 lg:gap-14">
         <div className="lg:col-span-4">
-          <Reveal>
-            <SectionHeading eyebrow={t('faqEyebrow')} title={t('faqTitle')} />
-          </Reveal>
+          <div className="lg:sticky lg:top-28">
+            <Kicker n="07">{t('faqEyebrow')}</Kicker>
+            <Headline text={t('faqTitle')} className="mt-5 text-[36px] leading-[1.04] sm:text-[48px]" />
+            {(wa || settings.phone) && (
+              <div onPointerMove={glowMove} className="sg-card mt-8 rounded-[24px] p-5 sm:p-6">
+                <div className="flex items-center gap-2.5 text-[15.5px] font-semibold">
+                  <LiveDot /> {t('faqMore')}
+                </div>
+                <p className="mt-2 text-[14px] leading-relaxed text-white/55">{t('faqMoreText')}</p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {wa && (
+                    <a
+                      href={wa}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex h-11 items-center gap-2 rounded-full bg-[#6fd3a5] px-5 text-[13.5px] font-semibold text-[#06110c] transition-colors hover:bg-[#8fe2bd]"
+                    >
+                      <WhatsAppIcon className="h-4 w-4" /> WhatsApp
+                    </a>
+                  )}
+                  {settings.phone && (
+                    <a
+                      href={telHref(settings.phone)}
+                      className="inline-flex h-11 items-center gap-2 rounded-full bg-white/[0.06] px-5 text-[13.5px] font-semibold text-white ring-1 ring-inset ring-white/15 transition-colors hover:bg-white/[0.11]"
+                    >
+                      <Phone className="h-4 w-4 text-[#6fd3a5]" /> {t('faqCall')}
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         <div className="lg:col-span-8">
-          <Accordion items={qa} defaultOpen={0} />
+          <FaqList items={qa} />
         </div>
       </div>
     </section>
@@ -222,7 +310,7 @@ export function SmartFaq() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Availability request (inline form, tagged for the CMS inbox)         */
+/* 9 — Availability request (inline form, tagged for the CMS inbox)    */
 /* ------------------------------------------------------------------ */
 export function RequestSection({ products, pick, onPick }: { products: Product[]; pick: string; onPick: (id: string) => void }) {
   const t = useDict(SG);
@@ -231,69 +319,103 @@ export function RequestSection({ products, pick, onPick }: { products: Product[]
   const product = products.find((p) => p.id === pick);
   const message = useMemo(() => (product ? t('reqMsgModel', { name: l(product.name) }) : t('reqMsgAny')), [product, t, l]);
   const wa = settings.whatsapp ? waHref(settings.whatsapp) : '';
+  const picture = product ? darkImage(product) : POSTER;
   const chip = (on: boolean) =>
     cn(
-      'inline-flex min-h-10 items-center rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors',
-      on ? 'border-ink bg-ink text-paper' : 'border-line bg-white text-ink-soft hover:border-ink/30 hover:text-ink',
+      'inline-flex min-h-10 items-center rounded-full px-4 py-1.5 text-[13px] font-semibold transition-[background-color,color,box-shadow] duration-200',
+      on ? 'bg-white text-[#06110c] shadow-[0_0_24px_-6px_rgb(111_211_165/0.6)]' : 'bg-white/[0.04] text-white/75 ring-1 ring-inset ring-white/12 hover:text-white hover:ring-white/30',
     );
 
   return (
-    <section id="kerkesa" className="scroll-mt-24 pb-10 pt-4 sm:pb-14">
-      <div className="container-x">
+    <section id="kerkesa" className="relative isolate scroll-mt-24 overflow-hidden bg-[#07090a] pb-20 text-white sm:pb-28">
+      <Backdrop glow="center" grid={false} />
+      <div className="container-x relative">
         <Reveal>
-          <div className="grid gap-4 rounded-[36px] bg-sand/80 p-3 sm:p-4 lg:grid-cols-[0.9fr_1.1fr]">
-            <div className="flex flex-col rounded-[28px] bg-paper p-6 ring-1 ring-line sm:p-9">
-              <SectionHeading eyebrow={t('reqEyebrow')} title={t('reqTitle')} subtitle={t('reqText')} />
-              <ul className="mt-6 space-y-2.5">
-                {[t('reqPoint1'), t('reqPoint2')].map((p) => (
-                  <li key={p} className="flex items-center gap-3 text-[14.5px] font-medium text-ink">
-                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-600 text-white">
-                      <Check className="h-3.5 w-3.5" />
-                    </span>
-                    {p}
-                  </li>
-                ))}
-                {wa && (
-                  <li>
-                    <a href={wa} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center gap-3 text-[14.5px] font-semibold text-ink hover:text-brand-700">
-                      <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#25d366] text-white">
-                        <WhatsAppIcon className="h-3.5 w-3.5" />
+          <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr] lg:gap-5">
+            {/* the pitch, with the chosen model */}
+            <div className="sg-card flex flex-col overflow-hidden rounded-[32px]">
+              <div className="relative aspect-[16/10] overflow-hidden border-b border-white/[0.08] bg-[#0b0f0d]">
+                <AnimatePresence initial={false}>
+                  <motion.div
+                    key={picture}
+                    initial={{ opacity: 0, scale: 1.04 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute inset-0"
+                  >
+                    <Img src={picture} small alt="" className={cn('h-full w-full object-cover', !product && 'object-[72%_50%]')} />
+                  </motion.div>
+                </AnimatePresence>
+                <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#07090a] via-[#07090a]/10 to-transparent" />
+                <RenderChip tone="dark" className="absolute left-4 top-4" />
+                <div className="absolute inset-x-5 bottom-4 flex items-center gap-2.5 sm:inset-x-7 sm:bottom-5">
+                  <LiveDot />
+                  <span className="sg-mono truncate text-[11px] text-white/80">
+                    {product ? `${t('reqChosen')} · ${l(product.name).replace(/\s*\(Gen 3\)$/, '')}` : 'Ray-Ban Meta · Oakley Meta · Meta Ray-Ban Display'}
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-1 flex-col p-6 sm:p-8">
+                <Kicker n="08">{t('reqEyebrow')}</Kicker>
+                <Headline text={t('reqTitle')} className="mt-4 text-[32px] leading-[1.05] sm:text-[42px]" />
+                <p className="mt-4 max-w-md text-[15px] leading-relaxed text-white/55">{t('reqText')}</p>
+                <ul className="mt-6 space-y-2.5">
+                  {[t('reqPoint1'), t('reqPoint2')].map((p) => (
+                    <li key={p} className="flex items-center gap-3 text-[14.5px] font-medium text-white/85">
+                      <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#6fd3a5]/15 text-[#6fd3a5] ring-1 ring-inset ring-[#6fd3a5]/30">
+                        <Check className="h-3.5 w-3.5" strokeWidth={3} />
                       </span>
-                      {t('reqPoint3')}
-                    </a>
-                  </li>
-                )}
-              </ul>
-              <div className="mt-auto pt-8">
-                <div className="relative overflow-hidden rounded-3xl bg-white p-5 ring-1 ring-line sm:p-6">
-                  <div className="flex items-start gap-4">
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-700">
-                      <CalendarCheck className="h-5 w-5" />
-                    </span>
-                    <div className="min-w-0">
-                      <div className="text-[16px] font-bold text-ink">{t('tryTitle')}</div>
-                      <p className="mt-1 text-[14px] leading-relaxed text-muted">{t('tryText')}</p>
+                      {p}
+                    </li>
+                  ))}
+                  {wa && (
+                    <li>
+                      <a href={wa} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center gap-3 text-[14.5px] font-semibold text-white hover:text-[#b5f0d3]">
+                        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#25d366] text-white">
+                          <WhatsAppIcon className="h-3.5 w-3.5" />
+                        </span>
+                        {t('reqPoint3')}
+                      </a>
+                    </li>
+                  )}
+                </ul>
+                <div className="mt-auto pt-8">
+                  <div className="rounded-[22px] bg-white/[0.035] p-5 ring-1 ring-inset ring-white/10 sm:flex sm:items-center sm:gap-5 sm:p-6">
+                    <div className="flex min-w-0 flex-1 items-start gap-4">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#6fd3a5]/10 text-[#6fd3a5] ring-1 ring-inset ring-[#6fd3a5]/20">
+                        <CalendarCheck className="h-5 w-5" />
+                      </span>
+                      <div className="min-w-0">
+                        <div className="text-[16px] font-semibold">{t('tryTitle')}</div>
+                        <p className="mt-1 text-[14px] leading-relaxed text-white/55">{t('tryText')}</p>
+                      </div>
                     </div>
+                    <Link
+                      to={BOOK_SMART}
+                      className="mt-4 inline-flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-white/[0.08] px-5 text-[13.5px] font-semibold text-white ring-1 ring-inset ring-white/15 transition-colors hover:bg-white/[0.14] sm:mt-0 sm:w-auto"
+                    >
+                      {t('tryCta')} <ArrowRight className="h-4 w-4" />
+                    </Link>
                   </div>
-                  <ButtonLink to={BOOK_SMART} variant="dark" className="mt-4 w-full sm:w-auto" icon={<CalendarCheck className="h-4 w-4" />}>
-                    {t('tryCta')}
-                  </ButtonLink>
                 </div>
               </div>
             </div>
-            <div className="rounded-[28px] bg-white p-6 ring-1 ring-line sm:p-8">
-              <div className="text-[13px] font-semibold text-ink-soft">{t('reqPick')}</div>
-              <div className="mt-2.5 flex flex-wrap gap-2" role="radiogroup" aria-label={t('reqPick')}>
+
+            {/* the form */}
+            <div className="sg-card flex flex-col rounded-[32px] p-6 sm:p-8">
+              <div className="sg-mono text-[11px] text-white/50">{t('reqPick')}</div>
+              <div className="mt-3 flex flex-wrap gap-2" role="radiogroup" aria-label={t('reqPick')}>
                 <button type="button" role="radio" aria-checked={!pick} onClick={() => onPick('')} className={chip(!pick)}>
                   {t('reqAny')}
                 </button>
                 {products.map((p) => (
                   <button key={p.id} type="button" role="radio" aria-checked={pick === p.id} onClick={() => onPick(p.id)} className={chip(pick === p.id)}>
-                    {l(p.name)}
+                    {l(p.name).replace(/\s*\(Gen 3\)$/, '')}
                   </button>
                 ))}
               </div>
-              <div className="mt-5 border-t border-line pt-5">
+              <div className="sg-form mt-6 border-t border-white/[0.08] pt-6">
                 <MeasureForm
                   key={pick || 'any'}
                   type="contact"
@@ -301,9 +423,18 @@ export function RequestSection({ products, pick, onPick }: { products: Product[]
                   defaultService={l({ me: 'Pametne naočare', sq: 'Syze inteligjente', en: 'Smart glasses' })}
                   defaultMessage={message}
                   tags={['smart-glasses']}
-                  className="p-0! ring-0! sm:p-0!"
+                  className="bg-transparent! p-0! ring-0! sm:p-0!"
                 />
               </div>
+              {/* what happens next */}
+              <ol className="mt-auto grid grid-cols-3 gap-2 pt-8 sm:gap-3">
+                {[t('reqStep1'), t('reqStep2'), t('reqStep3')].map((s, i) => (
+                  <li key={s} className="relative rounded-2xl bg-white/[0.03] p-3.5 ring-1 ring-inset ring-white/[0.08] sm:p-4">
+                    <span className="sg-mono text-[10.5px] text-[#6fd3a5]">{String(i + 1).padStart(2, '0')}</span>
+                    <p className="mt-2 text-[12.5px] font-medium leading-snug text-white/70 sm:text-[13.5px]">{s}</p>
+                  </li>
+                ))}
+              </ol>
             </div>
           </div>
         </Reveal>
@@ -319,28 +450,28 @@ export function BrandStrip() {
   const t = useDict(SG);
   const brands = ['Ray-Ban Meta', 'Oakley Meta', 'Meta'];
   return (
-    <section className="pb-6">
+    <section className="bg-[#07090a] pb-14 text-white sm:pb-16">
       <div className="container-x">
-        <div className="flex flex-col gap-4 border-y border-line py-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+        <div className="flex flex-col gap-4 border-y border-white/[0.08] py-7 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <span className="mr-2 text-[11px] font-bold uppercase tracking-[0.2em] text-muted">{t('brandsLabel')}</span>
+            <span className="sg-mono mr-2 text-[10.5px] text-white/40">{t('brandsLabel')}</span>
             {brands.map((b, i) => (
               <span key={b} className="inline-flex items-center gap-3">
-                {i > 0 && <span aria-hidden className="h-1 w-1 rounded-full bg-ink/25" />}
-                <span className="text-[20px] font-semibold tracking-[-0.03em] text-ink sm:text-[22px]">{b}</span>
+                {i > 0 && <span aria-hidden className="h-1 w-1 rounded-full bg-white/25" />}
+                <span className="text-[20px] font-semibold tracking-[-0.03em] text-white/90 sm:text-[22px]">{b}</span>
               </span>
             ))}
-            <span className="inline-flex items-center gap-3 text-[14px] font-medium text-muted">
-              <span aria-hidden className="h-1 w-1 rounded-full bg-ink/25" />
+            <span className="inline-flex items-center gap-3 text-[14px] font-medium text-white/45">
+              <span aria-hidden className="h-1 w-1 rounded-full bg-white/25" />
               {t('brandsMore')}
             </span>
           </div>
-          <Link to="/produktet/syze-inteligjente" className="group inline-flex min-h-10 shrink-0 items-center gap-1.5 text-[13.5px] font-semibold text-ink hover:text-brand-700">
+          <Link to="/produktet/syze-inteligjente" className="group inline-flex min-h-10 shrink-0 items-center gap-1.5 text-[13.5px] font-semibold text-[#6fd3a5] hover:text-[#b5f0d3]">
             {t('modelsAll')} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>
-        <p className="mt-4 flex max-w-3xl items-start gap-2 text-[12.5px] leading-relaxed text-muted">
-          <RenderChip className="mt-px shrink-0 scale-90" />
+        <p className="mt-5 flex max-w-3xl items-start gap-2.5 text-[12.5px] leading-relaxed text-white/40">
+          <RenderChip tone="dark" className="mt-px shrink-0 scale-90" />
           <span>{t('footnote')}</span>
         </p>
       </div>

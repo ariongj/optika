@@ -166,6 +166,64 @@
   }
 }
 
+/* The shared light lead form (MeasureForm), re-skinned for the dark page. Unlayered, so it beats the utilities. */
+.sg-form label {
+  color: rgb(255 255 255 / 0.62);
+}
+.sg-form input,
+.sg-form textarea,
+.sg-form select {
+  background-color: rgb(255 255 255 / 0.04);
+  border-color: rgb(255 255 255 / 0.12);
+  color: #fff;
+  color-scheme: dark;
+}
+.sg-form input::placeholder,
+.sg-form textarea::placeholder {
+  color: rgb(255 255 255 / 0.3);
+}
+.sg-form input:hover,
+.sg-form textarea:hover {
+  border-color: rgb(255 255 255 / 0.22);
+}
+.sg-form input:focus,
+.sg-form textarea:focus,
+.sg-form select:focus {
+  border-color: rgb(111 211 165 / 0.6);
+  background-color: rgb(255 255 255 / 0.06);
+  box-shadow: 0 0 0 4px rgb(111 211 165 / 0.12);
+}
+.sg-form [aria-invalid='true'] {
+  border-color: rgb(248 113 113 / 0.8);
+}
+.sg-form .text-red-600 {
+  color: #fca5a5;
+}
+.sg-form .text-muted {
+  color: rgb(255 255 255 / 0.42);
+}
+.sg-form h3 {
+  color: #fff;
+}
+.sg-form button[type='submit'] {
+  background: var(--sg-mint);
+  color: #06110c;
+  box-shadow: 0 0 44px -12px rgb(111 211 165 / 0.75);
+}
+.sg-form button[type='submit']:hover {
+  background: #8fe2bd;
+}
+/* "send another" on the thank-you panel */
+.sg-form button[type='button'] {
+  background: rgb(255 255 255 / 0.06);
+  border-color: rgb(255 255 255 / 0.15);
+  color: #fff;
+}
+.sg-form .bg-emerald-50 {
+  background: rgb(111 211 165 / 0.12);
+  color: var(--sg-mint);
+}
+
 /* Microphone level bars */
 @keyframes sg-eq {
   0%, 100% { transform: scaleY(0.35); }

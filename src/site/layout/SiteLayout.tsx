@@ -96,12 +96,12 @@ export function SiteLayout() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header transparentTop={(isHome && heroFirst) || darkPage} dark={darkPage} />
-      <main className="flex-1">
+      <main className={darkPage ? 'flex-1 bg-[#07090a]' : 'flex-1'}>
         <Suspense fallback={<PageLoading />}>
           <Outlet />
         </Suspense>
       </main>
-      <Footer />
+      <Footer dark={darkPage} />
       <Suspense fallback={null}>
         {cartOpened && <CartDrawer />}
         {searchOpened && <SearchOverlay />}

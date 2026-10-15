@@ -42,6 +42,10 @@ export function SmartStory() {
   const explodedMv = useTransform(scrollYProgress, [0, 0.1, 0.9, 1], [0, 1, 1, 0.4]);
   const n = STORY_PARTS.length;
   useMotionValueEvent(explodedMv, 'change', (v) => setExploded(Math.round(v * 50) / 50));
+  // back above the steps (scrolling up past the heading): start again from the first part
+  useMotionValueEvent(scrollYProgress, 'change', (v) => {
+    if (v <= 0.02) setActive(0);
+  });
 
   // the step crossing the reading line is the active one (a band near the middle of what's visible)
   useEffect(() => {
@@ -66,17 +70,22 @@ export function SmartStory() {
 
   return (
     <section id="brenda" className="relative isolate bg-[#07090a] text-white">
-      <div className="container-x pb-6 pt-6 sm:pt-10 lg:pb-0">
-        <div className="max-w-3xl">
+      {/* desktop: the heading sits in the left column, so the pinned model is already beside it (no empty screen) */}
+      <div ref={track} className="container-x relative lg:grid lg:grid-cols-12 lg:gap-x-10">
+        <div className="max-w-3xl pb-6 pt-6 sm:pt-10 lg:col-start-1 lg:col-end-6 lg:row-start-1 lg:pb-0 lg:pt-[18svh]">
           <Kicker n="02">{t('storyEyebrow')}</Kicker>
-          <Headline text={t('storyTitle')} className="mt-5 text-[36px] leading-[1.04] sm:text-[52px] lg:text-[58px]" />
+          <Headline text={t('storyTitle')} className="mt-5 text-[36px] leading-[1.04] sm:text-[52px] lg:text-[54px] xl:text-[58px]" />
           <p className="mt-5 max-w-xl text-[15.5px] leading-relaxed text-white/55 sm:text-[16.5px]">{t('storyText')}</p>
+          <div aria-hidden className="sg-mono mt-10 hidden items-center gap-3 text-[10.5px] text-white/35 lg:flex">
+            <span className="relative block h-10 w-px overflow-hidden bg-white/10">
+              <span className="sg-cue absolute inset-0 bg-[#6fd3a5]" />
+            </span>
+            {t('scroll')}
+          </div>
         </div>
-      </div>
 
-      <div ref={track} className="container-x relative lg:grid lg:grid-cols-12 lg:gap-10">
         {/* the pinned model */}
-        <div className="sticky top-[76px] z-20 -mx-4 bg-[#07090a] sm:-mx-6 lg:col-start-6 lg:col-end-13 lg:row-start-1 lg:mx-0 lg:h-[100svh] lg:self-start lg:bg-transparent lg:top-0">
+        <div className="sticky top-[76px] z-20 -mx-4 bg-[#07090a] sm:-mx-6 lg:col-start-6 lg:col-end-13 lg:row-span-2 lg:row-start-1 lg:mx-0 lg:h-[100svh] lg:self-start lg:bg-transparent lg:top-0">
           <div aria-hidden className="pointer-events-none absolute inset-0 hidden lg:block" style={{ background: 'radial-gradient(ellipse 55% 45% at 50% 52%, rgb(111 211 165 / 0.13), transparent 70%)' }} />
           <Stage
             poster={POSTER}
@@ -107,7 +116,7 @@ export function SmartStory() {
         </div>
 
         {/* the steps */}
-        <ol className="relative z-10 pb-[18svh] lg:col-start-1 lg:col-end-6 lg:row-start-1 lg:pb-[30svh] lg:pt-[20svh]">
+        <ol className="relative z-10 pb-[18svh] lg:col-start-1 lg:col-end-6 lg:row-start-2 lg:pb-[30svh] lg:pt-[8svh]">
           {STORY_PARTS.map((p, i) => (
             <li
               key={p}

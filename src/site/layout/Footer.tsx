@@ -26,7 +26,8 @@ const DIVISIONS = ['Optika Miftari', 'Optical Lab', 'Klinika Miftari'];
 
 const socialCls = 'grid h-10 w-10 place-items-center rounded-full bg-white/[0.08] transition-colors hover:bg-white hover:text-ink';
 
-export function Footer() {
+/** `dark`: on the dark smart-glasses page — no gap above, and the same near-black as the page. */
+export function Footer({ dark = false }: { dark?: boolean }) {
   const t = useDict(site);
   const f = useDict(F);
   const l = useL();
@@ -43,7 +44,7 @@ export function Footer() {
   ];
 
   return (
-    <footer className="relative mt-24 overflow-hidden bg-ink text-paper">
+    <footer className={`relative overflow-hidden text-paper ${dark ? 'border-t border-white/[0.08] bg-[#07090a]' : 'mt-24 bg-ink'}`}>
       <div className="bg-grain pointer-events-none absolute inset-0 opacity-60" />
       <div className="container-x relative">
         {/* Newsletter */}

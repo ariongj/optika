@@ -14,8 +14,8 @@ import '@/site/components/smart/smart.css';
 /**
  * /syze-inteligjente — smart glasses (Ray-Ban Meta, Oakley Meta, Meta Ray-Ban Display) as a dark, high-tech launch
  * page: real-time 3D hero with HUD callouts, spec bento, scroll-driven exploded view, the three kinds, the store's
- * models, then (on warm paper) why buy them at an optician, privacy, FAQ and an availability request.
- * The site header runs in its dark mode on this route (SiteLayout).
+ * models, why buy them at an optician, privacy, FAQ and an availability request — dark from top to bottom.
+ * The site header and footer run in their dark mode on this route (SiteLayout).
  */
 export default function SmartGlasses() {
   const t = useDict(SG);
@@ -29,7 +29,7 @@ export default function SmartGlasses() {
   }, []);
 
   return (
-    <div className="sg-page">
+    <div className="sg-page bg-[#07090a] text-white">
       <SmartHero />
       <SmartSpecs />
       <SmartStory />
