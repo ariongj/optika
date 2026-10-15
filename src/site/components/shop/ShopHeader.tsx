@@ -11,9 +11,8 @@ import { money, perUnit } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { isLensPackage, rxReady } from '@/site/components/product/optical';
 import { T, countLabel } from './dict';
-import { ButtonLink } from '@/components/ui/Button';
 import { common } from '@/i18n/common';
-import { IllustrationChip, isIllustration } from '@/site/components/smart/illustration';
+import { RenderChip, isRender } from '@/site/components/smart/render';
 
 /** Link to a category (or the all-products view) keeping ?akcija / ?sort. */
 export function shopHref(slug: string | null, params: URLSearchParams, patch: Record<string, string | null> = {}) {
@@ -41,8 +40,8 @@ export function CategoryBanner({ category, products, sale }: { category: Categor
   const maxPct = Math.max(0, ...products.map(discountPct));
   const pill = 'inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-[13px] font-semibold text-white ring-1 ring-inset ring-white/15 backdrop-blur-md';
 
-  // Illustrated category (smart glasses): a light banner with the drawing beside the text, not under a dark overlay.
-  if (isIllustration(category.image)) return <LightBanner category={category} products={products} />;
+  // Smart glasses (rendered category picture, sold on request): the dark launch-style banner.
+  if (isRender(category.image)) return <SmartBanner category={category} products={products} />;
 
   return (
     <section className="relative isolate overflow-hidden bg-ink">
@@ -94,52 +93,62 @@ export function CategoryBanner({ category, products, sale }: { category: Categor
   );
 }
 
-/** Light category banner for illustrated categories (smart glasses — sold on request). */
-function LightBanner({ category, products }: { category: Category; products: Product[] }) {
+/** Dark category banner for smart glasses (sold on request) — the same launch look as /syze-inteligjente. */
+function SmartBanner({ category, products }: { category: Category; products: Product[] }) {
   const t = useDict(T);
   const ts = useDict(site);
   const tc = useDict(common);
   const l = useL();
   const lang = useLang();
   const onReq = products.length > 0 && products.every(priceOnRequest);
-  const pill = 'inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[13px] font-semibold text-ink ring-1 ring-line';
+  const pill = 'inline-flex items-center gap-2 rounded-full bg-white/[0.06] px-3.5 py-1.5 text-[13px] font-semibold text-white/85 ring-1 ring-inset ring-white/12 backdrop-blur-md';
   return (
-    <section className="relative overflow-hidden border-b border-line bg-paper">
-      <div className="bg-grain pointer-events-none absolute inset-0 opacity-70" />
-      <div className="container-x relative grid items-center gap-8 pb-10 pt-7 sm:pb-12 sm:pt-9 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] lg:gap-14">
+    <section className="relative isolate overflow-hidden bg-[#07090a] text-white">
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={{ background: 'radial-gradient(ellipse 45% 70% at 78% 50%, rgb(111 211 165 / 0.16), rgb(44 74 58 / 0.1) 50%, transparent 80%)' }} />
+      <div className="bg-grain pointer-events-none absolute inset-0 -z-10 opacity-40 mix-blend-overlay" />
+      <div className="container-x grid items-center gap-8 pb-10 pt-7 sm:pb-12 sm:pt-9 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.62fr)] lg:gap-14">
         <div className="min-w-0 animate-fade-up">
-          <Breadcrumbs items={[{ label: ts('nav_products'), to: '/produktet' }, { label: l(category.name) }]} />
-          <div className="eyebrow mt-8 sm:mt-10">{l(category.tagline)}</div>
-          <h1 className="display mt-3 text-[46px] leading-[0.98] text-ink sm:text-[68px]">{l(category.name)}</h1>
-          <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-muted sm:text-[17px]">{l(category.description)}</p>
+          <Breadcrumbs tone="light" items={[{ label: ts('nav_products'), to: '/produktet' }, { label: l(category.name) }]} />
+          <div className="mt-8 inline-flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#6fd3a5] sm:mt-10">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#6fd3a5] shadow-[0_0_10px_2px_rgb(111_211_165/0.7)]" />
+            {l(category.tagline)}
+          </div>
+          <h1 className="mt-3 text-[46px] font-semibold leading-[0.98] tracking-[-0.045em] text-white sm:text-[68px]">{l(category.name)}</h1>
+          <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-white/60 sm:text-[17px]">{l(category.description)}</p>
           <div className="mt-6 flex flex-wrap gap-2">
             <span className={pill}>
-              <LayoutGrid className="h-3.5 w-3.5 text-brand-600" /> {countLabel(t, lang, products.length)}
+              <LayoutGrid className="h-3.5 w-3.5 text-[#6fd3a5]" /> {countLabel(t, lang, products.length)}
             </span>
             {onReq && (
               <span className={pill}>
-                <Tag className="h-3.5 w-3.5 text-brand-600" /> {tc('priceOnRequest')}
+                <Tag className="h-3.5 w-3.5 text-[#6fd3a5]" /> {tc('priceOnRequest')}
               </span>
             )}
             <span className={cn(pill, 'max-sm:hidden')}>
-              <CalendarCheck className="h-3.5 w-3.5 text-brand-600" /> {t('smartTry')}
+              <CalendarCheck className="h-3.5 w-3.5 text-[#6fd3a5]" /> {t('smartTry')}
             </span>
           </div>
           <div className="mt-7 flex flex-wrap gap-3">
-            <ButtonLink to="/syze-inteligjente" iconRight={<ArrowRight className="h-4 w-4" />}>
-              {t('smartGuide')}
-            </ButtonLink>
-            <ButtonLink to="/rezervo?sherbimi=sv-smart" variant="outline" icon={<CalendarCheck className="h-4 w-4" />}>
-              {t('smartBook')}
-            </ButtonLink>
+            <Link
+              to="/syze-inteligjente"
+              className="inline-flex h-11 items-center gap-2 rounded-full bg-[#6fd3a5] px-5 text-sm font-semibold text-[#06110c] shadow-[0_0_36px_-10px_rgb(111_211_165/0.8)] transition-colors hover:bg-[#8fe2bd]"
+            >
+              {t('smartGuide')} <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              to="/rezervo?sherbimi=sv-smart"
+              className="inline-flex h-11 items-center gap-2 rounded-full bg-white/[0.06] px-5 text-sm font-semibold text-white ring-1 ring-inset ring-white/15 transition-colors hover:bg-white/[0.11]"
+            >
+              <CalendarCheck className="h-4 w-4 text-[#6fd3a5]" /> {t('smartBook')}
+            </Link>
           </div>
         </div>
-        <div className="relative hidden aspect-[4/3] overflow-hidden rounded-3xl bg-sand ring-1 ring-line sm:block">
-          <Img src={category.image} eager alt="" className="absolute inset-0 h-full w-full object-cover object-[50%_15%]" />
-          <IllustrationChip className="absolute left-4 top-4" />
+        <div className="relative hidden aspect-[4/3] overflow-hidden rounded-3xl bg-[#0b0f0d] ring-1 ring-white/10 sm:block lg:aspect-[4/4.2]">
+          <Img src={category.image} eager alt="" className="absolute inset-0 h-full w-full object-cover" />
+          <RenderChip tone="dark" className="absolute left-4 top-4" />
         </div>
       </div>
-      <p className="container-x relative pb-5 text-[12px] leading-snug text-muted">{t('smartNote')}</p>
+      <p className="container-x relative pb-5 text-[12px] leading-snug text-white/40">{t('smartNote')}</p>
     </section>
   );
 }

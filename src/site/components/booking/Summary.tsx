@@ -9,7 +9,6 @@ import { cn } from '@/lib/utils';
 import { timeRange } from '@/admin/components/appointments/dates';
 import { telHref } from '@/site/components/content/posts';
 import { SERVICE_IMAGE, locationOf } from './availability';
-import { isIllustration } from '@/site/components/smart/illustration';
 import { bk } from './dict';
 import { longDay } from './Pickers';
 
@@ -60,8 +59,7 @@ export function SummaryCard({ service, day, start, compact }: { service?: Servic
     <div className="overflow-hidden rounded-3xl bg-white ring-1 ring-line">
       <div className="relative aspect-[2/1] overflow-hidden bg-sand">
         {img ? <Img src={img} alt="" className="h-full w-full object-cover" /> : <div className="bg-grain absolute inset-0" />}
-        {/* line-art illustrations are light — give the white title a deeper shade */}
-        <div className={cn('absolute inset-0 bg-gradient-to-t', isIllustration(img) ? 'from-ink/90 via-ink/50 to-ink/10' : 'from-ink/75 via-ink/10 to-transparent')} />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/10 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 p-5">
           <div className="eyebrow text-brand-200">{t('summary')}</div>
           <div className="display mt-1 text-[24px] leading-tight text-white">{service ? l(service.name) : '—'}</div>

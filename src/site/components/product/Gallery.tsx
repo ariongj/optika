@@ -6,7 +6,7 @@ import { Modal } from '@/components/ui/Overlay';
 import { useDict } from '@/i18n';
 import { cn } from '@/lib/utils';
 import { PD } from './dict';
-import { IllustrationChip, isIllustration } from '@/site/components/smart/illustration';
+import { RenderChip, isRender } from '@/site/components/smart/render';
 
 /**
  * Product gallery: swipeable main image (scroll-snap) with a subtle
@@ -67,7 +67,7 @@ export function Gallery({ images, alt, className }: { images: string[]; alt: str
           ))}
         </div>
 
-        {isIllustration(list[index]) && <IllustrationChip className="absolute left-4 top-4" />}
+        {isRender(list[index]) && <RenderChip tone={/-dark\.webp$/.test(list[index] ?? '') ? 'dark' : 'light'} className="absolute left-4 top-4" />}
         {/* overlay controls */}
         <span className="pointer-events-none absolute bottom-4 left-4 rounded-full bg-ink/70 px-3 py-1 text-[12px] font-semibold tabular-nums text-white backdrop-blur">
           {index + 1} / {list.length}

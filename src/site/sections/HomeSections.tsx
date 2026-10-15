@@ -24,7 +24,7 @@ import { useActiveProducts, useCategories, useSettings } from '@/store/hooks';
 import { isOnSale } from '@/lib/pricing';
 import { date } from '@/lib/format';
 import { cn } from '@/lib/utils';
-import { IllustrationChip, isIllustration } from '@/site/components/smart/illustration';
+import { RenderChip, isRender } from '@/site/components/smart/render';
 
 type DataOf<T extends HomeSection['type']> = Extract<HomeSection, { type: T }>['data'];
 
@@ -185,21 +185,21 @@ export function CategoriesSection({ data }: { data: DataOf<'categories'> }) {
         <div className={cn('mt-12 grid gap-4 sm:grid-cols-2 lg:mt-14 lg:gap-6 lg:pb-14', cols === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3')}>
           {cats.map((c, i) => {
             const n = products.filter((p) => p.categoryId === c.id).length;
-            // line-art illustration (smart glasses) → light tile with dark text instead of a dark photo overlay
-            const light = isIllustration(c.image);
             return (
               <Reveal key={c.id} delay={(i % cols) * 90} className={cn(cols === 4 ? i % 2 === 1 && 'lg:translate-y-14' : i % 3 === 1 && 'lg:translate-y-14')}>
-                <Link to={`/produktet/${c.slug}`} className={cn('group relative block aspect-[4/5] overflow-hidden rounded-3xl', light ? 'bg-paper ring-1 ring-line' : 'bg-ink')}>
+                <Link to={`/produktet/${c.slug}`} className="group relative block aspect-[4/5] overflow-hidden rounded-3xl bg-ink">
                   <Img src={c.image} alt={l(c.name)} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1.4s] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-[1.07]" />
-                  <div className={cn('absolute inset-0 bg-gradient-to-t', light ? 'from-paper via-paper/40 to-transparent' : 'from-ink/85 via-ink/15 to-transparent')} />
-                  <div className={cn('absolute left-5 top-5 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] backdrop-blur-md', light ? 'bg-ink/[0.07] text-ink' : 'bg-white/15 text-white')}>{String(i + 1).padStart(2, '0')}</div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/15 to-transparent" />
+                  <div className="absolute left-5 top-5 rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold tracking-[0.18em] text-white backdrop-blur-md">{String(i + 1).padStart(2, '0')}</div>
+                  {/* rendered picture (smart glasses) → an honest "3D render" chip */}
+                  {isRender(c.image) && <RenderChip tone="dark" className="absolute right-5 top-5" />}
                   <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-6 sm:p-7">
                     <div>
-                      <h3 className={cn('display leading-none', light ? 'text-ink' : 'text-white', cols === 4 ? 'text-[34px] sm:text-[40px] lg:text-[32px] xl:text-[38px]' : 'text-[34px] sm:text-[40px]')}>{l(c.name)}</h3>
-                      <p className={cn('mt-2 text-[14px]', light ? 'text-ink-soft' : 'text-white/75')}>{l(c.tagline)}</p>
-                      <p className={cn('mt-3 text-[11px] font-bold uppercase tracking-[0.18em]', light ? 'text-muted' : 'text-white/55')}>{h(pluralOne(n, lang) ? 'productsOne' : 'productsMany', { n })}</p>
+                      <h3 className={cn('display leading-none text-white', cols === 4 ? 'text-[34px] sm:text-[40px] lg:text-[32px] xl:text-[38px]' : 'text-[34px] sm:text-[40px]')}>{l(c.name)}</h3>
+                      <p className="mt-2 text-[14px] text-white/75">{l(c.tagline)}</p>
+                      <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.18em] text-white/55">{h(pluralOne(n, lang) ? 'productsOne' : 'productsMany', { n })}</p>
                     </div>
-                    <span className={cn('grid h-12 w-12 shrink-0 place-items-center rounded-full transition-transform duration-500 group-hover:-rotate-45 group-hover:bg-brand-600 group-hover:text-white', light ? 'bg-ink text-white' : 'bg-white text-ink')}>
+                    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white text-ink transition-transform duration-500 group-hover:-rotate-45 group-hover:bg-brand-600 group-hover:text-white">
                       <ArrowRight className="h-5 w-5" />
                     </span>
                   </div>
@@ -706,7 +706,7 @@ export function CtaSection({ data }: { data: DataOf<'cta'> }) {
 }
 
 /* ------------------------------------------------------------------ */
-/** Spotlight on a new range or page (smart glasses): light card, image + copy, points and two buttons. */
+/** Spotlight on a new range or page (smart glasses): a dark "launch" card — render + copy, points and two buttons. */
 export function SpotlightSection({ data }: { data: DataOf<'spotlight'> }) {
   const l = useL();
   const points = data.points.map((p) => l(p.text)).filter(Boolean);
@@ -714,22 +714,35 @@ export function SpotlightSection({ data }: { data: DataOf<'spotlight'> }) {
     <section className="pb-24 sm:pb-28">
       <div className="container-x">
         <Reveal>
-          <div className="grid items-center gap-4 overflow-hidden rounded-[36px] bg-sand/70 p-3 ring-1 ring-inset ring-line/60 sm:p-4 lg:grid-cols-[1.08fr_1fr] lg:gap-10">
-            <div className="relative aspect-[3/2] overflow-hidden rounded-[28px] bg-paper">
+          <div className="relative isolate grid items-center gap-4 overflow-hidden rounded-[36px] bg-[#07090a] p-3 text-white ring-1 ring-inset ring-white/[0.06] sm:p-4 lg:grid-cols-[1.08fr_1fr] lg:gap-10">
+            {/* soft mint glow + hairline grid */}
+            <div aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={{ background: 'radial-gradient(ellipse 50% 70% at 28% 50%, rgb(111 211 165 / 0.14), rgb(44 74 58 / 0.1) 50%, transparent 80%)' }} />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 -z-10 opacity-60 [mask-image:radial-gradient(ellipse_60%_80%_at_70%_50%,#000,transparent_75%)]"
+              style={{ backgroundImage: 'linear-gradient(to right, rgb(255 255 255 / 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgb(255 255 255 / 0.05) 1px, transparent 1px)', backgroundSize: '56px 56px' }}
+            />
+            <div className="relative aspect-[3/2] overflow-hidden rounded-[28px] bg-[#0b0f0d] ring-1 ring-white/[0.07]">
               <Img src={data.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
-              {isIllustration(data.image) && <IllustrationChip className="absolute left-4 top-4" />}
+              {isRender(data.image) && <RenderChip tone="dark" className="absolute left-4 top-4" />}
             </div>
             <div className="px-3 pb-5 pt-2 sm:px-5 lg:py-8 lg:pl-0 lg:pr-10">
-              <div className="eyebrow">{l(data.eyebrow)}</div>
-              <h2 className="display mt-3 text-[34px] leading-[1.04] text-ink sm:text-5xl">
-                <Accent text={l(data.title)} />
+              <div className="inline-flex items-center gap-2.5 text-[0.7rem] font-bold uppercase tracking-[0.22em] text-[#6fd3a5]">
+                <span aria-hidden className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#6fd3a5] opacity-60 [animation-duration:2.4s]" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#6fd3a5]" />
+                </span>
+                {l(data.eyebrow)}
+              </div>
+              <h2 className="mt-4 text-[34px] font-semibold leading-[1.04] tracking-[-0.04em] text-white sm:text-[46px]">
+                <Accent text={l(data.title)} accentClassName="font-normal text-[#8fe2bd]" />
               </h2>
-              {l(data.text) && <p className="mt-4 max-w-xl text-[15.5px] leading-relaxed text-ink-soft sm:text-[16.5px]">{l(data.text)}</p>}
+              {l(data.text) && <p className="mt-4 max-w-xl text-[15.5px] leading-relaxed text-white/60 sm:text-[16.5px]">{l(data.text)}</p>}
               {points.length > 0 && (
                 <ul className="mt-6 space-y-2.5">
                   {points.map((pt) => (
-                    <li key={pt} className="flex items-start gap-3 text-[15px] font-medium text-ink">
-                      <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-600 text-white">
+                    <li key={pt} className="flex items-start gap-3 text-[15px] font-medium text-white/85">
+                      <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#6fd3a5]/15 text-[#6fd3a5] ring-1 ring-inset ring-[#6fd3a5]/30">
                         <Check className="h-3.5 w-3.5" />
                       </span>
                       {pt}
@@ -739,12 +752,18 @@ export function SpotlightSection({ data }: { data: DataOf<'spotlight'> }) {
               )}
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 {data.primary.href && l(data.primary.label) && (
-                  <CtaLink to={data.primary.href} size="lg" iconRight={<ArrowRight className="h-4 w-4" />}>
+                  <CtaLink
+                    to={data.primary.href}
+                    variant="ghost"
+                    size="lg"
+                    iconRight={<ArrowRight className="h-4 w-4" />}
+                    className="bg-[#6fd3a5]! text-[#06110c]! shadow-[0_0_40px_-10px_rgb(111_211_165/0.8)] hover:bg-[#8fe2bd]!"
+                  >
                     {l(data.primary.label)}
                   </CtaLink>
                 )}
                 {data.secondary.href && l(data.secondary.label) && (
-                  <CtaLink to={data.secondary.href} variant="outline" size="lg" icon={<CalendarCheck className="h-4 w-4" />}>
+                  <CtaLink to={data.secondary.href} variant="outlineLight" size="lg" icon={<CalendarCheck className="h-4 w-4 text-[#6fd3a5]" />} className="border-white/20!">
                     {l(data.secondary.label)}
                   </CtaLink>
                 )}

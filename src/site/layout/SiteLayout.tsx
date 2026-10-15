@@ -37,8 +37,10 @@ function PageLoading() {
 function DemoBadge() {
   const t = useDict(site);
   const settings = useSettings();
-  // The try-on stage fills the phone screen (status pill bottom-left) — keep the badge out of its way there.
-  const tryOn = useLocation().pathname.startsWith('/provo-virtualisht');
+  // The try-on stage fills the phone screen (status pill bottom-left) and the smart-glasses story pins its text
+  // cards to the bottom-left — keep the badge out of their way on phones.
+  const { pathname } = useLocation();
+  const tryOn = pathname.startsWith('/provo-virtualisht') || pathname.startsWith('/syze-inteligjente');
   if (!settings.demoBanner) return null;
   return (
     <Link
@@ -60,6 +62,9 @@ export function SiteLayout() {
   const navigate = useNavigate();
   const lang = useLang();
   const isHome = location.pathname === '/';
+  // the smart-glasses launch page is dark from the top: transparent header over its hero, dark glass once scrolled
+  // (GitHub Pages serves the prerendered shell with a trailing slash)
+  const darkPage = /^\/syze-inteligjente\/?$/.test(location.pathname);
   const heroFirst = useDb((s) => s.home.find((h) => h.enabled)?.type === 'hero');
   const cartOpened = useOpenedOnce(useUi((s) => s.cartOpen));
   const searchOpened = useOpenedOnce(useUi((s) => s.searchOpen));
@@ -90,7 +95,7 @@ export function SiteLayout() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header transparentTop={isHome && heroFirst} />
+      <Header transparentTop={(isHome && heroFirst) || darkPage} dark={darkPage} />
       <main className="flex-1">
         <Suspense fallback={<PageLoading />}>
           <Outlet />

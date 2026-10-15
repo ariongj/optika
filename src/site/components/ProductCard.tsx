@@ -12,7 +12,7 @@ import { useDb } from '@/store/db';
 import { defaultOptions, discountPct, priceOnRequest } from '@/lib/pricing';
 import { cn } from '@/lib/utils';
 import { isLensPackage, labDays, rxReady } from './product/optical';
-import { IllustrationChip, isIllustration } from './smart/illustration';
+import { RenderChip, isRender } from './smart/render';
 
 const C = defineDict({
   me: { rxReady: 'Moguće sa dioptrijom', labDays: 'Laboratorija: {days} dana', request: 'Proverite dostupnost', tryIn: 'Besplatna proba u optici' },
@@ -65,7 +65,7 @@ export function ProductCard({ product, className, priority }: { product: Product
           )}
         </Link>
         <ProductBadges product={product} className="pointer-events-none absolute left-3 top-3" />
-        {isIllustration(product.images[0]) && <IllustrationChip className="absolute bottom-3 left-3 transition-opacity duration-300 md:group-hover:opacity-0" />}
+        {isRender(product.images[0]) && <RenderChip className="absolute bottom-3 left-3 transition-opacity duration-300 md:group-hover:opacity-0" />}
         <button
           type="button"
           onClick={() => toggleWishlist(product.id)}

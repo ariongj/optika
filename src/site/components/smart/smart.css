@@ -1,0 +1,173 @@
+/* ------------------------------------------------------------------ */
+/* /syze-inteligjente — dark, high-tech product-launch page.           */
+/* Loaded only with the page chunk. IBM Plex Mono (OFL, self-hosted in  */
+/* public/fonts) is used for the small HUD labels on this page only.   */
+/* ------------------------------------------------------------------ */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-400-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-400-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-500-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-500-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+.sg-page {
+  --sg-bg: #07090a;
+  --sg-bg-2: #0b0f0d;
+  --sg-mint: #6fd3a5;
+  --sg-mint-2: #b5f0d3;
+  --sg-green: #2c4a3a;
+}
+
+/* Mono HUD label */
+.sg-mono {
+  font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-feature-settings: 'zero' 1;
+}
+
+/* Accent word: Fraunces italic with a soft mint gradient */
+.sg-accent {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  padding-right: 0.08em;
+  margin-right: -0.05em;
+  background: linear-gradient(100deg, #e7fff3 0%, var(--sg-mint-2) 30%, var(--sg-mint) 70%, #3f9c74 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Hairline grid that slowly drifts, faded out towards the edges */
+.sg-grid {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.055) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 70% 60% at 60% 45%, #000 0%, rgb(0 0 0 / 0.5) 45%, transparent 80%);
+  animation: sg-grid-drift 24s linear infinite;
+}
+@keyframes sg-grid-drift {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 64px 64px, 64px 64px; }
+}
+
+/* Soft breathing glow */
+.sg-glow {
+  animation: sg-breathe 7s ease-in-out infinite;
+}
+@keyframes sg-breathe {
+  0%, 100% { opacity: 0.75; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+
+/* Glass card with a hover glow that follows the pointer (--x/--y set from JS; centre by default) */
+.sg-card {
+  position: relative;
+  isolation: isolate;
+  background: rgb(255 255 255 / 0.035);
+  border: 1px solid rgb(255 255 255 / 0.09);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: border-color 0.4s ease, background-color 0.4s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sg-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(420px circle at var(--x, 50%) var(--y, 0%), rgb(111 211 165 / 0.13), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.sg-card:hover {
+  border-color: rgb(111 211 165 / 0.28);
+  background: rgb(255 255 255 / 0.05);
+}
+.sg-card:hover::before {
+  opacity: 1;
+}
+
+/* Recording LED (privacy) */
+.sg-led {
+  animation: sg-led 2.4s ease-in-out infinite;
+}
+@keyframes sg-led {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgb(255 255 255 / 0.55), 0 0 18px 4px rgb(255 255 255 / 0.5); }
+  50% { opacity: 0.55; box-shadow: 0 0 0 10px rgb(255 255 255 / 0), 0 0 6px 1px rgb(255 255 255 / 0.2); }
+}
+.sg-ring {
+  animation: sg-ring 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+@keyframes sg-ring {
+  from { transform: scale(0.4); opacity: 0.7; }
+  to { transform: scale(1.6); opacity: 0; }
+}
+
+/* Scroll cue */
+.sg-cue {
+  animation: sg-cue 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+@keyframes sg-cue {
+  0% { transform: scaleY(0); transform-origin: top; }
+  45% { transform: scaleY(1); transform-origin: top; }
+  55% { transform: scaleY(1); transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+
+/* HUD callout dot */
+.sg-dot {
+  box-shadow: 0 0 0 3px rgb(111 211 165 / 0.18), 0 0 14px 2px rgb(111 211 165 / 0.55);
+}
+
+/* Battery fill */
+.sg-fill {
+  transform-origin: left;
+  transition: transform 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sg-grid,
+  .sg-glow,
+  .sg-led,
+  .sg-ring,
+  .sg-cue {
+    animation: none !important;
+  }
+}
+
+/* Microphone level bars */
+@keyframes sg-eq {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}

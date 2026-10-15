@@ -1509,14 +1509,14 @@ export function buildMenus(): Menu[] {
       items: [
         url('mi-products', T('Proizvodi', 'Produktet', 'Products'), '/produktet', [
           cat('cat-optike', L.optical),
-          // smart glasses → the landing page (models, three kinds, FAQ, availability request); shown as an image tile
-          url('mi-smart', L.smart, '/syze-inteligjente'),
           cat('cat-dielli', L.sun),
           cat('cat-lente', L.lenses),
           url('mi-finder', L.finder, '/gjej-kornizen'),
           url('mi-lens-guide', L.lensGuide, '/lentet'),
           url('mi-sale', L.sale, '/produktet?akcija=1'),
         ]),
+        // smart glasses have their own top-level item → the dark launch page (the header gives it a glowing "new" badge)
+        url('mi-smart', L.smart, '/syze-inteligjente'),
         url('mi-try-on', L.tryOn, '/provo-virtualisht'),
         url('mi-services', L.services, '/sherbimet', [
           url('mi-services-all', L.ourServices, '/sherbimet'),

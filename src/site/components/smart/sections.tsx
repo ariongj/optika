@@ -1,196 +1,112 @@
-import { useMemo, useState, type ComponentType } from 'react';
+import { useMemo, type ComponentType } from 'react';
 import { Link } from 'react-router';
-import {
-  ArrowRight, ArrowUpRight, AudioLines, CalendarCheck, Camera, Check, CircleDot, FlaskConical, Minus, MonitorSmartphone, Ruler, Send, ShieldPlus, Smartphone, Sparkles,
-  UserCheck, Wrench, type LucideIcon,
-} from 'lucide-react';
+import { ArrowRight, CalendarCheck, Check, FlaskConical, Ruler, Send, ShieldPlus, Smartphone, UserCheck, Wrench } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import { Accordion, Img, Reveal } from '@/components/ui/misc';
 import { ButtonLink } from '@/components/ui/Button';
 import { WhatsAppIcon } from '@/components/brand/Social';
 import { SectionHeading } from '@/site/components/SectionHeading';
-import { ProductCard } from '@/site/components/ProductCard';
 import { MeasureForm } from '@/site/components/MeasureForm';
 import { waHref } from '@/site/components/company/data';
 import { useDict, useL } from '@/i18n';
+import { common } from '@/i18n/common';
 import { useSettings } from '@/store/hooks';
 import { cn } from '@/lib/utils';
-import { IllustrationChip } from './illustration';
+import { RenderChip } from './render';
 import { SG } from './dict';
+import { BOOK_SMART, kindOf } from './data';
+import { kindLabels } from './Hero';
+import { Backdrop, Headline, Kicker, glowMove } from './ui';
 
-/** The few dictionary keys the comparison cells need (a full SG translator is assignable). */
-type T = (key: 'v_model' | 'v_yes' | 'v_no') => string;
-export const BOOK_SMART = '/rezervo?sherbimi=sv-smart';
+/** The dark render of a product (second image) where there is one. */
+const darkImage = (p: Product) => p.images.find((i) => /-dark\.webp$/.test(i)) ?? p.images[0];
 
 /* ------------------------------------------------------------------ */
-/* What you can do                                                     */
+/* 5 — The models (store products), dark cards                          */
 /* ------------------------------------------------------------------ */
-export function CanDo() {
+export function SmartModels({ products, categorySlug, onAsk }: { products: Product[]; categorySlug?: string; onAsk: (id: string) => void }) {
   const t = useDict(SG);
-  const items: { icon: LucideIcon; title: string; text: string; badge?: string }[] = [
-    { icon: Camera, title: t('can1Title'), text: t('can1Text') },
-    { icon: AudioLines, title: t('can2Title'), text: t('can2Text') },
-    { icon: Sparkles, title: t('can3Title'), text: t('can3Text') },
-    { icon: MonitorSmartphone, title: t('can4Title'), text: t('can4Text'), badge: t('can4Badge') },
-  ];
-  return (
-    <section className="py-20 sm:py-28">
-      <div className="container-x">
-        <Reveal>
-          <SectionHeading eyebrow={t('canEyebrow')} title={t('canTitle')} />
-        </Reveal>
-        <div className="mt-10 grid gap-3 sm:mt-12 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
-          {items.map(({ icon: Icon, title, text, badge }, i) => (
-            <Reveal key={title} delay={i * 70}>
-              <article className="flex h-full items-start gap-4 rounded-3xl bg-white p-4 ring-1 ring-line sm:flex-col sm:gap-0 sm:p-6">
-                <div className="flex shrink-0 items-center justify-between gap-3 sm:w-full">
-                  <span className="grid h-11 w-11 place-items-center rounded-2xl bg-brand-50 text-brand-700 sm:h-12 sm:w-12">
-                    <Icon className="h-[21px] w-[21px]" strokeWidth={1.75} />
-                  </span>
-                  {badge && <span className="hidden rounded-full bg-sand px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.14em] text-ink-soft sm:inline">{badge}</span>}
-                </div>
-                <div className="min-w-0 sm:mt-5">
-                  <h3 className="text-[16px] font-bold leading-snug text-ink sm:text-[17px]">
-                    {title}
-                    {badge && <span className="ml-2 inline-block rounded-full bg-sand px-2 py-0.5 align-middle text-[10px] font-bold uppercase tracking-[0.12em] text-ink-soft sm:hidden">{badge}</span>}
-                  </h3>
-                  <p className="mt-1 text-[14px] leading-relaxed text-muted sm:mt-2 sm:text-[14.5px]">{text}</p>
-                </div>
-              </article>
-            </Reveal>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Three kinds — comparison cards                                      */
-/* ------------------------------------------------------------------ */
-type Cell = boolean | 'model';
-const TYPES: { id: string; name: 'type1Name' | 'type2Name' | 'type3Name'; text: 'type1Text' | 'type2Text' | 'type3Text'; image: string; products: string[]; rows: Cell[] }[] = [
-  // rows: camera, audio, assistant, display, prescription
-  { id: 'camera', name: 'type1Name', text: 'type1Text', image: '/images/smart/rayban-meta-wayfarer.webp', products: ['p-rayban-meta-wayfarer', 'p-rayban-meta-aviator', 'p-rayban-meta-zena', 'p-oakley-meta-hstn'], rows: [true, true, true, false, 'model'] },
-  { id: 'audio', name: 'type2Name', text: 'type2Text', image: '/images/smart/rayban-meta-audio.webp', products: ['p-rayban-meta-audio'], rows: [false, true, true, false, true] },
-  { id: 'display', name: 'type3Name', text: 'type3Text', image: '/images/smart/meta-rayban-display.webp', products: ['p-meta-rayban-display'], rows: [ 'model', 'model', true, true, 'model'] },
-];
-const ROWS = ['row_camera', 'row_audio', 'row_assistant', 'row_display', 'row_rx'] as const;
-
-function CellValue({ v, t }: { v: Cell; t: T }) {
-  if (v === 'model') return <span className="text-[12.5px] font-semibold text-oak">{t('v_model')}</span>;
-  return v ? (
-    <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-700">
-      <span className="grid h-5 w-5 place-items-center rounded-full bg-brand-600 text-white">
-        <Check className="h-3 w-3" strokeWidth={3} />
-      </span>
-      {t('v_yes')}
-    </span>
-  ) : (
-    <span className="inline-flex items-center gap-1.5 text-[13px] font-medium text-muted">
-      <span className="grid h-5 w-5 place-items-center rounded-full bg-sand text-muted">
-        <Minus className="h-3 w-3" strokeWidth={3} />
-      </span>
-      {t('v_no')}
-    </span>
-  );
-}
-
-export function TypesCompare({ products }: { products: Product[] }) {
-  const t = useDict(SG);
+  const tc = useDict(common);
   const l = useL();
-  return (
-    <section className="border-y border-line bg-white/50 py-20 sm:py-28">
-      <div className="container-x">
-        <Reveal>
-          <SectionHeading eyebrow={t('typesEyebrow')} title={t('typesTitle')} subtitle={t('typesText')} />
-        </Reveal>
-        <div className="no-scrollbar -mx-4 mt-10 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:mt-12 sm:scroll-px-6 sm:px-6 lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-5 lg:overflow-visible lg:px-0 lg:pb-0">
-          {TYPES.map((ty, i) => {
-            const models = ty.products.map((id) => products.find((p) => p.id === id)).filter((p): p is Product => !!p);
-            return (
-              <Reveal key={ty.id} delay={i * 80} className="w-[86%] shrink-0 snap-start sm:w-[58%] lg:w-auto">
-                <article className="flex h-full flex-col overflow-hidden rounded-3xl bg-white ring-1 ring-line">
-                  <div className="relative aspect-[16/9] overflow-hidden bg-sand">
-                    <Img src={ty.image} small alt="" className="absolute inset-0 h-full w-full object-cover" />
-                    <span className="absolute left-4 top-4 rounded-full bg-ink px-3 py-1 text-[11px] font-bold tabular-nums tracking-[0.14em] text-paper">0{i + 1}</span>
-                  </div>
-                  <div className="flex flex-1 flex-col p-5 sm:p-6">
-                    <h3 className="display text-[26px] leading-tight text-ink">{t(ty.name)}</h3>
-                    <p className="mt-2 text-[14.5px] leading-relaxed text-muted">{t(ty.text)}</p>
-                    <dl className="mt-5 divide-y divide-line/70 border-y border-line/70">
-                      {ROWS.map((row, r) => (
-                        <div key={row} className="flex min-h-11 items-center justify-between gap-3 py-2">
-                          <dt className="text-[13.5px] text-ink-soft">{t(row)}</dt>
-                          <dd className="shrink-0 text-right">
-                            <CellValue v={ty.rows[r]} t={t} />
-                          </dd>
-                        </div>
-                      ))}
-                    </dl>
-                    {models.length > 0 && (
-                      <div className="mt-auto pt-5">
-                        <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted">{t('typesModels')}</div>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {models.map((p) => (
-                            <Link
-                              key={p.id}
-                              to={`/produkt/${p.slug}`}
-                              className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13px] font-semibold text-ink transition-colors hover:border-ink/30 hover:bg-white"
-                            >
-                              {l(p.name).replace(/\s*\(Gen 3\)$/, '')}
-                              <ArrowUpRight className="h-3.5 w-3.5 text-muted" />
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </article>
-              </Reveal>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* The models (store products in the smart-glasses category)            */
-/* ------------------------------------------------------------------ */
-export function Models({ products, categorySlug }: { products: Product[]; categorySlug?: string }) {
-  const t = useDict(SG);
+  const kinds = kindLabels(t);
   if (!products.length) return null;
   return (
-    <section id="modelet" className="scroll-mt-24 py-20 sm:py-28">
-      <div className="container-x">
-        <Reveal>
-          <SectionHeading
-            eyebrow={t('modelsEyebrow')}
-            title={t('modelsTitle')}
-            subtitle={t('modelsText')}
-            action={
-              categorySlug && (
-                <ButtonLink to={`/produktet/${categorySlug}`} variant="outline" iconRight={<ArrowRight className="h-4 w-4" />}>
-                  {t('modelsAll')}
-                </ButtonLink>
-              )
-            }
-          />
-        </Reveal>
-        <div className="mt-10 grid grid-cols-2 gap-x-3 gap-y-9 sm:mt-12 sm:gap-x-5 lg:grid-cols-3 xl:grid-cols-6 xl:gap-x-5">
-          {products.map((p, i) => (
-            <ProductCard key={p.id} product={p} priority={i < 2} />
-          ))}
+    <section id="modelet" className="relative isolate scroll-mt-20 overflow-hidden rounded-b-[40px] bg-[#07090a] pb-20 pt-20 text-white sm:rounded-b-[64px] sm:pb-28 sm:pt-28">
+      <Backdrop glow="center" grid={false} />
+      <div className="container-x relative">
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div className="max-w-2xl">
+            <Kicker n="04">{t('modelsEyebrow')}</Kicker>
+            <Headline text={t('modelsTitle')} className="mt-5 text-[36px] leading-[1.04] sm:text-[52px] lg:text-[58px]" />
+            <p className="mt-5 max-w-xl text-[15.5px] leading-relaxed text-white/55 sm:text-[16.5px]">{t('modelsText')}</p>
+          </div>
+          {categorySlug && (
+            <Link
+              to={`/produktet/${categorySlug}`}
+              className="inline-flex h-11 shrink-0 items-center gap-2 self-start rounded-full bg-white/[0.06] px-5 text-sm font-semibold text-white ring-1 ring-inset ring-white/15 transition-colors hover:bg-white/[0.11] md:self-end"
+            >
+              {t('modelsAll')} <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
         </div>
+
+        {/* phones: a snap carousel; from lg a 3-column grid */}
+        <ul className="no-scrollbar -mx-4 mt-10 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:mt-12 sm:scroll-px-6 sm:gap-4 sm:px-6 lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-5 lg:overflow-visible lg:px-0 lg:pb-0">
+          {products.map((p, i) => {
+            const kind = kindOf(p);
+            const gen3 = /\(Gen 3\)/.test(l(p.name));
+            const chips = [kinds[kind], ...(kind === 'camera' ? [kinds.audio] : []), ...(gen3 ? ['Gen 3'] : [])];
+            return (
+              <li key={p.id} className="w-[80%] shrink-0 snap-start sm:w-[46%] lg:w-auto">
+                <article onPointerMove={glowMove} className="sg-card group flex h-full flex-col overflow-hidden rounded-[26px]">
+                  <Link to={`/produkt/${p.slug}`} className="relative block aspect-[4/5] overflow-hidden bg-[#0b0f0d] lg:aspect-square" aria-label={l(p.name)}>
+                    <Img src={darkImage(p)} small eager={i < 2} alt={l(p.name)} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-[1.05]" />
+                    <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#07090a]/80 to-transparent" />
+                    <RenderChip tone="dark" className="absolute left-4 top-4" />
+                  </Link>
+                  <div className="flex flex-1 flex-col p-5 sm:p-6">
+                    <div className="flex flex-wrap gap-1.5">
+                      {chips.map((c) => (
+                        <span key={c} className="sg-mono rounded-md bg-white/[0.05] px-2 py-1 text-[10px] text-white/65 ring-1 ring-inset ring-white/10">
+                          {c}
+                        </span>
+                      ))}
+                    </div>
+                    <h3 className="mt-4 text-[19px] font-semibold leading-snug tracking-[-0.02em]">
+                      <Link to={`/produkt/${p.slug}`} className="hover:text-[#b5f0d3]">
+                        {l(p.name).replace(/\s*\(Gen 3\)$/, '')}
+                      </Link>
+                    </h3>
+                    <p className="mt-1.5 line-clamp-2 text-[14px] leading-relaxed text-white/50">{l(p.short)}</p>
+                    <div className="sg-mono mt-auto pt-5 text-[11px] text-[#6fd3a5]">{tc('priceOnRequest')}</div>
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onAsk(p.id)}
+                        className="inline-flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-white px-3 text-[12.5px] sm:px-4 sm:text-[13px] font-semibold text-[#06110c] transition-colors hover:bg-[#b5f0d3]"
+                      >
+                        <Send className="h-3.5 w-3.5" /> {t('askAvail')}
+                      </button>
+                      <Link
+                        to={`/produkt/${p.slug}`}
+                        className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-1 rounded-full px-3 text-[13px] sm:px-4 font-semibold text-white ring-1 ring-inset ring-white/15 transition-colors hover:bg-white/[0.08]"
+                      >
+                        <span className="max-sm:sr-only">{t('view')}</span> <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
+                  </div>
+                </article>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </section>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* Why buy them at an optician                                         */
+/* 6 — Why buy them at an optician (back to the warm paper style)       */
 /* ------------------------------------------------------------------ */
 export function WhyOptician() {
   const t = useDict(SG);
@@ -203,7 +119,7 @@ export function WhyOptician() {
     { icon: ShieldPlus, title: t('why6Title'), text: t('why6Text') },
   ];
   return (
-    <section className="bg-sand/60 py-20 sm:py-28">
+    <section className="py-20 sm:py-28">
       <div className="container-x grid gap-10 lg:grid-cols-12 lg:gap-14">
         <div className="lg:col-span-5">
           <Reveal>
@@ -239,27 +155,38 @@ export function WhyOptician() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Privacy & etiquette                                                 */
+/* 7 — Privacy & etiquette (dark again, short) with a recording LED     */
 /* ------------------------------------------------------------------ */
 export function PrivacyBlock() {
   const t = useDict(SG);
   const items = [t('priv1'), t('priv2'), t('priv3'), t('priv4')];
   return (
-    <section className="py-20 sm:py-28">
+    <section className="pb-20 sm:pb-28">
       <div className="container-x">
         <Reveal>
-          <div className="bg-grain relative overflow-hidden rounded-[32px] bg-ink px-6 py-12 sm:px-10 sm:py-14 lg:grid lg:grid-cols-12 lg:gap-12 lg:px-16 lg:py-16">
-            <div className="lg:col-span-5">
-              <span className="grid h-12 w-12 place-items-center rounded-full bg-white/10 text-brand-200 ring-1 ring-white/15">
-                <CircleDot className="h-5 w-5" />
-              </span>
-              <SectionHeading className="mt-6" tone="light" eyebrow={t('privEyebrow')} title={t('privTitle')} />
+          <div className="relative isolate overflow-hidden rounded-[36px] bg-[#07090a] px-6 py-12 text-white sm:px-10 sm:py-14 lg:grid lg:grid-cols-12 lg:items-center lg:gap-12 lg:px-16 lg:py-16">
+            <Backdrop glow="left" grid={false} />
+            <div className="relative lg:col-span-5">
+              {/* the recording LED */}
+              <div aria-hidden className="relative grid h-28 w-28 place-items-center rounded-full bg-white/[0.03] ring-1 ring-white/10">
+                <span className="sg-ring absolute inset-6 rounded-full border border-white/40" />
+                <span className="sg-ring absolute inset-6 rounded-full border border-white/30 [animation-delay:1.2s]" />
+                <span className="grid h-10 w-10 place-items-center rounded-full bg-[#111614] ring-1 ring-white/15">
+                  <span className="sg-led h-3 w-3 rounded-full bg-white" />
+                </span>
+              </div>
+              <div className="sg-mono mt-4 text-[10.5px] text-white/45">{t('privLed')}</div>
+              <Kicker n="05" className="mt-8">
+                {t('privEyebrow')}
+              </Kicker>
+              <Headline text={t('privTitle')} className="mt-4 text-[34px] leading-[1.05] sm:text-[44px]" />
+              <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-white/55">{t('privText')}</p>
             </div>
-            <ol className="mt-8 space-y-4 lg:col-span-7 lg:mt-0">
+            <ol className="relative mt-10 grid gap-3 sm:grid-cols-2 lg:col-span-7 lg:mt-0">
               {items.map((it, i) => (
-                <li key={i} className="flex items-start gap-4">
-                  <span className="display grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-[16px] text-brand-200">{i + 1}</span>
-                  <span className="pt-1.5 text-[15.5px] leading-relaxed text-paper/85">{it}</span>
+                <li key={i} className="sg-card rounded-[22px] p-5">
+                  <span className="sg-mono text-[11px] text-[#6fd3a5]">{String(i + 1).padStart(2, '0')}</span>
+                  <p className="mt-3 text-[15px] leading-relaxed text-white/80">{it}</p>
                 </li>
               ))}
             </ol>
@@ -271,7 +198,7 @@ export function PrivacyBlock() {
 }
 
 /* ------------------------------------------------------------------ */
-/* FAQ                                                                 */
+/* 8 — FAQ                                                             */
 /* ------------------------------------------------------------------ */
 export function SmartFaq() {
   const t = useDict(SG);
@@ -297,11 +224,10 @@ export function SmartFaq() {
 /* ------------------------------------------------------------------ */
 /* Availability request (inline form, tagged for the CMS inbox)         */
 /* ------------------------------------------------------------------ */
-export function RequestSection({ products }: { products: Product[] }) {
+export function RequestSection({ products, pick, onPick }: { products: Product[]; pick: string; onPick: (id: string) => void }) {
   const t = useDict(SG);
   const l = useL();
   const settings = useSettings();
-  const [pick, setPick] = useState<string>('');
   const product = products.find((p) => p.id === pick);
   const message = useMemo(() => (product ? t('reqMsgModel', { name: l(product.name) }) : t('reqMsgAny')), [product, t, l]);
   const wa = settings.whatsapp ? waHref(settings.whatsapp) : '';
@@ -358,11 +284,11 @@ export function RequestSection({ products }: { products: Product[] }) {
             <div className="rounded-[28px] bg-white p-6 ring-1 ring-line sm:p-8">
               <div className="text-[13px] font-semibold text-ink-soft">{t('reqPick')}</div>
               <div className="mt-2.5 flex flex-wrap gap-2" role="radiogroup" aria-label={t('reqPick')}>
-                <button type="button" role="radio" aria-checked={!pick} onClick={() => setPick('')} className={chip(!pick)}>
+                <button type="button" role="radio" aria-checked={!pick} onClick={() => onPick('')} className={chip(!pick)}>
                   {t('reqAny')}
                 </button>
                 {products.map((p) => (
-                  <button key={p.id} type="button" role="radio" aria-checked={pick === p.id} onClick={() => setPick(p.id)} className={chip(pick === p.id)}>
+                  <button key={p.id} type="button" role="radio" aria-checked={pick === p.id} onClick={() => onPick(p.id)} className={chip(pick === p.id)}>
                     {l(p.name)}
                   </button>
                 ))}
@@ -393,7 +319,7 @@ export function BrandStrip() {
   const t = useDict(SG);
   const brands = ['Ray-Ban Meta', 'Oakley Meta', 'Meta'];
   return (
-    <section className="pb-20 sm:pb-28">
+    <section className="pb-6">
       <div className="container-x">
         <div className="flex flex-col gap-4 border-y border-line py-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -401,7 +327,7 @@ export function BrandStrip() {
             {brands.map((b, i) => (
               <span key={b} className="inline-flex items-center gap-3">
                 {i > 0 && <span aria-hidden className="h-1 w-1 rounded-full bg-ink/25" />}
-                <span className="display text-[22px] text-ink sm:text-[24px]">{b}</span>
+                <span className="text-[20px] font-semibold tracking-[-0.03em] text-ink sm:text-[22px]">{b}</span>
               </span>
             ))}
             <span className="inline-flex items-center gap-3 text-[14px] font-medium text-muted">
@@ -410,11 +336,11 @@ export function BrandStrip() {
             </span>
           </div>
           <Link to="/produktet/syze-inteligjente" className="group inline-flex min-h-10 shrink-0 items-center gap-1.5 text-[13.5px] font-semibold text-ink hover:text-brand-700">
-            <Send className="h-4 w-4 text-brand-600" /> {t('modelsAll')} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            {t('modelsAll')} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>
         <p className="mt-4 flex max-w-3xl items-start gap-2 text-[12.5px] leading-relaxed text-muted">
-          <IllustrationChip className="mt-px shrink-0 scale-90" />
+          <RenderChip className="mt-px shrink-0 scale-90" />
           <span>{t('footnote')}</span>
         </p>
       </div>

@@ -9,7 +9,7 @@ import {
 } from './cms';
 
 /** Bump to force every browser to reload fresh demo data. */
-export const DB_VERSION = 8;
+export const DB_VERSION = 9;
 
 /** Every bundled image (besides product shots), exposed in the CMS media library. */
 const IMAGE_PATHS = [

@@ -168,7 +168,8 @@ const sgAskRx = spec(SG.rx, T('Pitajte u optici — zavisi od recepta i modela',
 const sgLed = spec(SG.recording, T('Vidljiva LED lampica tokom snimanja', 'LED i dukshëm gjatë incizimit', 'Visible LED while recording'));
 const sgApp = spec(SG.app, T('Povezuje se sa aplikacijom na telefonu', 'Çiftohet me aplikacionin në telefon', 'Pairs with a phone app'));
 const sgAvail = spec(SG.avail, T('Na upit — potvrđuje optika', 'Sipas kërkesës — e konfirmon optika', 'On request — confirmed by the store'));
-const sgImg = (name: string) => [`/images/smart/${name}.webp`];
+/** Our own 3D renders: a light studio shot (cards) and a dark one with rim light (second image, the landing page). */
+const sgImg = (name: string) => [`/images/smart/${name}.webp`, `/images/smart/${name}-dark.webp`];
 /** On-request listing: no online price, made-to-order stock, no Care+ add-on. */
 const onRequest = { price: 0, quoteOnly: true, stock: 999, installation: null, unit: 'kom' as const, sold: 0 };
 
@@ -1093,7 +1094,7 @@ const DRAFTS: Draft[] = [
       'Ray-Ban Meta (Gen 3) Wayfarer keeps the shape everyone knows and adds a 12 MP camera for hands-free photos and 3K video, open-ear speakers for music and calls, and six microphones that cut background noise. The battery lasts up to about 9 hours, depending on use.\n\nTry them on in store: we pair them with your phone and — where the model allows — make prescription lenses in our own lab. Price, colours and availability are confirmed on request.',
     ),
     ...onRequest,
-    images: sgImg('rayban-meta-wayfarer'),
+    images: sgImg('rb-wayfarer'),
     options: [
       sgColor(
         sw('shiny-black', T('Sjajna crna', 'E zezë me shkëlqim', 'Shiny black'), '#1d1c1a'),
@@ -1124,7 +1125,7 @@ const DRAFTS: Draft[] = [
       'The teardrop aviator silhouette, now with a 12 MP camera, 3K video and six microphones. Take photos and video hands-free, listen to music without covering your ears and ask the voice assistant — its features and languages vary by country. Battery: up to about 9 hours.\n\nIn store we adjust the frame to your face, pair the glasses with your phone and show you which lenses — sun, prescription or Transitions — work with the model.',
     ),
     ...onRequest,
-    images: sgImg('rayban-meta-aviator'),
+    images: sgImg('rb-aviator'),
     options: [
       sgColor(
         sw('gold', T('Zlatna', 'Ar', 'Gold'), '#c9a457'),
@@ -1155,7 +1156,7 @@ const DRAFTS: Draft[] = [
       'Zena is the cat-eye silhouette of the third Ray-Ban Meta generation: soft on the face, with a 12 MP camera, 3K video, open-ear speakers and six microphones for clearer calls. The battery lasts up to about 9 hours.\n\nAsk in store about the many lens and colour combinations — Transitions included; if you wear a prescription, we check whether we can make prescription lenses for this model.',
     ),
     ...onRequest,
-    images: sgImg('rayban-meta-zena'),
+    images: sgImg('rb-zena'),
     options: [
       sgColor(
         sw('shiny-black', T('Sjajna crna', 'E zezë me shkëlqim', 'Shiny black'), '#1d1c1a'),
@@ -1186,7 +1187,7 @@ const DRAFTS: Draft[] = [
       'Meta Ray-Ban Display adds a small display inside the lens: directions, messages, live captions and photo previews, without reaching for your phone. You control them with a wristband.\n\nThey launched in the US, UK and Canada and are arriving in Germany, France and Italy. We confirm availability for Kosovo and terms on request — leave your details and we’ll let you know.',
     ),
     ...onRequest,
-    images: sgImg('meta-rayban-display'),
+    images: sgImg('rb-display'),
     options: [
       sgColor(sw('black', T('Crna', 'E zezë', 'Black'), '#1d1c1a'), sw('sand', T('Peščana', 'Rërë', 'Sand'), '#cdbb9f')),
       optSmartLenses,
@@ -1223,7 +1224,7 @@ const DRAFTS: Draft[] = [
       'For anyone who wants audio and a voice assistant, but no camera. Ray-Ban Meta Audio plays music and podcasts and takes calls through open-ear speakers, with up to about 12 hours of battery — longer with the charging case. It weighs about 43 g and supports prescription lenses.\n\nA calm choice for the office, school or places where cameras aren’t welcome. In store we make lenses to your prescription and pair the glasses with your phone.',
     ),
     ...onRequest,
-    images: sgImg('rayban-meta-audio'),
+    images: sgImg('rb-audio'),
     options: [
       sgColor(
         sw('matte-black', T('Mat crna', 'E zezë mat', 'Matte black'), '#2f2f2f'),
@@ -1263,7 +1264,7 @@ const DRAFTS: Draft[] = [
       'HSTN is the lifestyle model from Oakley Meta: a camera, audio and a voice assistant in a frame with a sporty character. Exact specifications vary by version — we confirm them when you get in touch.\n\nFor more intense activity Oakley Meta also makes the Vanguard sport wrap; ask us about availability. Try them on in store, let us adjust them and check the options for prescription lenses.',
     ),
     ...onRequest,
-    images: sgImg('oakley-meta-hstn'),
+    images: sgImg('oakley-hstn'),
     options: [
       sgColor(
         sw('black', T('Crna', 'E zezë', 'Black'), '#1d1c1a'),
