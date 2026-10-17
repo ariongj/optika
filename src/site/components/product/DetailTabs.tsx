@@ -107,15 +107,16 @@ function Description({ product: p }: { product: Product }) {
             <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-5">
               {facts.map((f, i) => {
                 const Icon = f.icon;
+                // dt/dd straight inside the group (valid <dl>); the icon sits in the term, out of the flow
                 return (
-                  <div key={i} className="flex gap-3">
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-sand text-ink">
-                      <Icon className="h-4 w-4" />
-                    </span>
-                    <div className="min-w-0">
-                      <dt className="text-[12px] text-muted">{f.label}</dt>
-                      <dd className="text-[14px] font-bold text-ink">{f.value}</dd>
-                    </div>
+                  <div key={i} className="relative min-w-0 pl-12">
+                    <dt className="text-[12px] text-muted">
+                      <span aria-hidden className="absolute left-0 top-0 grid h-9 w-9 place-items-center rounded-full bg-sand text-ink">
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      {f.label}
+                    </dt>
+                    <dd className="text-[14px] font-bold text-ink">{f.value}</dd>
                   </div>
                 );
               })}

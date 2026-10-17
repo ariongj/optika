@@ -34,7 +34,6 @@ export function renderStill(spec: StillSpec): string {
     stage.render();
     return canvas.toDataURL('image/png');
   } finally {
-    stage.dispose();
-    stage.renderer.forceContextLoss();
+    stage.dispose(); // also releases the context
   }
 }

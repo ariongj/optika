@@ -606,11 +606,27 @@ export function createTryOnRenderer(
   };
 
   function resume() {
-    if (disposed || contextLost || document.hidden || !inViewport) return;
+    if (disposed || contextLost || !compiled || document.hidden || !inViewport) return;
     cancelAnimationFrame(frame);
     last = performance.now();
     frame = requestAnimationFrame(loop);
   }
+
+  // Shaders compile in the background (KHR_parallel_shader_compile where available) before the first frame, so
+  // opening the studio doesn't freeze the page on a phone; the loop starts once they're ready.
+  // compileAsync keeps polling the programs it started: releasing their materials before it settles makes three
+  // throw, so frame swaps and teardown during that first moment wait for it.
+  let compiled = false;
+  const afterCompile: (() => void)[] = [];
+  const whenCompiled = (fn: () => void) => (compiled ? fn() : void afterCompile.push(fn));
+  void renderer
+    .compileAsync(scene, camera)
+    .catch(() => undefined)
+    .then(() => {
+      compiled = true;
+      afterCompile.splice(0).forEach((fn) => fn());
+      resume();
+    });
 
   resize();
   const resizeObserver = new ResizeObserver(resize);
@@ -696,7 +712,8 @@ export function createTryOnRenderer(
       (next.userData.occluder as THREE.Object3D).visible = mode !== 'viewer';
       scene.add(next);
       scene.remove(model);
-      disposeObject(model);
+      const old = model;
+      whenCompiled(() => disposeObject(old));
       model = next;
       bounds = visualBounds(model);
       resume();
@@ -713,9 +730,12 @@ export function createTryOnRenderer(
       document.removeEventListener('visibilitychange', resume);
       el.removeEventListener('webglcontextlost', onLost);
       el.removeEventListener('webglcontextrestored', onRestored);
-      disposeObject(model);
-      envTarget.dispose();
-      renderer.dispose();
+      const last = model;
+      whenCompiled(() => {
+        disposeObject(last);
+        envTarget.dispose();
+        renderer.dispose();
+      });
       el.remove();
     },
   };

@@ -207,6 +207,8 @@ function render(route, m, shellFor = route) {
  */
 function appShell(route) {
   const bar = '<div style="height:36px;background:#1c1a17"></div>';
+  // the smart-glasses launch page is dark from the top
+  if (route === 'syze-inteligjente') return `${bar}<div style="height:calc(100svh - 36px);min-height:600px;background:#07090a"></div>`;
   if (route !== '' || !heroRel) return `${bar}<div style="height:76px;border-bottom:1px solid #e3d9cc"></div>`;
   const src = `${BASE}${heroRel}`;
   const portrait = heroPortrait && fs.existsSync(path.join(DIST, heroPortrait)) ? `<source media="(max-width: 767px)" srcset="${BASE}${heroPortrait}">` : '';

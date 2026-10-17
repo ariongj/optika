@@ -42,19 +42,13 @@ export function useSmartProducts() {
   return { category, products };
 }
 
-/** Cheap WebGL probe (no three.js) — lets the page skip the 3D chunk entirely where it can't run. */
-let webgl: boolean | null = null;
+/**
+ * Whether the browser has WebGL at all — lets the page skip the 3D chunk where it can't run. Deliberately not a real
+ * context probe (creating one costs as much as a frame on a slow phone); if the renderer later fails to start, the
+ * poster stays.
+ */
 export function canWebGL() {
-  if (webgl !== null) return webgl;
-  try {
-    const c = document.createElement('canvas');
-    const gl = (c.getContext('webgl2') || c.getContext('webgl')) as WebGLRenderingContext | null;
-    webgl = !!gl;
-    gl?.getExtension('WEBGL_lose_context')?.loseContext();
-  } catch {
-    webgl = false;
-  }
-  return webgl;
+  return typeof window !== 'undefined' && ('WebGL2RenderingContext' in window || 'WebGLRenderingContext' in window);
 }
 
 /** Visitors on Save-Data / 2G get the posters instead of the 3D model. */

@@ -228,6 +228,8 @@ function ShopView({ slug }: { slug?: string }) {
             {/* Grid */}
             {results.length > 0 ? (
               <>
+                {/* outline: page h1 → this h2 → the product-card h3s (the sidebar's h2 is desktop-only) */}
+                <h2 className="sr-only">{countLabel(t, lang, results.length)}</h2>
                 <div
                   key={`${sort}-${density}`}
                   className={cn('mt-6 grid grid-cols-2 gap-x-3.5 gap-y-9 sm:gap-x-5 md:grid-cols-3 lg:mt-7 lg:gap-x-6 lg:gap-y-12', density === 4 && 'xl:grid-cols-4 xl:gap-x-5')}

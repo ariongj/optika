@@ -117,7 +117,7 @@ export function SmartHero() {
           {/* switch + drag hint, under the model */}
           <div className="relative z-10 mt-1 flex flex-col items-center gap-3 px-4 lg:absolute lg:inset-x-0 lg:bottom-24 lg:mt-0">
             <KindSwitch id="hero" value={kind} onChange={setKind} labels={labels} />
-            <span className="sg-mono hidden items-center gap-2 text-[10.5px] text-white/40 sm:inline-flex">
+            <span className="sg-mono hidden items-center gap-2 text-[10.5px] text-white/50 sm:inline-flex">
               <Move3d className="h-3.5 w-3.5" /> {t('drag')}
             </span>
           </div>
@@ -149,7 +149,7 @@ export function SmartHero() {
               </li>
             ))}
           </ul>
-          <p className="sg-mono mt-10 hidden text-[10.5px] leading-relaxed text-white/35 xl:block">Ray-Ban Meta · Oakley Meta · Meta Ray-Ban Display</p>
+          <p className="sg-mono mt-10 hidden text-[10.5px] leading-relaxed text-white/50 xl:block">Ray-Ban Meta · Oakley Meta · Meta Ray-Ban Display</p>
         </div>
       </div>
 
@@ -157,7 +157,7 @@ export function SmartHero() {
       <button
         type="button"
         onClick={() => scrollToId('specs')}
-        className="sg-mono absolute bottom-7 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2.5 text-[10px] text-white/40 transition-colors hover:text-white/70 lg:flex"
+        className="sg-mono absolute bottom-7 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2.5 text-[10px] text-white/50 transition-colors hover:text-white/70 lg:flex"
       >
         {t('scroll')}
         <span className="relative block h-10 w-px overflow-hidden bg-white/10">

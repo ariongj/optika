@@ -234,7 +234,7 @@ export function FramePicker({ products, categories, filter, onFilter, value, onC
               <span className="mt-2 block truncate text-[13.5px] font-semibold text-ink">{l(p.name)}</span>
               <span className="flex items-baseline gap-1.5 text-[12.5px] tabular-nums">
                 <span className={cn('font-semibold', isOnSale(p) ? 'text-brand-700' : 'text-muted')}>{money(price, lang, { decimals: price % 1 !== 0 })}</span>
-                {isOnSale(p) && <span className="text-muted/80 line-through">{money(p.price, lang, { decimals: false })}</span>}
+                {isOnSale(p) && <span className="text-muted line-through">{money(p.price, lang, { decimals: false })}</span>}
               </span>
             </button>
           );

@@ -396,8 +396,6 @@ export function Header({ transparentTop = false, dark = false }: { transparentTo
   const onDark = dark || !solid;
   const tone = onDark ? 'light' : 'dark';
 
-  const settings = useSettings();
-
   const linkCls = (active: boolean) =>
     cn(
       'relative inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-2 text-[14px] font-semibold transition-colors 2xl:px-2.5',
@@ -440,7 +438,7 @@ export function Header({ transparentTop = false, dark = false }: { transparentTo
           <button className={cn(iconBtn, 'lg:hidden -ml-2')} onClick={() => setMobileOpen(true)} aria-label={t('menu')}>
             <Menu className="h-5 w-5" />
           </button>
-          <Link to="/" className="shrink-0" aria-label={settings.companyName}>
+          <Link to="/" className="shrink-0">
             <Logo tone={tone} className="h-[42px] 2xl:h-[46px]" />
           </Link>
 

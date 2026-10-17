@@ -20,7 +20,7 @@ export function QuantityPicker({ cfg }: { cfg: Configurator }) {
     <div>
       <div className="mb-3 text-[13.5px] font-semibold text-ink-soft">{isMetre ? t('length') : p.unit === 'set' ? t('quantityPairs') : t('quantity')}</div>
       <div className="flex items-center gap-3">
-        <QtyStepper value={cfg.qty} onChange={cfg.setQty} max={cfg.maxQty} />
+        <QtyStepper value={cfg.qty} onChange={cfg.setQty} max={cfg.maxQty} label={isMetre ? t('length') : p.unit === 'set' ? t('quantityPairs') : t('quantity')} />
         <span className="text-[14px] font-medium text-muted">{unitLabel(p.unit, lang)}</span>
         {isMetre && <span className="ml-1 text-[12.5px] text-muted">{t('lengthHint')}</span>}
       </div>
@@ -70,7 +70,7 @@ function AreaCalculator({ cfg }: { cfg: Configurator }) {
         </label>
         <div>
           <span className="mb-1.5 block text-[12.5px] font-semibold text-ink-soft">{t('packsLabel')}</span>
-          <QtyStepper value={cfg.qty} onChange={cfg.setQty} max={cfg.maxQty} className="w-full justify-between" />
+          <QtyStepper value={cfg.qty} onChange={cfg.setQty} max={cfg.maxQty} label={t('packsLabel')} className="w-full justify-between" />
         </div>
         <Checkbox checked={cfg.waste} onChange={cfg.setWaste} label={t('waste')} description={t('wasteHint')} className="sm:col-span-2" />
       </div>

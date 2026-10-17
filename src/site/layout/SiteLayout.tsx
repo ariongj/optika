@@ -25,10 +25,13 @@ function useOpenedOnce(open: boolean) {
   return once || open;
 }
 
-/** Shown while a page chunk downloads (header and footer stay in place). */
+/**
+ * Shown while a page chunk downloads. At least a full screen tall, so the footer starts below the fold and doesn't
+ * visibly jump when the page arrives (that jump was the only layout shift Lighthouse measured on desktop pages).
+ */
 function PageLoading() {
   return (
-    <div className="grid min-h-[70vh] place-items-center" aria-busy="true">
+    <div className="grid min-h-[100svh] place-items-center" aria-busy="true">
       <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink/15 border-t-brand-600" />
     </div>
   );

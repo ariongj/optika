@@ -16,9 +16,9 @@ import { LineDiscounts } from '@/site/components/checkout/parts';
 import { needsRx } from '@/site/components/product/optical';
 
 const D = defineDict({
-  me: { carePer: '/ okvir', careHint: '12 meseci zaštite od loma i besplatna podešavanja', rxNote: 'Recept potvrđujemo nakon narudžbe' },
-  sq: { carePer: '/ kornizë', careHint: '12 muaj mbrojtje nga thyerja dhe rregullime falas', rxNote: 'Recetën e konfirmojmë pas porosisë' },
-  en: { carePer: '/ frame', careHint: '12-month breakage cover and free adjustments', rxNote: 'We confirm your prescription after you order' },
+  me: { carePer: '/ okvir', careHint: '12 meseci zaštite od loma i besplatna podešavanja', rxNote: 'Recept potvrđujemo nakon narudžbe', qty: 'Količina' },
+  sq: { carePer: '/ kornizë', careHint: '12 muaj mbrojtje nga thyerja dhe rregullime falas', rxNote: 'Recetën e konfirmojmë pas porosisë', qty: 'Sasia' },
+  en: { carePer: '/ frame', careHint: '12-month breakage cover and free adjustments', rxNote: 'We confirm your prescription after you order', qty: 'Quantity' },
 });
 
 export function FreeShippingBar({ remaining, threshold, reason, className }: { remaining: number; threshold: number; reason: string | null; className?: string }) {
@@ -77,7 +77,7 @@ export function CartLine({ line, compact }: { line: PricedLine; compact?: boolea
         </div>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <QtyStepper size="sm" value={line.item.qty} onChange={(v) => setQty(line.item.key, v)} />
+            <QtyStepper size="sm" value={line.item.qty} onChange={(v) => setQty(line.item.key, v)} label={`${td('qty')} — ${l(p.name)}`} />
             <span className="text-[12px] text-muted">{isPack ? `${tc('packs')} · ${num(line.units, lang)} ${unitLabel('m2', lang)}` : unitLabel(p.unit, lang)}</span>
           </div>
           <span className="text-[15px] font-bold tabular-nums text-ink">{money(line.lineTotal, lang)}</span>

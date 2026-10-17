@@ -1,3 +1,4 @@
+import '@/admin/admin.css'; // full CMS stylesheet (the storefront sheet leaves admin-only classes out)
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
 import { toast } from 'sonner';

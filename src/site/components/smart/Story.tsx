@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useMotionValueEvent, useScroll, useTransform } from 'motion/react';
 import { useDict } from '@/i18n';
 import { cn } from '@/lib/utils';
 import type { SmartPart } from './three/SmartGlasses3D';
@@ -20,6 +19,13 @@ const TAG: Partial<Record<SmartPart, string>> = { camera: '12 MP · 3K', mics: '
 /** The HUD label that follows the active part on the model. */
 const HUD: Partial<Record<SmartPart, SGKey>> = { camera: 'hud_cam', speaker: 'hud_ear', mics: 'hud_mic', touch: 'hud_touch', battery: 'hud_batt9', display: 'hud_display' };
 
+/** Track progress (0 = its top at the top of the screen, 1 = its bottom at the bottom) → how far the parts are apart. */
+function explodeAt(p: number) {
+  if (p <= 0.1) return p / 0.1;
+  if (p <= 0.9) return 1;
+  return 1 - ((p - 0.9) / 0.1) * 0.6;
+}
+
 /** The view each step turns to (radians): front three-quarter for the front parts, side-on for the temple. */
 const YAW: Record<string, number> = { camera: -0.55, led: 0.55, speaker: -1.25, mics: -0.25, touch: -1.4, battery: -1.15, display: 0.2 };
 
@@ -37,15 +43,35 @@ export function SmartStory() {
   const desktop = useMedia('(min-width: 1024px)');
   const onParts = useCallback((pts: PartPoints) => hud.current?.update(pts), []);
 
-  // scroll → exploded: opens over the first step, closes a little at the end (each step turns the model to its part)
-  const { scrollYProgress } = useScroll({ target: track, offset: ['start start', 'end end'] });
-  const explodedMv = useTransform(scrollYProgress, [0, 0.1, 0.9, 1], [0, 1, 1, 0.4]);
+  // scroll → exploded: opens over the first step, closes a little at the end (each step turns the model to its part).
+  // Measured only on scroll/resize (a motion `useScroll` target re-measured offsets every frame, forcing a layout
+  // each time the HUD moved).
   const n = STORY_PARTS.length;
-  useMotionValueEvent(explodedMv, 'change', (v) => setExploded(Math.round(v * 50) / 50));
-  // back above the steps (scrolling up past the heading): start again from the first part
-  useMotionValueEvent(scrollYProgress, 'change', (v) => {
-    if (v <= 0.02) setActive(0);
-  });
+  useEffect(() => {
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const el = track.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const span = r.height - window.innerHeight;
+      const p = span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : r.top <= 0 ? 1 : 0;
+      setExploded(Math.round(explodeAt(p) * 50) / 50);
+      // back above the steps (scrolling up past the heading): start again from the first part
+      if (p <= 0.02) setActive(0);
+    };
+    const schedule = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+    };
+  }, []);
 
   // the step crossing the reading line is the active one (a band near the middle of what's visible)
   useEffect(() => {
@@ -76,7 +102,7 @@ export function SmartStory() {
           <Kicker n="02">{t('storyEyebrow')}</Kicker>
           <Headline text={t('storyTitle')} className="mt-5 text-[36px] leading-[1.04] sm:text-[52px] lg:text-[54px] xl:text-[58px]" />
           <p className="mt-5 max-w-xl text-[15.5px] leading-relaxed text-white/55 sm:text-[16.5px]">{t('storyText')}</p>
-          <div aria-hidden className="sg-mono mt-10 hidden items-center gap-3 text-[10.5px] text-white/35 lg:flex">
+          <div aria-hidden className="sg-mono mt-10 hidden items-center gap-3 text-[10.5px] text-white/50 lg:flex">
             <span className="relative block h-10 w-px overflow-hidden bg-white/10">
               <span className="sg-cue absolute inset-0 bg-[#6fd3a5]" />
             </span>
@@ -126,10 +152,11 @@ export function SmartStory() {
               data-i={i}
               className="flex min-h-[54svh] items-end pb-6 lg:min-h-[78svh] lg:items-center lg:pb-0"
             >
+              {/* inactive steps recede by colour, not opacity, so their text stays readable (contrast ≥ 4.5:1) */}
               <div
                 className={cn(
-                  'w-full rounded-[24px] border p-6 transition-[opacity,border-color,background-color] duration-500 sm:p-7 lg:border-0 lg:bg-transparent lg:p-0',
-                  i === active ? 'border-[#6fd3a5]/30 bg-white/[0.045] opacity-100' : 'border-white/[0.07] bg-white/[0.02] opacity-55 lg:opacity-30',
+                  'w-full rounded-[24px] border p-6 transition-[border-color,background-color] duration-500 sm:p-7 lg:border-0 lg:bg-transparent lg:p-0',
+                  i === active ? 'border-[#6fd3a5]/30 bg-white/[0.045]' : 'border-white/[0.07] bg-white/[0.02]',
                 )}
               >
                 <div className="sg-mono flex items-center gap-3 text-[11px] text-white/50">
@@ -137,14 +164,16 @@ export function SmartStory() {
                   <span aria-hidden className={cn('h-px transition-[width,background-color] duration-500', i === active ? 'w-10 bg-[#6fd3a5]' : 'w-5 bg-white/20')} />
                   {TAG[p] && <span>{TAG[p]}</span>}
                 </div>
-                <h3 className="mt-4 text-[24px] font-semibold leading-tight tracking-[-0.025em] sm:text-[30px] lg:text-[34px]">{t(TITLE[p])}</h3>
-                <p className="mt-3 max-w-md text-[15px] leading-relaxed text-white/60 sm:text-[16px]">{t(TEXT[p])}</p>
+                <h3 className={cn('mt-4 text-[24px] font-semibold leading-tight tracking-[-0.025em] transition-colors duration-500 sm:text-[30px] lg:text-[34px]', i === active ? 'text-white' : 'text-white/50')}>
+                  {t(TITLE[p])}
+                </h3>
+                <p className={cn('mt-3 max-w-md text-[15px] leading-relaxed transition-colors duration-500 sm:text-[16px]', i === active ? 'text-white/70' : 'text-white/50')}>{t(TEXT[p])}</p>
               </div>
             </li>
           ))}
         </ol>
       </div>
-      <p className="container-x sg-mono pb-16 text-[10.5px] text-white/35 sm:pb-20">{t('storyNote')}</p>
+      <p className="container-x sg-mono pb-16 text-[10.5px] text-white/50 sm:pb-20">{t('storyNote')}</p>
     </section>
   );
 }

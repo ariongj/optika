@@ -92,17 +92,19 @@ export function Reveal({ children, className, delay = 0, as: Tag = 'div' }: { ch
 /* ------------------------------------------------------------------ */
 /* Quantity stepper                                                    */
 /* ------------------------------------------------------------------ */
-export function QtyStepper({ value, onChange, min = 1, max = 999, size = 'md', className }: { value: number; onChange: (v: number) => void; min?: number; max?: number; size?: 'sm' | 'md'; className?: string }) {
+/** `label` names the field for screen readers (e.g. the visible "Quantity" heading next to it). */
+export function QtyStepper({ value, onChange, min = 1, max = 999, size = 'md', className, label }: { value: number; onChange: (v: number) => void; min?: number; max?: number; size?: 'sm' | 'md'; className?: string; label?: string }) {
   const h = size === 'sm' ? 'h-9' : 'h-11';
   const w = size === 'sm' ? 'w-8' : 'w-10';
   return (
     <div className={cn('inline-flex items-center rounded-full border border-line bg-white', h, className)}>
-      <button type="button" aria-label="−" className={cn('grid h-full place-items-center rounded-l-full text-ink-soft hover:text-ink disabled:opacity-30', w)} disabled={value <= min} onClick={() => onChange(Math.max(min, value - 1))}>
+      <button type="button" aria-label={label ? `${label} −` : '−'} className={cn('grid h-full place-items-center rounded-l-full text-ink-soft hover:text-ink disabled:opacity-30', w)} disabled={value <= min} onClick={() => onChange(Math.max(min, value - 1))}>
         <Minus className="h-3.5 w-3.5" />
       </button>
       <input
         type="number"
         inputMode="numeric"
+        aria-label={label}
         className={cn('h-full bg-transparent text-center text-sm font-semibold tabular-nums outline-none', size === 'sm' ? 'w-8' : 'w-10')}
         value={value}
         onChange={(e) => {
@@ -110,7 +112,7 @@ export function QtyStepper({ value, onChange, min = 1, max = 999, size = 'md', c
           if (!Number.isNaN(n)) onChange(Math.min(max, Math.max(min, n)));
         }}
       />
-      <button type="button" aria-label="+" className={cn('grid h-full place-items-center rounded-r-full text-ink-soft hover:text-ink disabled:opacity-30', w)} disabled={value >= max} onClick={() => onChange(Math.min(max, value + 1))}>
+      <button type="button" aria-label={label ? `${label} +` : '+'} className={cn('grid h-full place-items-center rounded-r-full text-ink-soft hover:text-ink disabled:opacity-30', w)} disabled={value >= max} onClick={() => onChange(Math.min(max, value + 1))}>
         <Plus className="h-3.5 w-3.5" />
       </button>
     </div>

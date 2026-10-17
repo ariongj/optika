@@ -42,7 +42,7 @@ function CellValue({ v, on }: { v: Cell; on: boolean }) {
         <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-white/[0.06] text-white/35">
           <Minus className="h-3.5 w-3.5" strokeWidth={3} />
         </span>
-        <span className="hidden text-[13px] font-medium text-white/40 xl:inline">{t('v_no')}</span>
+        <span className="hidden text-[13px] font-medium text-white/55 xl:inline">{t('v_no')}</span>
         <span className="sr-only xl:hidden">{t('v_no')}</span>
       </span>
     );
@@ -146,7 +146,7 @@ export function SmartCompare({ products }: { products: Product[] }) {
                           k === kind ? 'border-[#6fd3a5] bg-white/[0.05]' : 'border-transparent hover:bg-white/[0.03]',
                         )}
                       >
-                        <span className={cn('sg-mono text-[10px]', k === kind ? 'text-[#6fd3a5]' : 'text-white/40')}>0{KINDS.indexOf(k) + 1}</span>
+                        <span className={cn('sg-mono text-[10px]', k === kind ? 'text-[#6fd3a5]' : 'text-white/55')}>0{KINDS.indexOf(k) + 1}</span>
                         <span className={cn('text-[13px] font-semibold leading-tight sm:text-[15px]', k === kind ? 'text-white' : 'text-white/60')}>{t(NAME[k])}</span>
                       </button>
                     </th>
@@ -169,7 +169,7 @@ export function SmartCompare({ products }: { products: Product[] }) {
               </tbody>
             </table>
             {/* legend (phones/tablets show icons only) */}
-            <div className="sg-mono flex flex-wrap gap-x-5 gap-y-2 border-t border-white/[0.07] px-4 py-4 text-[10px] text-white/45 sm:px-6 xl:hidden">
+            <div className="sg-mono flex flex-wrap gap-x-5 gap-y-2 border-t border-white/[0.07] px-4 py-4 text-[10px] text-white/55 sm:px-6 xl:hidden">
               <span className="inline-flex items-center gap-2">
                 <Check className="h-3 w-3 text-[#6fd3a5]" strokeWidth={3} /> {t('v_yes')}
               </span>

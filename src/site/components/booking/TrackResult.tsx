@@ -421,7 +421,7 @@ function Help({ order }: { order: Order }) {
               href={`https://wa.me/${wa}?text=${encodeURIComponent(t('waMsg', { n: order.number }))}`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex h-11 items-center gap-2 rounded-full bg-[#25d366] px-5 text-[14px] font-semibold text-white transition hover:brightness-95"
+              className="inline-flex h-11 items-center gap-2 rounded-full bg-[#25d366] px-5 text-[14px] font-semibold text-[#04210f] transition hover:brightness-95"
             >
               <WhatsAppIcon className="h-[18px] w-[18px]" /> {t('whatsapp')}
             </a>

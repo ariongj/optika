@@ -1,3 +1,4 @@
+import '@/admin/admin.css'; // full CMS stylesheet (the storefront sheet leaves admin-only classes out)
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router';
 import { ArrowLeft, Lock, Mail, ShieldCheck } from 'lucide-react';

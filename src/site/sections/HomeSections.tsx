@@ -371,21 +371,24 @@ export function ProcessSection({ data }: { data: DataOf<'process'> }) {
         <Reveal>
           <SectionHeading eyebrow={l(data.eyebrow)} title={l(data.title)} align="center" />
         </Reveal>
-        <ol className="relative mt-16 grid gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
-          <div className="pointer-events-none absolute left-0 right-0 top-[27px] hidden border-t border-dashed border-ink/20 lg:block" />
-          {data.steps.map((s, i) => (
-            <Reveal as="li" key={i} delay={i * 110} className="relative">
-              <div className="relative z-10 grid h-14 w-14 place-items-center rounded-full bg-paper text-brand-700 ring-1 ring-line">
-                <span className="display text-xl">{String(i + 1).padStart(2, '0')}</span>
-              </div>
-              <div className="mt-6 text-[11px] font-bold uppercase tracking-[0.2em] text-muted">
-                {h('step')} {i + 1}
-              </div>
-              <h3 className="mt-2 text-xl font-bold text-ink">{l(s.title)}</h3>
-              <p className="mt-2 text-[15px] leading-relaxed text-muted">{l(s.text)}</p>
-            </Reveal>
-          ))}
-        </ol>
+        {/* the dashed line behind the step numbers sits beside the list (an <ol> may only hold <li>s) */}
+        <div className="relative mt-16">
+          <div aria-hidden className="pointer-events-none absolute left-0 right-0 top-[27px] hidden border-t border-dashed border-ink/20 lg:block" />
+          <ol className="relative grid gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+            {data.steps.map((s, i) => (
+              <Reveal as="li" key={i} delay={i * 110} className="relative">
+                <div className="relative z-10 grid h-14 w-14 place-items-center rounded-full bg-paper text-brand-700 ring-1 ring-line">
+                  <span className="display text-xl">{String(i + 1).padStart(2, '0')}</span>
+                </div>
+                <div className="mt-6 text-[11px] font-bold uppercase tracking-[0.2em] text-muted">
+                  {h('step')} {i + 1}
+                </div>
+                <h3 className="mt-2 text-xl font-bold text-ink">{l(s.title)}</h3>
+                <p className="mt-2 text-[15px] leading-relaxed text-muted">{l(s.text)}</p>
+              </Reveal>
+            ))}
+          </ol>
+        </div>
       </div>
     </section>
   );
@@ -427,9 +430,9 @@ export function ServicesSection({ data }: { data: DataOf<'services'> }) {
                   onFocus={() => setActive(i)}
                   className="group flex w-full items-start gap-6 border-b border-line py-7 text-left"
                 >
-                  <span className={cn('display mt-1 w-10 text-lg tabular-nums transition-colors', active === i ? 'text-brand-600' : 'text-muted/60')}>{String(i + 1).padStart(2, '0')}</span>
+                  <span className={cn('display mt-1 w-10 text-lg tabular-nums transition-colors', active === i ? 'text-brand-600' : 'text-muted')}>{String(i + 1).padStart(2, '0')}</span>
                   <span className="flex-1">
-                    <span className={cn('display block text-[30px] leading-tight transition-colors', active === i ? 'text-ink' : 'text-ink/45 group-hover:text-ink/75')}>{l(it.title)}</span>
+                    <span className={cn('display block text-[30px] leading-tight transition-colors', active === i ? 'text-ink' : 'text-ink/60 group-hover:text-ink/80')}>{l(it.title)}</span>
                     <span className={cn('grid transition-all duration-500', active === i ? 'mt-2 grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
                       <span className="overflow-hidden text-[15px] leading-relaxed text-muted">{l(it.text)}</span>
                     </span>

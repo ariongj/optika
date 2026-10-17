@@ -330,7 +330,7 @@ function RxBox({ order, choice }: { order: Order; choice: RxChoice }) {
               href={`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex h-11 items-center gap-2 rounded-full bg-[#25d366] px-5 text-[14px] font-semibold text-white transition-transform hover:scale-[1.02]"
+              className="inline-flex h-11 items-center gap-2 rounded-full bg-[#25d366] px-5 text-[14px] font-semibold text-[#04210f] transition-transform hover:scale-[1.02]"
             >
               <WhatsAppIcon className="h-[18px] w-[18px]" /> {t('rxWhatsapp')}
             </a>

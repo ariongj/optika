@@ -103,7 +103,7 @@ export function Confirmation({ booking, service, onAnother }: { booking: Booking
                 {t('addCal')}
               </Button>
               {wa && (
-                <a href={`https://wa.me/${wa}?text=${encodeURIComponent(waText)}`} target="_blank" rel="noreferrer" className={`${pill} bg-[#25d366] text-white hover:brightness-95`}>
+                <a href={`https://wa.me/${wa}?text=${encodeURIComponent(waText)}`} target="_blank" rel="noreferrer" className={`${pill} bg-[#25d366] text-[#04210f] hover:brightness-95`}>
                   <WhatsAppIcon className="h-[18px] w-[18px]" /> {t('waConfirm')}
                 </a>
               )}

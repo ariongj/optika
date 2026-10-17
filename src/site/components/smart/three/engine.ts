@@ -74,12 +74,24 @@ export function createSmartEngine(host: HTMLElement, initial: EngineProps, cb: E
   const framingKey = (f?: SmartFraming) => JSON.stringify(f ?? {});
   let currentLook = '';
   let currentFraming = '';
+  /** shader compiles in flight: no frame is drawn meanwhile (drawing would compile them synchronously) */
+  let compiling = 0;
+  const precompile = () => {
+    compiling++;
+    void stage.compile().then(() => {
+      compiling--;
+      if (disposed) return;
+      partsDirty = true;
+      invalidate();
+    });
+  };
 
   const applyLook = () => {
     const k = lookKey(props);
     if (k !== currentLook) {
       currentLook = k;
       stage.setLook({ variant: props.variant, colorway: props.colorway, shape: props.shape, background: props.background });
+      precompile();
     }
     const fk = framingKey(props.framing);
     if (fk !== currentFraming) {
@@ -183,7 +195,7 @@ export function createSmartEngine(host: HTMLElement, initial: EngineProps, cb: E
 
   const frame = (now: number) => {
     raf = 0;
-    if (disposed || !running()) return;
+    if (disposed || !running() || compiling) return;
     const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;
     last = now;
     clock += dt;
@@ -207,7 +219,7 @@ export function createSmartEngine(host: HTMLElement, initial: EngineProps, cb: E
 
   const running = () => visible && tabVisible && !disposed;
   function invalidate() {
-    if (raf || !running()) return;
+    if (raf || !running() || compiling) return;
     raf = requestAnimationFrame(frame);
   }
 
@@ -346,8 +358,7 @@ export function createSmartEngine(host: HTMLElement, initial: EngineProps, cb: E
       canvas.removeEventListener('pointerup', onUp);
       canvas.removeEventListener('pointercancel', onUp);
       canvas.removeEventListener('webglcontextlost', onLost);
-      stage.dispose();
-      stage.renderer.forceContextLoss();
+      stage.dispose(); // frees GPU resources and the context once any shader compile has settled
       canvas.remove();
     },
   };

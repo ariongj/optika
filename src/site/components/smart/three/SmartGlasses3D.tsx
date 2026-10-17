@@ -69,14 +69,20 @@ export default function SmartGlasses3D(props: SmartGlasses3DProps) {
 
   useEffect(() => {
     const host = hostRef.current;
-    if (!host || !isWebGLAvailable()) {
-      setFailed(true);
-      return;
-    }
+    if (!host) return;
     let cancelled = false;
     let engine: SmartEngine | null = null;
-    import('./engine')
-      .then(({ createSmartEngine }) => {
+    // Download the engine now, but build the scene once the page is idle: the poster is on screen meanwhile, and
+    // the page's own first render and images don't compete with geometry, environment and shader work. No separate
+    // WebGL probe (it costs a context of its own) — if the renderer can't start, the poster simply stays.
+    const loaded = import('./engine');
+    const idle = (cb: () => void) =>
+      'requestIdleCallback' in window ? window.requestIdleCallback(cb, { timeout: 2500 }) : (setTimeout(cb, 300) as unknown as number);
+    const cancelIdle = (h: number) => ('cancelIdleCallback' in window ? window.cancelIdleCallback(h) : clearTimeout(h));
+    let idleHandle = 0;
+    loaded
+      .then(({ createSmartEngine }) => new Promise<typeof createSmartEngine>((resolve) => (idleHandle = idle(() => resolve(createSmartEngine)))))
+      .then((createSmartEngine) => {
         if (cancelled) return;
         engine = createSmartEngine(host, toEngine(propsRef.current), {
           onFirstFrame: () => {
@@ -98,6 +104,7 @@ export default function SmartGlasses3D(props: SmartGlasses3DProps) {
       });
     return () => {
       cancelled = true;
+      if (idleHandle) cancelIdle(idleHandle);
       engine?.dispose();
       engineRef.current = null;
     };

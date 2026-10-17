@@ -53,9 +53,36 @@ function preloadFonts(prefix: string): Plugin {
   };
 }
 
+/**
+ * The app stylesheet (~45 KB gzipped, storefront + CMS) must not hold back the first paint: every page ships a
+ * static first screen with inline styles (scripts/prerender-meta.mjs), so the sheet loads as a high-priority
+ * preload and applies when it lands; main.tsx mounts React only once it has (no unstyled flash).
+ */
+function asyncCss(): Plugin {
+  return {
+    name: 'optika-async-css',
+    apply: 'build',
+    transformIndexHtml: {
+      order: 'post',
+      handler(html) {
+        return html.replace(/<link rel="stylesheet" crossorigin href="([^"]+\.css)">/g, (_m, href: string) =>
+          [
+            `<link rel="preload" as="style" crossorigin href="${href}">`,
+            `<link rel="stylesheet" crossorigin href="${href}" media="print" onload="this.media='all'" data-app-css>`,
+            `<noscript><link rel="stylesheet" crossorigin href="${href}"></noscript>`,
+            // until the sheet is in: no default body margin and the page colour (main.tsx removes it — unlayered, it
+            // would otherwise beat the sheet's layered base styles)
+            '<style id="shell-css">body{margin:0;background:#f7f3ee}</style>',
+          ].join('\n    '),
+        );
+      },
+    },
+  };
+}
+
 export default defineConfig({
   base,
-  plugins: [baseImages(base), preloadFonts(base), react(), tailwindcss()],
+  plugins: [baseImages(base), preloadFonts(base), asyncCss(), react(), tailwindcss()],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },

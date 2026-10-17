@@ -273,7 +273,10 @@ export interface Stage {
   setFraming(f: Partial<StageFraming>): void;
   apply(pose: StagePose): void;
   render(): void;
+  /** Compile the current look's shaders without stalling the page (KHR_parallel_shader_compile where available). */
+  compile(): Promise<void>;
   project(pose: StagePose): SmartPartPoints;
+  /** Free everything (waits for a compile in flight) and release the WebGL context. */
   dispose(): void;
 }
 
@@ -334,6 +337,10 @@ export function createStage(canvas: HTMLCanvasElement, opts: { antialias?: boole
   let baseDistance = 6;
   let floorY = -0.3;
   let samples: THREE.Vector3[] = [];
+  // compileAsync keeps polling the programs it started: freeing their materials (or losing the context) before it
+  // settles makes three throw, so disposal waits for every compile in flight.
+  let pending: Promise<void> | null = null;
+  const afterCompiles = (fn: () => void) => (pending ? void pending.then(fn) : fn());
   let parts: SmartPart[] = [];
 
   const applyTuning = () => {
@@ -428,7 +435,8 @@ export function createStage(canvas: HTMLCanvasElement, opts: { antialias?: boole
       if (!model || !prev || prev.variant !== next.variant || prev.colorway !== next.colorway || prevShape !== shape || transparentChanged) {
         if (model) {
           pivot.remove(model.root);
-          model.dispose();
+          const old = model;
+          afterCompiles(() => old.dispose());
         }
         model = createGlassesModel({ variant: next.variant, colorway: next.colorway, shape, transparentBg: next.background === 'transparent' });
         pivot.add(model.root);
@@ -470,6 +478,17 @@ export function createStage(canvas: HTMLCanvasElement, opts: { antialias?: boole
       renderer.setRenderTarget(null);
       renderer.render(scene, camera);
     },
+    compile() {
+      const p = renderer.compileAsync(scene, camera).then(
+        () => undefined,
+        () => undefined,
+      );
+      const all: Promise<void> = (pending ? Promise.all([pending, p]) : p).then(() => {
+        if (pending === all) pending = null;
+      });
+      pending = all;
+      return p;
+    },
     project(pose) {
       const out: SmartPartPoints = {};
       if (!model) return out;
@@ -495,17 +514,19 @@ export function createStage(canvas: HTMLCanvasElement, opts: { antialias?: boole
       return out;
     },
     dispose() {
-      if (model) {
-        pivot.remove(model.root);
-        model.dispose();
-        model = null;
-      }
-      shadow.dispose();
-      backdrop.mesh.geometry.dispose();
-      (backdrop.mesh.material as THREE.Material).dispose();
-      envTex?.dispose();
-      pmrem.dispose();
-      renderer.dispose();
+      const last = model;
+      model = null;
+      if (last) pivot.remove(last.root);
+      afterCompiles(() => {
+        last?.dispose();
+        shadow.dispose();
+        backdrop.mesh.geometry.dispose();
+        (backdrop.mesh.material as THREE.Material).dispose();
+        envTex?.dispose();
+        pmrem.dispose();
+        renderer.dispose();
+        renderer.forceContextLoss();
+      });
     },
   };
   return stage;

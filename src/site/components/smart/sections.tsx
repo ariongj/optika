@@ -58,7 +58,7 @@ export function SmartModels({ products, categorySlug, onAsk }: { products: Produ
             return (
               <li key={p.id} className="w-[80%] shrink-0 snap-start sm:w-[46%] lg:w-auto">
                 <article onPointerMove={glowMove} className="sg-card group flex h-full flex-col overflow-hidden rounded-[26px]">
-                  <Link to={`/produkt/${p.slug}`} className="relative block aspect-[4/5] overflow-hidden bg-[#0b0f0d] lg:aspect-square" aria-label={l(p.name)}>
+                  <Link to={`/produkt/${p.slug}`} className="relative block aspect-[4/5] overflow-hidden bg-[#0b0f0d] lg:aspect-square" aria-hidden tabIndex={-1}>
                     <Img src={darkImage(p)} small eager={i < 2} alt={l(p.name)} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-[1.05]" />
                     <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#07090a]/80 to-transparent" />
                     <RenderChip tone="dark" className="absolute left-4 top-4" />
@@ -178,7 +178,7 @@ export function PrivacyBlock() {
                   <span className="sg-led h-3 w-3 rounded-full bg-white" />
                 </span>
               </div>
-              <div className="sg-mono mt-4 text-[10.5px] text-white/45">{t('privLed')}</div>
+              <div className="sg-mono mt-4 text-[10.5px] text-white/55">{t('privLed')}</div>
               <Kicker n="06" className="mt-8">
                 {t('privEyebrow')}
               </Kicker>
@@ -218,7 +218,7 @@ function FaqList({ items }: { items: { title: string; content: string }[] }) {
               onClick={() => setOpen(on ? null : i)}
               className="flex w-full items-center gap-4 px-5 py-5 text-left sm:gap-5 sm:px-6"
             >
-              <span className={cn('sg-mono w-6 shrink-0 text-[11px] transition-colors', on ? 'text-[#6fd3a5]' : 'text-white/35')}>{String(i + 1).padStart(2, '0')}</span>
+              <span className={cn('sg-mono w-6 shrink-0 text-[11px] transition-colors', on ? 'text-[#6fd3a5]' : 'text-white/50')}>{String(i + 1).padStart(2, '0')}</span>
               <span className={cn('flex-1 text-[16px] font-semibold leading-snug tracking-[-0.01em] transition-colors sm:text-[17.5px]', on ? 'text-white' : 'text-white/80')}>{it.title}</span>
               <span
                 aria-hidden
@@ -454,14 +454,14 @@ export function BrandStrip() {
       <div className="container-x">
         <div className="flex flex-col gap-4 border-y border-white/[0.08] py-7 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <span className="sg-mono mr-2 text-[10.5px] text-white/40">{t('brandsLabel')}</span>
+            <span className="sg-mono mr-2 text-[10.5px] text-white/55">{t('brandsLabel')}</span>
             {brands.map((b, i) => (
               <span key={b} className="inline-flex items-center gap-3">
                 {i > 0 && <span aria-hidden className="h-1 w-1 rounded-full bg-white/25" />}
                 <span className="text-[20px] font-semibold tracking-[-0.03em] text-white/90 sm:text-[22px]">{b}</span>
               </span>
             ))}
-            <span className="inline-flex items-center gap-3 text-[14px] font-medium text-white/45">
+            <span className="inline-flex items-center gap-3 text-[14px] font-medium text-white/55">
               <span aria-hidden className="h-1 w-1 rounded-full bg-white/25" />
               {t('brandsMore')}
             </span>
@@ -470,7 +470,7 @@ export function BrandStrip() {
             {t('modelsAll')} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>
-        <p className="mt-5 flex max-w-3xl items-start gap-2.5 text-[12.5px] leading-relaxed text-white/40">
+        <p className="mt-5 flex max-w-3xl items-start gap-2.5 text-[12.5px] leading-relaxed text-white/50">
           <RenderChip tone="dark" className="mt-px shrink-0 scale-90" />
           <span>{t('footnote')}</span>
         </p>
