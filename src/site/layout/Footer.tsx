@@ -11,7 +11,7 @@ import { useCategories, useSettings } from '@/store/hooks';
 import { useDb } from '@/store/db';
 import { isPromo, type NavNode } from '@/admin/components/menus/links';
 import { useNavMenu } from '@/admin/components/menus/useNav';
-import { cn } from '@/lib/utils';
+import { cn, isFilled } from '@/lib/utils';
 import { isBookingHref, openBooking } from '@/site/components/utility/Booking';
 
 /** Footer-only copy (the shared footer strings live in `site`). */
@@ -172,13 +172,13 @@ export function Footer({ dark = false }: { dark?: boolean }) {
         <div className="flex flex-col gap-3 border-t border-white/10 py-6 text-[12.5px] text-paper/45 sm:flex-row sm:items-center sm:justify-between">
           <span>
             © {year} {settings.legalName}
-            {settings.pib && (
+            {isFilled(settings.pib) && (
               <>
                 {' '}
                 · {t('taxId')} {settings.pib}
               </>
             )}
-            {settings.pdv && (
+            {isFilled(settings.pdv) && (
               <>
                 {' '}
                 · {f('vatNo')} {settings.pdv}

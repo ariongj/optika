@@ -235,10 +235,11 @@ function AnnouncementBar() {
           <AnimatePresence mode="wait">
             <motion.p
               key={cur.id}
-              initial={{ y: 14, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -14, opacity: 0 }}
-              transition={{ duration: 0.35 }}
+              // a clipped ticker slide, no fade: the text is never shown at low contrast mid-transition
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '-100%' }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               className="absolute inset-0 flex items-center justify-center truncate font-medium"
             >
               {!cur.href ? (

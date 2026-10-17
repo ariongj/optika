@@ -91,3 +91,8 @@ export function download(filename: string, content: string, type = 'application/
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+/** A business detail that is actually filled in — not empty and not a seed placeholder like "81XXXXXXX". */
+export function isFilled(value: string | undefined | null): value is string {
+  return !!value && !!value.trim() && !/X{3,}/i.test(value);
+}

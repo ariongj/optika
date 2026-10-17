@@ -537,10 +537,13 @@ export default function Checkout() {
                 title={t('s1')}
                 desc={t('s1d')}
                 action={
-                  <button type="button" onClick={fillDemo} className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-ink/20 px-3 py-1.5 text-[12px] font-semibold text-muted transition-colors hover:border-ink/40 hover:text-ink">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    {t('demoFill')}
-                  </button>
+                  // demo stores only (the same CMS switch as the "demo shop" badge)
+                  settings.demoBanner ? (
+                    <button type="button" onClick={fillDemo} className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-ink/20 px-3 py-1.5 text-[12px] font-semibold text-muted transition-colors hover:border-ink/40 hover:text-ink">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      {t('demoFill')}
+                    </button>
+                  ) : undefined
                 }
               >
                 <div className="grid gap-x-4 gap-y-5 sm:grid-cols-2">

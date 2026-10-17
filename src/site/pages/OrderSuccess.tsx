@@ -11,7 +11,7 @@ import { useSettings } from '@/store/hooks';
 import { zoneForCity } from '@/lib/pricing';
 import { dateTime, money, num, unitLabel } from '@/lib/format';
 import type { Order, OrderLine } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { cn, isFilled } from '@/lib/utils';
 import { usePageTitle } from '@/site/layout/SiteLayout';
 import { CheckoutSteps, TotalsRows, useCopy, useDiscountRows, useItemsLabel } from '@/site/components/checkout/parts';
 import { Confetti, SuccessCheck } from '@/site/components/checkout/Celebrate';
@@ -59,6 +59,7 @@ const T = defineDict({
     recipient: 'Primalac',
     bank: 'Banka',
     account: 'Broj računa',
+    accountLater: 'Poslaćemo ga telefonom ili e-poštom',
     amount: 'Iznos',
     reference: 'Poziv na broj',
     purpose: 'Svrha uplate',
@@ -121,6 +122,7 @@ const T = defineDict({
     recipient: 'Përfituesi',
     bank: 'Banka',
     account: 'Llogaria',
+    accountLater: 'Do t’jua dërgojmë me telefon ose e-mail',
     amount: 'Shuma',
     reference: 'Referenca',
     purpose: 'Qëllimi i pagesës',
@@ -183,6 +185,7 @@ const T = defineDict({
     recipient: 'Recipient',
     bank: 'Bank',
     account: 'Account number',
+    accountLater: 'We’ll send it to you by phone or email',
     amount: 'Amount',
     reference: 'Reference',
     purpose: 'Payment description',
@@ -260,7 +263,10 @@ function BankBox({ order }: { order: Order }) {
   const rows: { label: string; value: string; copy?: boolean; strong?: boolean }[] = [
     { label: t('recipient'), value: settings.legalName },
     { label: t('bank'), value: settings.bankName },
-    { label: t('account'), value: settings.bankAccount, copy: true, strong: true },
+    // until the real account is entered in the CMS, don't show the seed placeholder
+    isFilled(settings.bankAccount)
+      ? { label: t('account'), value: settings.bankAccount, copy: true, strong: true }
+      : { label: t('account'), value: t('accountLater') },
     { label: t('amount'), value: money(order.total, lang), strong: true },
     { label: t('reference'), value: order.number, copy: true, strong: true },
     { label: t('purpose'), value: t('purposeText', { n: order.number }) },
