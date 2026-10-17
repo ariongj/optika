@@ -172,7 +172,7 @@ export default function CartPage() {
                   {items(totals.count)} · <span className="font-semibold text-ink">{money(totals.total, lang)}</span>
                 </p>
               </div>
-              <Link to="/produktet" className="group hidden items-center gap-2 text-sm font-semibold text-ink-soft hover:text-ink sm:inline-flex">
+              <Link to="/produktet" className="tap group hidden items-center gap-2 text-sm font-semibold text-ink-soft hover:text-ink sm:inline-flex">
                 <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
                 {t('continue')}
               </Link>

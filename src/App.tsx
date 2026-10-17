@@ -119,7 +119,10 @@ function Root() {
   }, []);
   return (
     <>
-      <ScrollRestoration />
+      {/* Every full page load starts as history key "default", so keying by it restored the previous page's scroll
+          position onto a different page opened in the same tab. Fresh loads are keyed by their path instead (a
+          reload still comes back to where you were); in-app navigations keep their unique keys (back/forward). */}
+      <ScrollRestoration getKey={(location) => (location.key === 'default' ? location.pathname : location.key)} />
       <Suspense fallback={<Loader />}>
         <Outlet />
       </Suspense>

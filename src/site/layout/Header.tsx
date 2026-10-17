@@ -228,7 +228,7 @@ function AnnouncementBar() {
   return (
     <div className="relative z-50 bg-ink text-paper">
       <div className="container-x flex h-9 items-center justify-between gap-4 text-[12.5px]">
-        <a href={`tel:${settings.phone.replace(/\s/g, '')}`} className="hidden items-center gap-1.5 text-paper/75 hover:text-white md:flex">
+        <a href={`tel:${settings.phone.replace(/\s/g, '')}`} className="tap hidden items-center gap-1.5 text-paper/75 hover:text-white md:flex">
           <Phone className="h-3.5 w-3.5" /> {settings.phone}
         </a>
         <div className="relative h-full flex-1 overflow-hidden text-center md:max-w-[60%]">

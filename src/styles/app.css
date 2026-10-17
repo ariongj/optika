@@ -214,9 +214,10 @@ html[data-admin] ::selection {
   }
 }
 
-/* Phones: iOS Safari zooms the page when a focused field's text is under 16px. Unlayered on purpose (beats the
-   Tailwind utilities layer); fields that already use a larger size (search boxes etc.) keep it. */
-@media (max-width: 767px) {
+/* Phones and tablets: iOS Safari zooms the page when a focused field's text is under 16px — also on a phone held
+   sideways (wider than 767px) and on iPads, hence "or any touch screen". Unlayered on purpose (beats the Tailwind
+   utilities layer); fields that already use a larger size (search boxes etc.) keep it. */
+@media (max-width: 767px), (pointer: coarse) {
   :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="submit"], [type="button"]), select, textarea):not(
       [class*="text-lg"],
       [class*="text-xl"],
@@ -234,5 +235,21 @@ html[data-admin] ::selection {
       [class*="text-[6"]
     ) {
     font-size: 16px;
+  }
+}
+
+/* Touch screens: text links and small text buttons get a finger-sized hit area (WCAG 2.5.8: at least 24 × 24 px)
+   without moving anything — an invisible pseudo-element around them takes the tap. Left alone: positioned or sized
+   elements, pills (rounded), anything with its own ::after, and "tap" opts a control in explicitly. */
+@media (pointer: coarse) {
+  :is(a, button):is(.link-u, .eyebrow, .inline-flex, .tap):not([class*='absolute'], [class*='fixed'], [class*='sticky'], [class*='h-'], [class*='size-'], [class*='rounded'], [class*='after:']),
+  :is(h2, h3, h4) > a:not([class*='absolute'], [class*='h-'], [class*='rounded'], [class*='after:']) {
+    position: relative;
+  }
+  :is(a, button):is(.link-u, .eyebrow, .inline-flex, .tap):not([class*='absolute'], [class*='fixed'], [class*='sticky'], [class*='h-'], [class*='size-'], [class*='rounded'], [class*='after:'])::after,
+  :is(h2, h3, h4) > a:not([class*='absolute'], [class*='h-'], [class*='rounded'], [class*='after:'])::after {
+    content: '';
+    position: absolute;
+    inset: -8px -6px;
   }
 }

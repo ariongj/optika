@@ -78,9 +78,14 @@ export default function SmartGlasses3D(props: SmartGlasses3DProps) {
     // the page's own first render and images don't compete with geometry, environment and shader work. No separate
     // WebGL probe (it costs a context of its own) — if the renderer can't start, the poster simply stays.
     const loaded = import('./engine');
+    const eager = !!propsRef.current.eager;
     const idle = (cb: () => void) =>
-      'requestIdleCallback' in window ? window.requestIdleCallback(cb, { timeout: 2500 }) : (setTimeout(cb, 300) as unknown as number);
-    const cancelIdle = (h: number) => ('cancelIdleCallback' in window ? window.cancelIdleCallback(h) : clearTimeout(h));
+      eager
+        ? (setTimeout(cb, 0) as unknown as number) // the hero: as soon as the page has painted
+        : 'requestIdleCallback' in window
+          ? window.requestIdleCallback(cb, { timeout: 2500 })
+          : (setTimeout(cb, 300) as unknown as number);
+    const cancelIdle = (h: number) => (!eager && 'cancelIdleCallback' in window ? window.cancelIdleCallback(h) : clearTimeout(h));
     let idleHandle = 0;
     loaded
       .then(({ createSmartEngine }) => new Promise<typeof createSmartEngine>((resolve) => (idleHandle = idle(() => resolve(createSmartEngine)))))

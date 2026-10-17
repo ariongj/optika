@@ -7,7 +7,8 @@ import { useInView } from './ui';
 
 /** three.js stays out of the page chunk: the model loads on demand (and is prefetched once the page is idle). */
 const SmartGlasses3D = lazyRetry(() => import('./three/SmartGlasses3D'));
-export const preload3D = () => import('./three/SmartGlasses3D').catch(() => undefined);
+/** Fetch the 3D component and its engine (three.js) together, before the stage mounts. */
+export const preload3D = () => Promise.all([import('./three/SmartGlasses3D'), import('./three/engine')]).catch(() => undefined);
 
 interface StageProps extends Omit<SmartGlasses3DProps, 'poster' | 'className' | 'background'> {
   /** Desktop poster (and phone poster below 1024 px) — shown until WebGL draws, or instead of it. */
@@ -23,21 +24,29 @@ interface StageProps extends Omit<SmartGlasses3DProps, 'poster' | 'className' | 
 }
 
 /**
- * The real-time 3D smart glasses (agent smart3d's component) with a poster as the Suspense fallback. The canvas is
- * mounted only near the viewport and skipped entirely without WebGL or on Save-Data/2G; the poster fades out once
- * the first frame is drawn.
+ * The real-time 3D smart glasses. The canvas is mounted only near the viewport; the model fades and scales in once
+ * its first frame is drawn — no still image first. The poster (a static render) is only a fallback: shown without
+ * WebGL, on Save-Data/2G, or if the model hasn't drawn after a few seconds (then it crossfades to the live model).
  */
 export function Stage({ poster, posterMobile, posterClassName, className, margin = '40% 0px', children, onReady, ...props }: StageProps) {
   const ref = useRef<HTMLDivElement>(null);
   const near = useInView(ref, { once: false, margin, threshold: 0 });
   const [enabled] = useState(() => typeof window !== 'undefined' && canWebGL() && !lightMode());
   const [ready, setReady] = useState(false);
+  /** the model hasn't drawn in time (slow phone, slow network): show the still meanwhile */
+  const [late, setLate] = useState(false);
   const live = enabled && near;
 
-  // a remounted canvas has to draw again before the poster may go
+  // a remounted canvas has to draw again
   useEffect(() => {
     if (!live) setReady(false);
   }, [live]);
+  useEffect(() => {
+    if (!live || ready) return;
+    const t = setTimeout(() => setLate(true), 4500);
+    return () => clearTimeout(t);
+  }, [live, ready]);
+  const showPoster = !enabled || (late && !ready);
 
   const readyRef = useRef(onReady);
   readyRef.current = onReady;
@@ -56,8 +65,7 @@ export function Stage({ poster, posterMobile, posterClassName, className, margin
         decoding="async"
         className={cn(
           // the render has its own backdrop: feather its edges into the page
-          'pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-700 select-none [mask-image:radial-gradient(ellipse_70%_65%_at_50%_50%,#000_45%,transparent_100%)]',
-          ready ? 'opacity-0' : 'opacity-100',
+          'pointer-events-none absolute inset-0 h-full w-full animate-fade-in object-cover select-none [mask-image:radial-gradient(ellipse_70%_65%_at_50%_50%,#000_45%,transparent_100%)]',
           posterClassName,
         )}
       />
@@ -66,10 +74,18 @@ export function Stage({ poster, posterMobile, posterClassName, className, margin
 
   return (
     <div ref={ref} className={cn('relative', className)}>
-      {posterEl}
+      {showPoster && posterEl}
       {live && (
         <Suspense fallback={null}>
-          <SmartGlasses3D {...props} background="transparent" onReady={handleReady} className={cn('absolute inset-0 h-full w-full transition-opacity duration-700', ready ? 'opacity-100' : 'opacity-0')} />
+          <SmartGlasses3D
+            {...props}
+            background="transparent"
+            onReady={handleReady}
+            className={cn(
+              'absolute inset-0 h-full w-full transition-[opacity,transform] duration-[1100ms] ease-[cubic-bezier(.16,1,.3,1)]',
+              ready ? 'scale-100 opacity-100' : 'scale-[0.94] opacity-0',
+            )}
+          />
         </Suspense>
       )}
       {children}

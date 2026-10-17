@@ -295,7 +295,7 @@ export function MeasureForm({
                       type="button"
                       aria-pressed={form.rx === v}
                       onClick={() => setForm((x) => ({ ...x, rx: x.rx === v ? '' : v }))}
-                      className={cn('min-h-10 rounded-full px-4 py-1.5 text-[13.5px] font-semibold transition-colors sm:min-h-0', form.rx === v ? 'bg-white text-ink shadow-sm ring-1 ring-line' : 'text-muted hover:text-ink')}
+                      className={cn('min-h-10 rounded-full px-4 py-1.5 text-[13.5px] font-semibold transition-colors pointer-fine:min-h-0', form.rx === v ? 'bg-white text-ink shadow-sm ring-1 ring-line' : 'text-muted hover:text-ink')}
                     >
                       {f(v === 'yes' ? 'rx_yes' : 'rx_no')}
                     </button>

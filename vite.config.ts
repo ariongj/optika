@@ -88,5 +88,7 @@ export default defineConfig({
   },
   server: { port: 5173, host: true },
   preview: { port: 4173, host: true },
-  build: { chunkSizeWarningLimit: 1500 },
+  // manifest: scripts/prerender-meta.mjs reads it to preload a route's lazy chunks from its HTML (then deletes it)
+  // JS syntax for Safari/iOS 15 too (iPhone 6s/7 stop at iOS 15.8); the runtime APIs used need iOS 15.4+ at most
+  build: { chunkSizeWarningLimit: 1500, manifest: true, target: ['es2020', 'safari15', 'ios15', 'chrome100', 'edge100', 'firefox100'] },
 });

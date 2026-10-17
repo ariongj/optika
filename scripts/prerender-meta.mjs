@@ -99,6 +99,31 @@ const STATIC = [
   ['rezervo', 'Rezervo kontrollin e syve', 'Zgjidhni shërbimin, ditën dhe orën — kontroll i syve, përshtatje, lente kontakti ose konsultë në Klinikën Miftari.', '/images/hero/exam.webp'],
 ];
 for (const [r, t, d, img] of STATIC) put(r, { title: t, description: d, image: img });
+
+// Smart glasses: the page and its live 3D model are lazy chunks. Preload them from the HTML so the download starts
+// while the main bundle is still arriving — the glasses then fade in sooner (there is no still image first).
+{
+  const manifestPath = path.join(DIST, '.vite', 'manifest.json');
+  if (fs.existsSync(manifestPath)) {
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    const shellHtml = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
+    const files = new Set();
+    const css = new Set();
+    const walk = (key) => {
+      const e = manifest[key];
+      if (!e || files.has(e.file)) return;
+      files.add(e.file);
+      (e.css ?? []).forEach((c) => css.add(c));
+      (e.imports ?? []).forEach(walk);
+    };
+    ['src/site/pages/SmartGlasses.tsx', 'src/site/components/smart/three/SmartGlasses3D.tsx', 'src/site/components/smart/three/engine.ts'].forEach(walk);
+    const fresh = [...files].filter((f) => !shellHtml.includes(f));
+    pages.get('syze-inteligjente').preload = [
+      ...fresh.map((f) => `<link rel="modulepreload" crossorigin href="${BASE}${f}" />`),
+      ...[...css].filter((c) => !shellHtml.includes(c)).map((c) => `<link rel="preload" as="style" crossorigin href="${BASE}${c}" />`),
+    ];
+  }
+}
 for (const [r, t] of [['shporta', 'Shporta'], ['pagesa', 'Pagesa'], ['kerko', 'Kërko'], ['te-preferuarat', 'Të preferuarat'], ['gjurmo-porosine', 'Gjurmo porosinë'], ['admin', 'CMS'], ['admin/login', 'Hyrje në CMS']])
   put(r, { title: t, description: s.seo.description, image: '/images/hero/optical.webp', noindex: true });
 
@@ -242,4 +267,5 @@ fs.writeFileSync(
 );
 fs.writeFileSync(path.join(DIST, 'robots.txt'), `User-agent: *\nDisallow: ${BASE}admin/\nAllow: /\n\nSitemap: ${abs('sitemap.xml')}\n`);
 fs.rmSync(tmp, { recursive: true, force: true });
+fs.rmSync(path.join(DIST, '.vite'), { recursive: true, force: true }); // the build manifest isn't part of the site
 console.log(`prerender-meta: ${n} route shells, ${urls.length} URLs in sitemap.xml, robots.txt, 404.html`);

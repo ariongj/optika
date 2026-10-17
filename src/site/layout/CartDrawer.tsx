@@ -61,7 +61,7 @@ export function CartLine({ line, compact }: { line: PricedLine; compact?: boolea
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <Link to={`/produkt/${p.slug}`} onClick={() => setCartOpen(false)} className="line-clamp-2 text-[14.5px] font-semibold leading-snug text-ink hover:text-brand-700">
+            <Link to={`/produkt/${p.slug}`} onClick={() => setCartOpen(false)} className="-my-0.5 line-clamp-2 py-0.5 text-[14.5px] font-semibold leading-snug text-ink hover:text-brand-700">
               {l(p.name)}
             </Link>
             {line.optionsLabel && <p className="mt-1 text-[12.5px] leading-snug text-muted">{line.optionsLabel}</p>}

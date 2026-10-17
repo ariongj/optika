@@ -108,6 +108,7 @@ export function SmartHero() {
             autoRotate
             interactive
             onParts={onParts}
+            eager
             margin="20% 0px"
             framing={desktop ? undefined : PHONE_FRAMING}
             className="aspect-[5/4] w-full touch-pan-y lg:aspect-auto lg:h-full"

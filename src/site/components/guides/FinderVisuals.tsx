@@ -149,7 +149,7 @@ export function MatchRing({ pct, label, className }: { pct: number; label: strin
       </svg>
       <span aria-hidden className="relative text-[13px] font-bold tabular-nums text-ink">
         {pct}
-        <span className="text-[9px]">%</span>
+        <span className="text-[10px]">%</span>
       </span>
       <span className="sr-only">{label}</span>
     </span>

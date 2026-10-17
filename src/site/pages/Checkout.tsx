@@ -489,7 +489,7 @@ export default function Checkout() {
       {/* Checkout bar */}
       <div className="border-b border-line bg-white/55">
         <div className="container-x flex h-[60px] items-center justify-between gap-4">
-          <Link to="/shporta" className="group hidden items-center gap-2 text-[13.5px] font-semibold text-ink-soft hover:text-ink md:inline-flex">
+          <Link to="/shporta" className="tap group hidden items-center gap-2 text-[13.5px] font-semibold text-ink-soft hover:text-ink md:inline-flex">
             <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
             {t('backToCart')}
           </Link>

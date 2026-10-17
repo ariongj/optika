@@ -40,6 +40,8 @@ export interface SmartGlasses3DProps {
   spread?: number;
   /** 0..1, the camera flies in towards `activePart` (eased; 0 = the whole model) */
   zoom?: number;
+  /** first screen: build the scene right after the first paint instead of waiting for the browser to be idle */
+  eager?: boolean;
   /** radians; null = autoRotate / idle sway */
   rotation?: { yaw: number; pitch: number } | null;
   /** gentle idle motion (off under prefers-reduced-motion) */

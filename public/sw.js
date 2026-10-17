@@ -28,30 +28,40 @@ async function trim(cacheName, max) {
   for (let i = 0; i < keys.length - max; i++) await cache.delete(keys[i]);
 }
 
-async function cacheFirst(request) {
+/** Saving to the cache must never break the response itself (storage full, private mode…). */
+function store(event, cacheName, request, res, max) {
+  event.waitUntil(
+    caches
+      .open(cacheName)
+      .then((cache) => cache.put(request, res))
+      .then(() => trim(cacheName, max))
+      .catch(() => {}),
+  );
+}
+
+async function cacheFirst(event) {
   const cache = await caches.open(ASSETS);
-  const hit = await cache.match(request);
+  const hit = await cache.match(event.request);
   if (hit) return hit;
-  const res = await fetch(request);
-  if (res.ok) {
-    await cache.put(request, res.clone());
-    trim(ASSETS, 120);
+  try {
+    const res = await fetch(event.request);
+    if (res.ok) store(event, ASSETS, event.request, res.clone(), 120);
+    return res;
+  } catch {
+    // offline, or the page went away and cancelled the download: a plain network error, not a worker crash
+    return Response.error();
   }
-  return res;
 }
 
 async function staleWhileRevalidate(event) {
   const cache = await caches.open(IMAGES);
   const hit = await cache.match(event.request);
   const refresh = fetch(event.request)
-    .then(async (res) => {
-      if (res.ok) {
-        await cache.put(event.request, res.clone());
-        trim(IMAGES, 160);
-      }
+    .then((res) => {
+      if (res.ok) store(event, IMAGES, event.request, res.clone(), 160);
       return res;
     })
-    .catch(() => hit);
+    .catch(() => hit || Response.error());
   if (hit) {
     event.waitUntil(refresh);
     return hit;
@@ -59,17 +69,15 @@ async function staleWhileRevalidate(event) {
   return refresh;
 }
 
-async function networkFirst(request) {
-  const cache = await caches.open(PAGES);
+async function networkFirst(event) {
+  const { request } = event;
   try {
     const res = await fetch(request);
     // GitHub Pages answers unknown deep links with the app shell (404.html, status 404) — still a usable page.
-    if (res.ok || res.status === 404) {
-      await cache.put(request, res.clone());
-      trim(PAGES, 40);
-    }
+    if (res.ok || res.status === 404) store(event, PAGES, request, res.clone(), 40);
     return res;
-  } catch (err) {
+  } catch {
+    const cache = await caches.open(PAGES);
     return (await cache.match(request)) || (await cache.match(SCOPE.href)) || Response.error();
   }
 }
@@ -81,7 +89,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== SCOPE.origin || !url.pathname.startsWith(SCOPE.pathname)) return;
   const path = url.pathname.slice(SCOPE.pathname.length);
   if (path.startsWith('mediapipe/') || path === 'sw.js') return;
-  if (request.mode === 'navigate') return event.respondWith(networkFirst(request));
-  if (path.startsWith('assets/')) return event.respondWith(cacheFirst(request));
+  if (request.mode === 'navigate') return event.respondWith(networkFirst(event));
+  if (path.startsWith('assets/')) return event.respondWith(cacheFirst(event));
   if (/^(images|og)\//.test(path) || /\.(png|webp|jpg|svg|ico)$/.test(path)) return event.respondWith(staleWhileRevalidate(event));
 });

@@ -121,20 +121,20 @@ export function Footer({ dark = false }: { dark?: boolean }) {
             <ul className="space-y-1 text-[14.5px] text-paper/80 sm:space-y-4">
               <li className="flex items-center gap-3 sm:items-start">
                 <MapPin className="sm:mt-0.5 h-4 w-4 shrink-0 text-brand-300" />
-                <a href={settings.mapUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center hover:text-white sm:min-h-0">
+                <a href={settings.mapUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center hover:text-white pointer-fine:min-h-0">
                   {settings.address}, {settings.city}, {f('country')}
                 </a>
               </li>
               <li className="flex items-center gap-3 sm:items-start">
                 <Phone className="h-4 w-4 shrink-0 text-brand-300 sm:mt-0.5" />
                 <span>
-                  <a href={`tel:${settings.phone.replace(/[^\d+]/g, '')}`} className="inline-flex min-h-10 items-center hover:text-white sm:min-h-0">
+                  <a href={`tel:${settings.phone.replace(/[^\d+]/g, '')}`} className="inline-flex min-h-10 items-center hover:text-white pointer-fine:min-h-0">
                     {settings.phone}
                   </a>
                   {wa && (
                     <>
                       <span className="text-paper/35"> · </span>
-                      <a href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center hover:text-white sm:min-h-0">
+                      <a href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center hover:text-white pointer-fine:min-h-0">
                         WhatsApp
                       </a>
                     </>
@@ -143,7 +143,7 @@ export function Footer({ dark = false }: { dark?: boolean }) {
               </li>
               <li className="flex items-center gap-3 sm:items-start">
                 <Mail className="h-4 w-4 shrink-0 text-brand-300 sm:mt-0.5" />
-                <a href={`mailto:${settings.email}`} className="inline-flex min-h-10 items-center hover:text-white sm:min-h-0">
+                <a href={`mailto:${settings.email}`} className="inline-flex min-h-10 items-center hover:text-white pointer-fine:min-h-0">
                   {settings.email}
                 </a>
               </li>
@@ -154,7 +154,7 @@ export function Footer({ dark = false }: { dark?: boolean }) {
               {ig && (
                 <li className="flex items-center gap-3 sm:items-start">
                   <InstagramIcon className="h-4 w-4 shrink-0 text-brand-300 sm:mt-0.5" />
-                  <a href={`https://www.instagram.com/${ig}/`} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center hover:text-white sm:min-h-0">
+                  <a href={`https://www.instagram.com/${ig}/`} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center hover:text-white pointer-fine:min-h-0">
                     @{ig}
                   </a>
                 </li>
@@ -190,10 +190,10 @@ export function Footer({ dark = false }: { dark?: boolean }) {
             · {t('rights')}
           </span>
           <span className="flex items-center gap-5">
-            <Link to="/admin" className="inline-flex min-h-10 items-center hover:text-white sm:min-h-0">
+            <Link to="/admin" className="inline-flex min-h-10 items-center hover:text-white pointer-fine:min-h-0">
               {t('adminLink')}
             </Link>
-            <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="inline-flex min-h-10 items-center gap-1.5 hover:text-white sm:min-h-0">
+            <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="inline-flex min-h-10 items-center gap-1.5 hover:text-white pointer-fine:min-h-0">
               {t('backToTop')} <ArrowUp className="h-3.5 w-3.5" />
             </button>
           </span>
@@ -243,7 +243,7 @@ function TryOnLabel({ label }: { label: string }) {
     <span className="inline-flex items-center gap-1.5">
       <ScanFace className="h-3.5 w-3.5 text-brand-300" />
       {label}
-      <span className="ml-1 rounded-full bg-brand-600/60 px-1.5 py-px text-[9.5px] font-bold uppercase tracking-[0.12em] text-white">{tc('badge_new')}</span>
+      <span className="ml-1 rounded-full bg-brand-600/60 px-1.5 py-px text-[10px] font-bold uppercase tracking-[0.12em] text-white">{tc('badge_new')}</span>
     </span>
   );
 }

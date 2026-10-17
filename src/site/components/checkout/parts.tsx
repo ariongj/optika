@@ -220,7 +220,7 @@ export function CouponBox({ totals, collapsible, className }: { totals: Totals; 
                 demo && (
                   <p className="mt-2 text-[12px] text-muted">
                     {t('couponDemo')}{' '}
-                    <button type="button" onClick={() => apply(demo.code)} className="font-bold tracking-wide text-ink-soft underline decoration-dotted underline-offset-2 hover:text-brand-700">
+                    <button type="button" onClick={() => apply(demo.code)} className="tap font-bold tracking-wide text-ink-soft underline decoration-dotted underline-offset-2 hover:text-brand-700">
                       {demo.code}
                     </button>
                   </p>

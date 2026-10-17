@@ -128,7 +128,7 @@ export function Checkbox({ checked, onChange, label, description, className, dis
 
 export function Switch({ checked, onChange, label, size = 'md', disabled }: { checked: boolean; onChange: (v: boolean) => void; label?: ReactNode; size?: 'sm' | 'md'; disabled?: boolean }) {
   return (
-    <label className={cn('inline-flex cursor-pointer items-center gap-2.5 select-none', disabled && 'cursor-not-allowed opacity-60')}>
+    <label className={cn('inline-flex min-h-6 cursor-pointer items-center gap-2.5 select-none', disabled && 'cursor-not-allowed opacity-60')}>
       <button
         type="button"
         role="switch"
