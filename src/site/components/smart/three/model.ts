@@ -43,6 +43,8 @@ export interface ModelOptions {
 
 export interface ModelFrameState {
   exploded: number;
+  /** explode distance multiplier (default 1) */
+  spread?: number;
   highlight: Record<SmartPart, number>;
   hud: number;
   led: number;
@@ -1023,9 +1025,10 @@ export function createGlassesModel(o: ModelOptions): GlassesModel {
     anchors: b.anchors,
     update(s) {
       const e = clamp01(s.exploded);
+      const spread = s.spread ?? 1;
       for (const m of b.movers) {
         const t = easeInOut((e - m.delay) / (1 - 0.32));
-        m.obj.position.copy(m.base).addScaledVector(m.offset, t);
+        m.obj.position.copy(m.base).addScaledVector(m.offset, t * spread);
       }
       const wave = s.reduced ? 1 : 0.82 + 0.18 * Math.sin(s.time * 3.2);
       for (const em of b.emissive) {

@@ -43,6 +43,8 @@ function toEngine(p: SmartGlasses3DProps): EngineProps {
     colorway: p.colorway ?? 'black',
     shape: p.shape,
     exploded: p.exploded ?? 0,
+    spread: p.spread ?? 1,
+    zoom: p.zoom ?? 0,
     rotation: p.rotation ?? null,
     autoRotate: p.autoRotate ?? false,
     interactive: p.interactive ?? false,

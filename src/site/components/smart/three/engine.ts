@@ -8,6 +8,8 @@ export interface EngineProps {
   colorway: SmartColorway;
   shape?: SmartShape;
   exploded: number;
+  spread: number;
+  zoom: number;
   rotation: { yaw: number; pitch: number } | null;
   autoRotate: boolean;
   interactive: boolean;
@@ -59,6 +61,8 @@ export function createSmartEngine(host: HTMLElement, initial: EngineProps, cb: E
 
   // animated state
   let exploded = initial.exploded;
+  let spread = initial.spread;
+  let zoom = initial.zoom;
   const highlight: Record<SmartPart, number> = { camera: 0, led: 0, speaker: 0, mics: 0, touch: 0, battery: 0, display: 0, hinge: 0 };
   let hud = initial.showDisplayHud ? 1 : 0;
   let baseYaw = initial.rotation ? initial.rotation.yaw : DEFAULT_FRAMING.restYaw;
@@ -118,6 +122,13 @@ export function createSmartEngine(host: HTMLElement, initial: EngineProps, cb: E
     const te = clamp(props.exploded, 0, 1);
     exploded = Math.abs(te - exploded) < 1e-4 ? te : damp(exploded, te, reduced ? 30 : 7, dt);
     if (exploded !== te) moving = true;
+
+    // explode distance and camera fly-in ease too (scroll moves them in steps)
+    const ts = Math.max(0, props.spread);
+    spread = Math.abs(ts - spread) < 1e-3 ? ts : damp(spread, ts, reduced ? 30 : 4, dt);
+    const tz = clamp(props.zoom, 0, 1);
+    zoom = Math.abs(tz - zoom) < 1e-3 ? tz : damp(zoom, tz, reduced ? 30 : 3.2, dt);
+    if (spread !== ts || zoom !== tz) moving = true;
 
     // highlights
     for (const p of SMART_PARTS) {
@@ -184,6 +195,8 @@ export function createSmartEngine(host: HTMLElement, initial: EngineProps, cb: E
       pitch: clamp(basePitch + userPitch, -0.7, 0.7),
       lift: idle ? 0.012 * Math.sin(clock * 0.9) : 0,
       exploded,
+      spread,
+      focus: { part: props.activePart, amount: zoom },
       highlight,
       hud,
       led,

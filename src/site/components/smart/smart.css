@@ -229,3 +229,17 @@
   0%, 100% { transform: scaleY(0.35); }
   50% { transform: scaleY(1); }
 }
+
+/* Scroll story: a scan sweeps across the model when a new part comes up */
+.sg-scan {
+  animation: sg-scan 1.15s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+@keyframes sg-scan {
+  from { transform: translateX(-100%); opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  to { transform: translateX(310%); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sg-scan { animation: none; display: none; }
+}

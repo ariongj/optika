@@ -33,6 +33,10 @@ export interface StagePose {
   pitch: number;
   lift: number;
   exploded: number;
+  /** explode distance multiplier (default 1) */
+  spread?: number;
+  /** camera fly-in: towards `part` by `amount` 0..1 (the stage glides its aim point between parts) */
+  focus?: { part: SmartPart | null; amount: number };
   highlight: Record<SmartPart, number>;
   hud: number;
   led: number;
@@ -335,6 +339,11 @@ export function createStage(canvas: HTMLCanvasElement, opts: { antialias?: boole
   let width = 1;
   let height = 1;
   let baseDistance = 6;
+  /** the framing's view offset: centres the model's bounds (and keeps a focused part at the same spot) */
+  let viewOffset = { x: 0, y: 0 };
+  const aim = new THREE.Vector3();
+  const aimTarget = new THREE.Vector3();
+  let aimTime = -1;
   let floorY = -0.3;
   let samples: THREE.Vector3[] = [];
   // compileAsync keeps polling the programs it started: freeing their materials (or losing the context) before it
@@ -415,7 +424,8 @@ export function createStage(canvas: HTMLCanvasElement, opts: { antialias?: boole
     baseDistance = d;
     const cxN = (bx[0] + bx[1]) / 2;
     const cyN = (bx[2] + bx[3]) / 2;
-    camera.setViewOffset(width, height, ((cxN - framing.offsetX * 2) / 2) * width, ((framing.offsetY * 2 - cyN) / 2) * height, width, height);
+    viewOffset = { x: ((cxN - framing.offsetX * 2) / 2) * width, y: ((framing.offsetY * 2 - cyN) / 2) * height };
+    camera.setViewOffset(width, height, viewOffset.x, viewOffset.y, width, height);
     shadow.group.position.y = floorY;
   };
 
@@ -467,10 +477,23 @@ export function createStage(canvas: HTMLCanvasElement, opts: { antialias?: boole
       pivot.rotation.set(pose.pitch, pose.yaw, 0);
       pivot.position.y = pose.lift;
       model.update(pose);
-      const d = baseDistance * (1 + 0.18 * pose.exploded);
-      const el = framing.elevation;
-      camera.position.set(0, Math.sin(el) * d, Math.cos(el) * d);
-      camera.lookAt(0, 0, 0);
+      const spread = pose.spread ?? 1;
+      const amount = Math.min(1, Math.max(0, pose.focus?.amount ?? 0));
+      // where the camera looks: the model's centre, pulled towards the focused part by `amount`
+      aimTarget.set(0, 0, 0);
+      const anchor = pose.focus?.part ? model.anchors[pose.focus.part] : undefined;
+      if (anchor && amount > 0.001) {
+        pivot.updateMatrixWorld(true);
+        anchor.anchor.getWorldPosition(aimTarget).multiplyScalar(amount);
+      }
+      // glide the aim between parts instead of cutting (frame-rate independent)
+      const dt = aimTime < 0 ? 1 : Math.min(0.1, Math.max(0, pose.time - aimTime));
+      aimTime = pose.time;
+      aim.lerp(aimTarget, pose.reduced ? 1 : 1 - Math.exp(-4.5 * dt));
+      const d = baseDistance * (1 + 0.18 * pose.exploded * spread) * (1 - 0.55 * amount);
+      const el = framing.elevation + 0.12 * amount;
+      camera.position.set(aim.x, aim.y + Math.sin(el) * d, aim.z + Math.cos(el) * d);
+      camera.lookAt(aim);
     },
     render() {
       if (!model) return;

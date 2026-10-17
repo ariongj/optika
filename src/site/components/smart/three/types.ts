@@ -36,6 +36,10 @@ export interface SmartGlasses3DProps {
   shape?: SmartShape;
   /** 0..1, parts separate along their axes (scroll-driven) */
   exploded?: number;
+  /** how far the exploded parts travel (1 = default; the scroll story uses more) */
+  spread?: number;
+  /** 0..1, the camera flies in towards `activePart` (eased; 0 = the whole model) */
+  zoom?: number;
   /** radians; null = autoRotate / idle sway */
   rotation?: { yaw: number; pitch: number } | null;
   /** gentle idle motion (off under prefers-reduced-motion) */
