@@ -21,6 +21,8 @@ import { PaymentSim } from '@/site/components/checkout/PaymentSim';
 import { RX_CHOICES, ck, rxNoteLine, type RxChoice } from '@/site/components/checkout/dict';
 import { cartNeedsRx } from '@/site/components/product/optical';
 import { openBooking } from '@/site/components/utility/Booking';
+import { notifyOrder } from '@/lib/leads';
+import { CARD_PAYMENTS } from '@/lib/launch';
 
 const T = defineDict({
   me: {
@@ -30,7 +32,7 @@ const T = defineDict({
     backToCart: 'Nazad u korpu',
     secure: 'Sigurna kupovina',
     s1: 'Kontakt i adresa',
-    s1d: 'Na ove podatke šaljemo potvrdu i dogovaramo dostavu ili preuzimanje.',
+    s1d: 'Preko ovih podataka potvrđujemo narudžbu i dogovaramo dostavu ili preuzimanje.',
     s2: 'Način preuzimanja',
     s2d: 'Dostavljamo širom Kosova za 1–3 dana, ili preuzmite naočare u optici.',
     s3: 'Način plaćanja',
@@ -79,7 +81,7 @@ const T = defineDict({
     termsDesc: 'Vaše podatke koristimo isključivo za obradu narudžbe, recept i dostavu.',
     placeOrder: 'Potvrdi narudžbu',
     payNow: 'Plati {amount}',
-    afterNote: 'Potvrdu narudžbe odmah šaljemo na vaš e-mail.',
+    afterNote: 'Nakon narudžbe dobijate njen broj, a optičar vas zove da je potvrdi.',
     yourOrder: 'Vaša narudžba',
     edit: 'Uredi',
     showSummary: 'Prikaži pregled narudžbe',
@@ -92,7 +94,7 @@ const T = defineDict({
     backToCart: 'Kthehu te shporta',
     secure: 'Blerje e sigurt',
     s1: 'Kontakti dhe adresa',
-    s1d: 'Në këto të dhëna dërgojmë konfirmimin dhe caktojmë dërgesën ose marrjen.',
+    s1d: 'Me këto të dhëna e konfirmojmë porosinë dhe caktojmë dërgesën ose marrjen.',
     s2: 'Mënyra e marrjes',
     s2d: 'Dërgojmë në gjithë Kosovën për 1–3 ditë, ose merrni syzet në optikë.',
     s3: 'Mënyra e pagesës',
@@ -141,7 +143,7 @@ const T = defineDict({
     termsDesc: 'Të dhënat tuaja i përdorim vetëm për përpunimin e porosisë, recetën dhe dërgesën.',
     placeOrder: 'Konfirmo porosinë',
     payNow: 'Paguaj {amount}',
-    afterNote: 'Konfirmimin e porosisë e dërgojmë menjëherë në e-mailin tuaj.',
+    afterNote: 'Pas porosisë merrni numrin e saj, dhe optiku ju telefonon për ta konfirmuar.',
     yourOrder: 'Porosia juaj',
     edit: 'Ndrysho',
     showSummary: 'Shfaq përmbledhjen e porosisë',
@@ -154,7 +156,7 @@ const T = defineDict({
     backToCart: 'Back to bag',
     secure: 'Secure checkout',
     s1: 'Contact & address',
-    s1d: 'We send the confirmation here and arrange delivery or pickup with you.',
+    s1d: 'We use these details to confirm your order and arrange delivery or pickup.',
     s2: 'Delivery method',
     s2d: 'We deliver across Kosovo in 1–3 days, or collect your glasses at the store.',
     s3: 'Payment method',
@@ -203,7 +205,7 @@ const T = defineDict({
     termsDesc: 'We use your details only to process your order, your prescription and delivery.',
     placeOrder: 'Place order',
     payNow: 'Pay {amount}',
-    afterNote: 'We e-mail your order confirmation right away.',
+    afterNote: 'You get your order number right away, and our optician calls you to confirm it.',
     yourOrder: 'Your order',
     edit: 'Edit',
     showSummary: 'Show order summary',
@@ -330,7 +332,7 @@ export default function Checkout() {
 
   const cities = useMemo(() => allCities(settings), [settings]);
   const methods = useMemo(() => {
-    const m = (['cod', 'bank', 'card'] as const).filter((k) => settings.payments[k]);
+    const m = (['cod', 'bank', 'card'] as const).filter((k) => settings.payments[k] && (k !== 'card' || CARD_PAYMENTS));
     return m.length ? m : (['cod'] as PaymentMethod[]);
   }, [settings.payments]);
   const needsRx = useMemo(() => cartNeedsRx(cart, products), [cart, products]);
@@ -415,6 +417,7 @@ export default function Checkout() {
       ...(note ? { note } : {}),
     };
     const order = placeOrder({ customer, items: cart, delivery, payment, codes, lang });
+    notifyOrder(order); // e-mail to the shop (no-op until a form key is configured)
     placed.current = true;
     saveDraft(null);
     clearCart();

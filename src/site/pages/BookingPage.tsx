@@ -18,6 +18,7 @@ import { DayNav, DayPicker, NoSlots, ServicePicker, TimePicker, midDay, shortDay
 import { DetailsForm, type DetailsValues } from '@/site/components/booking/DetailsForm';
 import { PhoneCard, SummaryCard } from '@/site/components/booking/Summary';
 import { Confirmation } from '@/site/components/booking/Confirmation';
+import { notifyInquiry } from '@/lib/leads';
 
 /** Days shown per page of the day picker, and how far ahead the visitor may page. */
 const WINDOW = 14;
@@ -180,6 +181,7 @@ function BookingFlow({ onDone }: { onDone: (d: { booking: Booking; service: Serv
     }
     // addBooking marks the inquiry scheduled + seen — a web request stays new/unseen in the inbox (as in MeasureForm).
     st.updateInquiry(inq.id, { status: 'new', seen: false, scheduledAt: res.booking.start });
+    notifyInquiry(inq, { booking: res.booking, topic: lt(svc.name, 'sq') }); // e-mail to the shop
     onDone({ booking: res.booking, service: svc });
     window.scrollTo({ top: 0 });
     return true;

@@ -7,12 +7,15 @@ export type Lookup = { kind: 'ok'; order: Order } | { kind: 'notFound' } | { kin
 
 const canon = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, '');
 
-/** "om 1234", "OM1234", "#OM-1234" and "1234" all find OM-1234. */
+/** "om 1234", "OM1234", "#OM-1234" and "1234" all find OM-1234 (and "w7k3qf" finds the web order OM-W7K3QF). */
 export function findOrder(orders: Order[], input: string, prefix: string) {
-  let want = canon(input);
+  const want = canon(input);
   if (!want) return undefined;
-  if (/^\d+$/.test(want)) want = canon(prefix || 'OM-') + want;
-  return orders.find((o) => canon(o.number) === want);
+  const p = canon(prefix || 'OM-');
+  return orders.find((o) => {
+    const c = canon(o.number);
+    return c === want || c === p + want;
+  });
 }
 
 /** E-mail: case-insensitive. Phone: digits only, +383 / 00383 / leading 0 ignored. */

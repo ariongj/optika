@@ -5,6 +5,7 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { BOOK_ID, openBooking, useBooking } from '@/site/components/utility/Booking';
 import { listenForLinkIntent, prefetchLikelyPages } from '@/site/pages/lazy';
+import { flushLeadOutbox } from '@/lib/leads';
 import { useUi } from '@/store/ui';
 import { useDict, LANGS, useLang } from '@/i18n';
 import { site } from '@/i18n/site';
@@ -74,6 +75,8 @@ export function SiteLayout() {
   const bookingOpened = useOpenedOnce(useBooking((s) => s.open));
 
   useEffect(() => listenForLinkIntent(), []);
+  // leads that could not be e-mailed (offline submit) go out on the next visit
+  useEffect(() => flushLeadOutbox(), []);
   useEffect(() => prefetchLikelyPages(), []);
 
   useEffect(() => {

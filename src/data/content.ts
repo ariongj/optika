@@ -698,7 +698,7 @@ Narudžbu možete besplatno preuzeti u ulici **Mbretëresha Teutë 182, Mitrovic
 ## Načini plaćanja
 - **Pouzećem** — plaćate kuriru ili u optici
 - **Uplatom na račun** — prema predračunu koji vam šaljemo e-mailom (ProCredit Bank Kosovo)
-- **Platnom karticom** — Visa, Mastercard, Maestro (plaćanje karticom je trenutno u test režimu i kartica se ne tereti)
+- **Platnom karticom** — uskoro
 
 Sve cene su u eurima i uključuju PDV od 18%.`,
         `Dërgojmë në gjithë Kosovën, ndërsa porosinë mund ta merrni edhe vetë në optikën tonë në Mitrovicë.
@@ -721,7 +721,7 @@ Porosinë mund ta merrni falas në **Mbretëresha Teutë 182, Mitrovicë**, nga 
 ## Mënyrat e pagesës
 - **Para në dorëzim** — paguani korrierit ose në optikë
 - **Transfertë bankare** — sipas parafaturës që ju dërgojmë me e-mail (ProCredit Bank Kosovo)
-- **Kartelë pagese** — Visa, Mastercard, Maestro (pagesa me kartelë është aktualisht në mënyrë testimi dhe kartela nuk ngarkohet)
+- **Kartelë pagese** — së shpejti
 
 Të gjitha çmimet janë në euro dhe përfshijnë TVSH-në 18%.`,
         `We deliver across Kosovo, and you can also collect your order in person from our store in Mitrovica.
@@ -744,7 +744,7 @@ Collect your order free of charge at **Mbretëresha Teutë 182, Mitrovica**, Mon
 ## Payment methods
 - **Cash on delivery** — pay the courier or in store
 - **Bank transfer** — against the pro-forma invoice we e-mail you (ProCredit Bank Kosovo)
-- **Card** — Visa, Mastercard, Maestro (card payment is currently in test mode and no card is charged)
+- **Card** — coming soon
 
 All prices are in euros and include 18% VAT.`,
       ),

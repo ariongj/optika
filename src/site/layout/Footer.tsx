@@ -12,6 +12,8 @@ import { useDb } from '@/store/db';
 import { isPromo, type NavNode } from '@/admin/components/menus/links';
 import { useNavMenu } from '@/admin/components/menus/useNav';
 import { cn, isFilled } from '@/lib/utils';
+import { notifyNewsletter } from '@/lib/leads';
+import { CARD_PAYMENTS } from '@/lib/launch';
 import { isBookingHref, openBooking } from '@/site/components/utility/Booking';
 
 /** Footer-only copy (the shared footer strings live in `site`). */
@@ -38,7 +40,7 @@ export function Footer({ dark = false }: { dark?: boolean }) {
   const ig = (settings.instagram ?? '').trim().replace(/^@/, '');
   const wa = (settings.whatsapp ?? '').replace(/\D/g, '');
   const pays = [
-    ...(settings.payments.card ? ['VISA', 'Mastercard', 'Maestro'] : []),
+    ...(settings.payments.card && CARD_PAYMENTS ? ['VISA', 'Mastercard', 'Maestro'] : []),
     ...(settings.payments.bank ? [f('bank')] : []),
     ...(settings.payments.cod ? [t('payCod')] : []),
   ];
@@ -57,6 +59,7 @@ export function Footer({ dark = false }: { dark?: boolean }) {
             onSubmit={(e) => {
               e.preventDefault();
               if (!/^\S+@\S+\.\S+$/.test(email)) return;
+              notifyNewsletter(email.trim()); // e-mail to the shop
               toast.success(t('subscribed'));
               setEmail('');
             }}

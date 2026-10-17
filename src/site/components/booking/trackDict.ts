@@ -29,7 +29,7 @@ export const tr = defineDict({
 
     nfTitle: 'Nismo pronašli ovu narudžbu',
     nfText: 'Proverite broj i pokušajte ponovo — ili nas kontaktirajte, rado ćemo pomoći.',
-    nf1: 'Broj ima oblik OM-1234 i nalazi se u e-mailu sa potvrdom.',
+    nf1: 'Broj ima oblik OM-W7K3QF ili OM-1234 i prikazan je posle narudžbe.',
     nf2: 'Proverite da nema razmaka ili slova viška.',
     nf3: 'Narudžbe napravljene telefonom ili u optici pratimo zajedno sa vama — pozovite nas.',
     mmTitle: 'Kontakt se ne poklapa',
@@ -137,7 +137,7 @@ export const tr = defineDict({
 
     nfTitle: 'Nuk e gjetëm këtë porosi',
     nfText: 'Kontrolloni numrin dhe provoni sërish — ose na kontaktoni, me kënaqësi ju ndihmojmë.',
-    nf1: 'Numri ka formën OM-1234 dhe gjendet në e-mailin e konfirmimit.',
+    nf1: 'Numri ka formën OM-W7K3QF ose OM-1234 dhe shfaqet pas porosisë.',
     nf2: 'Sigurohuni që nuk ka hapësira ose shkronja të tepërta.',
     nf3: 'Porositë e bëra me telefon ose në optikë i ndjekim bashkë me ju — na telefononi.',
     mmTitle: 'Kontakti nuk përputhet',
@@ -245,7 +245,7 @@ export const tr = defineDict({
 
     nfTitle: 'We couldn’t find this order',
     nfText: 'Check the number and try again — or get in touch, we’re happy to help.',
-    nf1: 'The number looks like OM-1234 and is in your confirmation e-mail.',
+    nf1: 'The number looks like OM-W7K3QF or OM-1234 and is shown after you order.',
     nf2: 'Make sure there are no extra spaces or letters.',
     nf3: 'Orders placed by phone or in the store — call us and we’ll check together.',
     mmTitle: 'The contact doesn’t match',

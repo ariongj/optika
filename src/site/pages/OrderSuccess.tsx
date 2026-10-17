@@ -23,7 +23,7 @@ const T = defineDict({
     pageTitle: 'Narudžba primljena',
     eyebrow: 'Narudžba je primljena',
     thanks: 'Hvala, *{name}*!',
-    lead: 'Vaša narudžba je uspešno primljena. Potvrdu smo poslali na {email}, a naš optičar će vas uskoro pozvati.',
+    lead: 'Vaša narudžba je uspešno primljena. Naš optičar će vas uskoro pozvati da je potvrdi — sačuvajte broj narudžbe ispod.',
     orderNo: 'Broj narudžbe',
     placedAt: 'Naručeno {date}',
     nextTitle: 'Šta *sledi*',
@@ -74,19 +74,21 @@ const T = defineDict({
     summary: 'Pregled narudžbe',
     continue: 'Nastavi kupovinu',
     track: 'Pratite porudžbinu',
+    waOrder: 'Pišite nam na WhatsApp',
+    waOrderMsg: 'Zdravo! Upravo sam naručio/la na sajtu — narudžba {n}.',
     home: 'Početna',
     demo: 'Demo:',
     demoText: 'narudžba se upravo pojavila u CMS-u.',
     demoLink: 'Pogledaj narudžbu u CMS-u',
     nfTitle: 'Narudžba nije pronađena',
-    nfText: 'Proverite link iz potvrde ili nas kontaktirajte — rado ćemo pomoći.',
+    nfText: 'Proverite broj narudžbe ili nas kontaktirajte — rado ćemo pomoći.',
     contactUs: 'Kontaktirajte nas',
   },
   sq: {
     pageTitle: 'Porosia u pranua',
     eyebrow: 'Porosia u pranua',
     thanks: 'Faleminderit, *{name}*!',
-    lead: 'Porosia juaj u pranua me sukses. Konfirmimin e dërguam në {email}, ndërsa optiku ynë do t’ju telefonojë së shpejti.',
+    lead: 'Porosia juaj u pranua me sukses. Optiku ynë do t’ju telefonojë së shpejti për ta konfirmuar — ruajeni numrin e porosisë më poshtë.',
     orderNo: 'Numri i porosisë',
     placedAt: 'Porositur më {date}',
     nextTitle: 'Çfarë *vijon*',
@@ -137,19 +139,21 @@ const T = defineDict({
     summary: 'Përmbledhja e porosisë',
     continue: 'Vazhdo blerjen',
     track: 'Gjurmo porosinë',
+    waOrder: 'Na shkruani në WhatsApp',
+    waOrderMsg: 'Përshëndetje! Sapo bëra një porosi në uebfaqe — porosia {n}.',
     home: 'Ballina',
     demo: 'Demo:',
     demoText: 'porosia sapo u shfaq në CMS.',
     demoLink: 'Shiko porosinë në CMS',
     nfTitle: 'Porosia nuk u gjet',
-    nfText: 'Kontrolloni lidhjen nga konfirmimi ose na kontaktoni — me kënaqësi ju ndihmojmë.',
+    nfText: 'Kontrolloni numrin e porosisë ose na kontaktoni — me kënaqësi ju ndihmojmë.',
     contactUs: 'Na kontaktoni',
   },
   en: {
     pageTitle: 'Order received',
     eyebrow: 'Order received',
     thanks: 'Thank you, *{name}*!',
-    lead: 'Your order has been received. We’ve sent the confirmation to {email} and our optician will call you shortly.',
+    lead: 'Your order has been received. Our optician will call you shortly to confirm it — keep the order number below.',
     orderNo: 'Order number',
     placedAt: 'Placed {date}',
     nextTitle: 'What happens *next*',
@@ -200,12 +204,14 @@ const T = defineDict({
     summary: 'Order summary',
     continue: 'Continue shopping',
     track: 'Track your order',
+    waOrder: 'Message us on WhatsApp',
+    waOrderMsg: 'Hi! I just placed an order on your website — order {n}.',
     home: 'Home',
     demo: 'Demo:',
     demoText: 'the order has just landed in the CMS.',
     demoLink: 'View the order in the CMS',
     nfTitle: 'Order not found',
-    nfText: 'Please check the link from your confirmation or get in touch — we’re happy to help.',
+    nfText: 'Please check your order number or get in touch — we’re happy to help.',
     contactUs: 'Contact us',
   },
 });
@@ -515,6 +521,17 @@ function Success({ order }: { order: Order }) {
             <ButtonLink to="/" size="lg" variant="outline" icon={<Home className="h-4 w-4" />}>
               {t('home')}
             </ButtonLink>
+            {/* the fastest way to reach the shop about this order, with its number filled in */}
+            {settings.whatsapp && (
+              <a
+                href={`https://wa.me/${settings.whatsapp.replace(/D/g, '')}?text=${encodeURIComponent(t('waOrderMsg', { n: order.number }))}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-13 items-center gap-2.5 rounded-full bg-[#25d366] px-7 text-[15px] font-semibold text-[#04210f] transition hover:brightness-95"
+              >
+                <WhatsAppIcon className="h-4 w-4" /> {t('waOrder')}
+              </a>
+            )}
           </div>
 
           <Link

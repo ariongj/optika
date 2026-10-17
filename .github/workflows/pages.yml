@@ -1,4 +1,5 @@
-# Build the demo for GitHub Pages under https://<user>.github.io/optika/ and deploy it.
+# Build the site for GitHub Pages and deploy it: under https://<user>.github.io/optika/, or at the root of the shop's
+# own domain once the CUSTOM_DOMAIN variable is set.
 # Root deployments (Vercel / Netlify) keep using vercel.json and public/_redirects with the default base "/".
 name: Deploy to GitHub Pages
 
@@ -19,6 +20,15 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Optional repository variables (Settings → Secrets and variables → Actions → Variables):
+    #   WEB3FORMS_KEY  the shop's Web3Forms access key — orders, bookings and requests are e-mailed to the shop
+    #                  (public by design: it can only send to the address it was created for)
+    #   CUSTOM_DOMAIN  e.g. optikamiftari.com, once its DNS points at GitHub Pages — the site is then built for the
+    #                  domain root (base "/") with canonical URLs, sitemap and a CNAME file for that domain
+    env:
+      VITE_WEB3FORMS_KEY: ${{ vars.WEB3FORMS_KEY }}
+      BASE_PATH: ${{ vars.CUSTOM_DOMAIN && '/' || '/optika/' }}
+      SITE_URL: ${{ vars.CUSTOM_DOMAIN && format('https://{0}', vars.CUSTOM_DOMAIN) || 'https://ariongj.github.io' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -29,10 +39,8 @@ jobs:
 
       - run: npm ci
 
-      - name: Build (base /optika/)
+      - name: Build
         run: npm run build
-        env:
-          BASE_PATH: /optika/
 
       # Per-route HTML shells (own title, description, preview image, canonical, JSON-LD) so shared links and
       # crawlers get HTTP 200 + the right preview; 404.html stays the SPA fallback for anything else (e.g.
@@ -41,9 +49,7 @@ jobs:
         run: |
           node scripts/prerender-meta.mjs
           touch dist/.nojekyll
-        env:
-          BASE_PATH: /optika/
-          SITE_URL: https://ariongj.github.io
+          if [ -n "${{ vars.CUSTOM_DOMAIN }}" ]; then echo "${{ vars.CUSTOM_DOMAIN }}" > dist/CNAME; fi
 
       - uses: actions/configure-pages@v5
 

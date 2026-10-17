@@ -10,6 +10,7 @@ import { useSettings } from '@/store/hooks';
 import { allCities } from '@/lib/pricing';
 import type { Lang } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { notifyInquiry } from '@/lib/leads';
 
 /** Market of a partner application — the B2B tabs on /optical-lab. */
 export type Market = 'xk' | 'eu';
@@ -253,6 +254,7 @@ export function PartnerForm({
     });
     // `InquiryInput` has no tags — set them right after (does not mark the inquiry as seen).
     updateInquiry(inq.id, { tags: ['b2b', 'optical-lab', market === 'eu' ? 'eu' : 'kosove'] });
+    notifyInquiry({ ...inq, tags: ['b2b', 'optical-lab', market === 'eu' ? 'eu' : 'kosove'] }, { topic: 'Optical Lab B2B' }); // e-mail to the shop
     setBusy(false);
     setSent({
       name: form.name.trim().split(' ')[0],

@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { CalendarClock, CheckCircle2, Send } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input, Select, Textarea } from '@/components/ui/Field';
-import { defineDict, useDict, useLang } from '@/i18n';
+import { defineDict, lt, useDict, useLang } from '@/i18n';
+import { notifyInquiry } from '@/lib/leads';
 import { site } from '@/i18n/site';
 import { useDb } from '@/store/db';
 import { useSettings } from '@/store/hooks';
@@ -202,6 +203,8 @@ export function MeasureForm({
       ...(tags?.length ? { tags } : {}),
     });
     const slot = exam && form.date ? bookSlot(inq.id, form.date, [service, message].filter(Boolean).join(' — ')) : undefined;
+    const product = productId ? useDb.getState().products.find((x) => x.id === productId) : undefined;
+    notifyInquiry(inq, { booking: slot, product: product ? lt(product.name, 'sq') : undefined }); // e-mail to the shop
     setBusy(false);
     setSent({ name: form.name.trim().split(' ')[0], phone: form.phone.trim(), slot });
     onDone?.();

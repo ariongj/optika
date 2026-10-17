@@ -213,6 +213,13 @@ interface BuiltOrder {
   patch: Partial<Db>;
 }
 
+/** "W" + 5 characters without look-alikes (no 0/O, 1/I/L): easy to read out on the phone, ~20 M combinations. */
+function webOrderCode() {
+  const abc = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+  const r = crypto.getRandomValues(new Uint8Array(5));
+  return 'W' + Array.from(r, (b) => abc[b % abc.length]).join('');
+}
+
 function buildOrder(s: Db, input: PlaceOrderInput, extra: { customLines?: DraftOrder['customLines']; draftId?: string; by?: string; status?: OrderStatus } = {}): BuiltOrder {
   const totals = priceCart(input.items, s.products, s.settings, {
     lang: input.lang,
@@ -224,7 +231,8 @@ function buildOrder(s: Db, input: PlaceOrderInput, extra: { customLines?: DraftO
     city: input.customer.city,
   });
   const prefix = s.settings.orderPrefix || 'SC-';
-  const maxNum = s.orders.reduce((m, o) => Math.max(m, Number(o.number.replace(/\D/g, '')) || 0), 1000);
+  // sequential numbers only (web orders carry a letter code — see webOrderCode)
+  const maxNum = s.orders.reduce((m, o) => Math.max(m, Number(/^\D*(\d+)$/.exec(o.number)?.[1] ?? 0)), 1000);
   const now = new Date().toISOString();
   const by = extra.by ?? 'web';
   const items: OrderLine[] = totals.lines.map((l) => ({
@@ -252,7 +260,9 @@ function buildOrder(s: Db, input: PlaceOrderInput, extra: { customLines?: DraftO
   const firstCode = totals.applied.find((a) => a.code);
   const order: Order = {
     id: uid('o'),
-    number: `${prefix}${maxNum + 1}`,
+    // Orders placed on the website are numbered in the customer's own browser (there is no server to count them),
+    // so a sequential number would repeat between customers: they get a short random code instead.
+    number: by === 'web' ? `${prefix}${webOrderCode()}` : `${prefix}${maxNum + 1}`,
     createdAt: now,
     status: extra.status ?? 'new',
     customer: input.customer,

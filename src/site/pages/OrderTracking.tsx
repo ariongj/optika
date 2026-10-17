@@ -116,7 +116,7 @@ export default function OrderTracking() {
               }}
               error={errors.number}
               hint={t('numberHint')}
-              placeholder="OM-1234"
+              placeholder="OM-W7K3QF"
               autoComplete="off"
               autoCapitalize="characters"
               spellCheck={false}
