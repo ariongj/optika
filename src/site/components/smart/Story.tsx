@@ -153,7 +153,7 @@ export function SmartStory() {
     const schedule = () => {
       if (!raf) raf = requestAnimationFrame(update);
     };
-    update();
+    schedule(); // first measure in the next frame (no forced layout while the page mounts)
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', schedule);
     return () => {

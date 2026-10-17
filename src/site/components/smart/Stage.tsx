@@ -82,7 +82,7 @@ export function Stage({ poster, posterMobile, posterClassName, className, margin
             background="transparent"
             onReady={handleReady}
             className={cn(
-              'absolute inset-0 h-full w-full transition-[opacity,transform] duration-[1100ms] ease-[cubic-bezier(.16,1,.3,1)]',
+              'absolute inset-0 h-full w-full transition-[opacity,transform] duration-[650ms] ease-[cubic-bezier(.16,1,.3,1)]',
               ready ? 'scale-100 opacity-100' : 'scale-[0.94] opacity-0',
             )}
           />

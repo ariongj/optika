@@ -43,7 +43,8 @@ export function createSmartEngine(host: HTMLElement, initial: EngineProps, cb: E
   const coarse = window.matchMedia('(pointer: coarse)').matches;
   const small = Math.min(window.screen.width, window.screen.height) < 820;
   const dprCap = coarse && small ? 1.5 : 2;
-  const stage = createStage(canvas, { antialias: true, shadowRes: coarse ? 256 : 512 });
+  // phones: lighter geometry (rings / sides / triangles × 0.65) — the model builds much faster, no visible difference
+  const stage = createStage(canvas, { antialias: true, shadowRes: coarse ? 256 : 512, detail: coarse && small ? 0.65 : 1 });
 
   const reducedQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   let reduced = reducedQuery.matches;

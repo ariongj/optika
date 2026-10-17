@@ -199,6 +199,16 @@ export function sectionPoint(a: number, hw: number, hh: number, e: number) {
 }
 
 /** Cross-section frame of a sweep at u. */
+/**
+ * Geometric detail of the next model build: 1 = full (desktop, stills); phones build with less — rings, sides and
+ * triangle density scale down, invisible at phone size and much quicker to generate.
+ */
+let DETAIL = 1;
+export function setGeometryDetail(d: number) {
+  DETAIL = Math.min(1, Math.max(0.4, d));
+}
+export const geometryDetail = () => DETAIL;
+
 export function sweepFrame(curve: THREE.Curve<THREE.Vector3>, u: number, up: THREE.Vector3) {
   const p = curve.getPointAt(u);
   const t = curve.getTangentAt(u).normalize();
@@ -218,7 +228,8 @@ export function sweep(o: SweepOptions): THREE.BufferGeometry {
   const e = o.exponent ?? 2;
   const inflate = o.inflate ?? 0;
   const upAt = (u: number) => (typeof o.up === 'function' ? o.up(u) : o.up ?? new THREE.Vector3(0, 1, 0));
-  const sides = o.sides;
+  const sides = Math.max(6, Math.round(o.sides * DETAIL));
+  const ringCount = Math.max(4, Math.round(o.rings * DETAIL));
   const cols = sides + 1;
   const length = o.curve.getLength();
 
@@ -227,7 +238,7 @@ export function sweep(o: SweepOptions): THREE.BufferGeometry {
   const capS = o.capStart ?? 0;
   const capE = o.capEnd ?? 0;
   for (let k = capS; k >= 1; k -= 1) rings.push({ u: u0, scale: Math.cos(((k / capS) * Math.PI) / 2), push: -Math.sin(((k / capS) * Math.PI) / 2) });
-  for (let i = 0; i <= o.rings; i += 1) rings.push({ u: u0 + (u1 - u0) * (i / o.rings), scale: 1, push: 0 });
+  for (let i = 0; i <= ringCount; i += 1) rings.push({ u: u0 + (u1 - u0) * (i / ringCount), scale: 1, push: 0 });
   for (let k = 1; k <= capE; k += 1) rings.push({ u: u1, scale: Math.cos(((k / capE) * Math.PI) / 2), push: Math.sin(((k / capE) * Math.PI) / 2) });
 
   const pos: number[] = [];
@@ -305,7 +316,8 @@ export function sweep(o: SweepOptions): THREE.BufferGeometry {
 /* ------------------------------------------------------------------ */
 /* Curved lens shell (fan grid → smooth reflections)                    */
 /* ------------------------------------------------------------------ */
-export function lensShell(contour: V2[], rings: number, surface: (x: number, y: number) => number, normalAt: (x: number, y: number) => THREE.Vector3) {
+export function lensShell(contour: V2[], ringsFull: number, surface: (x: number, y: number) => number, normalAt: (x: number, y: number) => THREE.Vector3) {
+  const rings = Math.max(4, Math.round(ringsFull * DETAIL));
   let cx = 0;
   let cy = 0;
   contour.forEach((p) => {

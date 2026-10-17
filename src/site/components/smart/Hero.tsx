@@ -66,7 +66,8 @@ function calloutsFor(kind: Kind, t: T): Callout[] {
 /* ------------------------------------------------------------------ */
 /* 1 — Hero: the 3D glasses, HUD callouts, headline, CTAs              */
 /* ------------------------------------------------------------------ */
-export function SmartHero() {
+/** `onReady`: the live 3D has drawn its first frame. */
+export function SmartHero({ onReady }: { onReady?: () => void } = {}) {
   const t = useDict(SG);
   const [kind, setKind] = useState<Kind>('camera');
   const hud = useRef<HudHandle>(null);
@@ -109,6 +110,7 @@ export function SmartHero() {
             interactive
             onParts={onParts}
             eager
+            onReady={onReady}
             margin="20% 0px"
             framing={desktop ? undefined : PHONE_FRAMING}
             className="aspect-[5/4] w-full touch-pan-y lg:aspect-auto lg:h-full"

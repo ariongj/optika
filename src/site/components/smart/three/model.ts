@@ -30,6 +30,7 @@ import {
   disposeTree,
   type Bend,
   type V2,
+  geometryDetail,
 } from './geometry';
 
 export const MM = 0.01;
@@ -295,7 +296,7 @@ function slab(outline: V2[], holes: V2[][], depth: number, r: number, rt: number
   const faces = THREE.ShapeUtils.triangulateShape(contour, holePts);
   const tris = subdivide(
     faces.map((f) => [all[f[0]], all[f[1]], all[f[2]]] as [V2, V2, V2]),
-    2.6,
+    2.6 / Math.sqrt(geometryDetail()), // fewer, larger triangles at lower detail (phones)
   );
   for (const side of [1, -1]) {
     const z = side > 0 ? 0 : -depth;

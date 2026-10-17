@@ -5,6 +5,7 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import { HorizontalBlurShader } from 'three/examples/jsm/shaders/HorizontalBlurShader.js';
 import { VerticalBlurShader } from 'three/examples/jsm/shaders/VerticalBlurShader.js';
 import { createGlassesModel, type GlassesModel } from './model';
+import { setGeometryDetail } from './geometry';
 import { SHAPE_FOR_VARIANT, partsForVariant, type SmartBackground, type SmartColorway, type SmartPart, type SmartPartPoints, type SmartShape, type SmartVariant } from './types';
 
 export interface StageLook {
@@ -284,7 +285,7 @@ export interface Stage {
   dispose(): void;
 }
 
-export function createStage(canvas: HTMLCanvasElement, opts: { antialias?: boolean; preserveDrawingBuffer?: boolean; shadowRes?: number } = {}): Stage {
+export function createStage(canvas: HTMLCanvasElement, opts: { antialias?: boolean; preserveDrawingBuffer?: boolean; shadowRes?: number; detail?: number } = {}): Stage {
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: opts.antialias ?? true,
@@ -374,13 +375,21 @@ export function createStage(canvas: HTMLCanvasElement, opts: { antialias?: boole
     const pts: THREE.Vector3[] = [];
     root.updateMatrixWorld(true);
     const inv = new THREE.Matrix4().copy(root.matrixWorld).invert();
+    // ~2000 points over the whole model are plenty to frame it (fit() projects them several times per build)
+    const meshes: THREE.Mesh[] = [];
     root.traverse((o) => {
       const m = o as THREE.Mesh;
       if (!m.isMesh || !m.geometry) return;
       const mat = m.material as THREE.Material;
       if (mat.depthTest === false || mat.blending === THREE.AdditiveBlending) return;
+      meshes.push(m);
+    });
+    const total = meshes.reduce((n, m) => n + m.geometry.attributes.position.count, 0);
+    const every = Math.max(1, Math.floor(total / 2000));
+    meshes.forEach((m) => {
       const pos = m.geometry.attributes.position as THREE.BufferAttribute;
-      const step = Math.max(1, Math.floor(pos.count / 400));
+      // every mesh keeps at least a few points, so small parts still count for the bounds
+      const step = Math.max(1, Math.min(every, Math.floor(pos.count / 12)));
       const local = new THREE.Matrix4().multiplyMatrices(inv, m.matrixWorld);
       for (let i = 0; i < pos.count; i += step) pts.push(new THREE.Vector3().fromBufferAttribute(pos, i).applyMatrix4(local));
     });
@@ -448,6 +457,7 @@ export function createStage(canvas: HTMLCanvasElement, opts: { antialias?: boole
           const old = model;
           afterCompiles(() => old.dispose());
         }
+        setGeometryDetail(opts.detail ?? 1);
         model = createGlassesModel({ variant: next.variant, colorway: next.colorway, shape, transparentBg: next.background === 'transparent' });
         pivot.add(model.root);
         samples = collectSamples(model.root);

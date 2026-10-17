@@ -16,8 +16,11 @@ export function useHomeData<T extends HomeSectionType>(type: T): SectionData<T> 
 }
 
 /** Smooth-scroll to an in-page anchor without touching the URL. */
-export function scrollToId(id: string) {
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+/** Smooth-scroll to a section; waits a few frames for one that is still being rendered (pages that stream in). */
+export function scrollToId(id: string, tries = 30) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  else if (tries > 0) requestAnimationFrame(() => scrollToId(id, tries - 1));
 }
 
 export const pad2 = (n: number) => String(n).padStart(2, '0');
