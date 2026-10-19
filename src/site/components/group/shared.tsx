@@ -4,7 +4,7 @@ import { ArrowRight, ArrowUpRight, Phone } from 'lucide-react';
 import { Accordion, Img, Reveal } from '@/components/ui/misc';
 import { WhatsAppIcon } from '@/components/brand/Social';
 import { SectionHeading } from '@/site/components/SectionHeading';
-import { pad2, telHref, waHref } from '@/site/components/company/data';
+import { telHref, waHref } from '@/site/components/company/data';
 import { defineDict, useDict } from '@/i18n';
 import { site } from '@/i18n/site';
 import { useSettings } from '@/store/hooks';
@@ -12,15 +12,19 @@ import type { L10n } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 /**
- * Shared pieces of the Miftari Holding Group pages (/klinika, /optical-lab): the "one family" cross-links,
+ * Shared pieces of the group pages (/klinika, /optical-lab) — Miftari Vision Group is the parent company of Klinika
+ * Miftari (clinic), Optika Miftari (optical boutique) and Optical Lab: the cross-links between the three companies,
  * the FAQ block and the phone / WhatsApp buttons.
  */
 export const G = defineDict({
   me: {
-    familyEyebrow: 'Miftari Holding Group',
+    familyEyebrow: 'Miftari Vision Group',
     familyTitle: 'Ista porodica, *u svakom koraku*',
-    familyText: 'Optika, laboratorija i klinika rade zajedno — od pregleda i recepta do gotovih naočara.',
-    optika: 'Okviri i naočare za sunce, pregled vida i lično prilagođavanje u našoj optici.',
+    familyText: 'Klinika, optički butik i laboratorija — tri kompanije grupe Miftari Vision Group rade zajedno, od pregleda i recepta do gotovih naočara.',
+    optika: 'Naš optički butik: okviri i naočare za sunce, pregled vida i lično prilagođavanje.',
+    typeClinic: 'Klinika',
+    typeBoutique: 'Optički butik',
+    typeLab: 'Optička laboratorija',
     lab: 'Sočiva po receptu za naše kupce i za optike na Kosovu i u EU.',
     clinic: 'Specijalističke konsultacije, procena i kontrolni pregledi za zdravlje oka.',
     optikaCta: 'Pogledajte kolekciju',
@@ -32,10 +36,13 @@ export const G = defineDict({
     faqHelp: 'Niste našli odgovor? Pozovite nas ili nam pišite na WhatsApp — rado ćemo pomoći.',
   },
   sq: {
-    familyEyebrow: 'Miftari Holding Group',
+    familyEyebrow: 'Miftari Vision Group',
     familyTitle: 'E njëjta familje, *në çdo hap*',
-    familyText: 'Optika, laboratori dhe klinika punojnë bashkë — nga kontrolli dhe receta deri te syzet e gatshme.',
-    optika: 'Korniza optike dhe syze dielli, kontroll i syve dhe përshtatje personale në optikën tonë.',
+    familyText: 'Klinika, butiku optik dhe laboratori — tri kompanitë e Miftari Vision Group punojnë bashkë, nga kontrolli dhe receta deri te syzet e gatshme.',
+    optika: 'Butiku ynë optik: korniza optike dhe syze dielli, kontroll i syve dhe përshtatje personale.',
+    typeClinic: 'Klinikë',
+    typeBoutique: 'Butik optik',
+    typeLab: 'Laborator optik',
     lab: 'Lente me recetë për klientët tanë dhe për optika në Kosovë e në BE.',
     clinic: 'Konsultë specialistike, vlerësim dhe kontrolle pasuese për shëndetin e syve.',
     optikaCta: 'Shikoni koleksionin',
@@ -47,10 +54,13 @@ export const G = defineDict({
     faqHelp: 'Nuk e gjeni përgjigjen? Na telefononi ose na shkruani në WhatsApp — ju ndihmojmë me kënaqësi.',
   },
   en: {
-    familyEyebrow: 'Miftari Holding Group',
+    familyEyebrow: 'Miftari Vision Group',
     familyTitle: 'One family, *every step of the way*',
-    familyText: 'Store, lab and clinic work together — from the exam and prescription to the finished glasses.',
-    optika: 'Optical frames and sunglasses, eye exams and personal fitting in our store.',
+    familyText: 'Clinic, optical boutique and lab — the three companies of Miftari Vision Group work together, from the exam and prescription to the finished glasses.',
+    optika: 'Our optical boutique: optical frames and sunglasses, eye exams and personal fitting.',
+    typeClinic: 'Clinic',
+    typeBoutique: 'Optical boutique',
+    typeLab: 'Optical lab',
     lab: 'Prescription lenses for our own clients and for opticians in Kosovo and the EU.',
     clinic: 'Specialist consultations, assessment and follow-up visits for eye health.',
     optikaCta: 'Shop the collection',
@@ -120,10 +130,11 @@ export function FaqSection({ title, items, eyebrow, className }: { title: string
 
 export type Division = 'optika' | 'lab' | 'clinic';
 
-const DIVISIONS: { id: Division; name: string; image: string; to: string; cta: 'optikaCta' | 'labCta' | 'clinicCta' }[] = [
-  { id: 'optika', name: 'Optika Miftari', image: '/images/lookbook/atelier-optical.webp', to: '/produktet', cta: 'optikaCta' },
-  { id: 'lab', name: 'Optical Lab', image: '/images/s/laboratori.webp', to: '/optical-lab', cta: 'labCta' },
-  { id: 'clinic', name: 'Klinika Miftari', image: '/images/s/klinika.webp', to: '/klinika', cta: 'clinicCta' },
+/** The member companies of Miftari Vision Group, in the group's order. */
+const DIVISIONS: { id: Division; name: string; type: 'typeClinic' | 'typeBoutique' | 'typeLab'; image: string; to: string; cta: 'optikaCta' | 'labCta' | 'clinicCta' }[] = [
+  { id: 'clinic', name: 'Klinika Miftari', type: 'typeClinic', image: '/images/s/klinika.webp', to: '/klinika', cta: 'clinicCta' },
+  { id: 'optika', name: 'Optika Miftari', type: 'typeBoutique', image: '/images/lookbook/atelier-optical.webp', to: '/produktet', cta: 'optikaCta' },
+  { id: 'lab', name: 'Optical Lab', type: 'typeLab', image: '/images/s/laboratori.webp', to: '/optical-lab', cta: 'labCta' },
 ];
 
 /** "One family" cross-links between the three divisions, plus the company pages. */
@@ -151,7 +162,7 @@ export function GroupFamily({ current }: { current: Division }) {
                     <Img src={d.image} small alt="" className="h-full w-full object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-[1.06]" />
                   </div>
                   <div className="flex min-w-0 flex-1 flex-col">
-                    <div className={cn('text-[11px] font-bold uppercase tracking-[0.18em]', here ? 'text-brand-200' : 'text-muted')}>{here ? t('here') : pad2(i + 1)}</div>
+                    <div className={cn('text-[11px] font-bold uppercase tracking-[0.18em]', here ? 'text-brand-200' : 'text-muted')}>{here ? `${t(d.type)} · ${t('here')}` : t(d.type)}</div>
                     <h3 className={cn('display mt-1.5 text-[24px] leading-tight', here ? 'text-white' : 'text-ink')}>{d.name}</h3>
                     <p className={cn('mt-1.5 text-[14px] leading-relaxed', here ? 'text-paper/70' : 'text-muted')}>{t(d.id)}</p>
                     {!here && (

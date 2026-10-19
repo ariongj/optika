@@ -95,7 +95,7 @@ export const LG = defineDict({
 
     labEyebrow: 'Optical Lab',
     labTitle: 'Od recepta do sočiva — *u našoj laboratoriji*',
-    labText: 'Sočiva ne naručujemo iz kataloga: izrađujemo ih, centriramo i montiramo u sopstvenoj laboratoriji u okviru Miftari Holding Group.',
+    labText: 'Sočiva ne naručujemo iz kataloga: izrađujemo ih, centriramo i montiramo u sopstvenoj laboratoriji u okviru Miftari Vision Group.',
     labCta: 'Upoznajte Optical Lab',
 
     adviceEyebrow: 'Saveti',
@@ -199,7 +199,7 @@ export const LG = defineDict({
 
     labEyebrow: 'Optical Lab',
     labTitle: 'Nga receta te lentja — *në laboratorin tonë*',
-    labText: 'Lentet nuk i porosisim nga katalogu: i punojmë, i centrojmë dhe i montojmë në laboratorin tonë, pjesë e Miftari Holding Group.',
+    labText: 'Lentet nuk i porosisim nga katalogu: i punojmë, i centrojmë dhe i montojmë në laboratorin tonë, pjesë e Miftari Vision Group.',
     labCta: 'Njihuni me Optical Lab',
 
     adviceEyebrow: 'Këshilla',
@@ -303,7 +303,7 @@ export const LG = defineDict({
 
     labEyebrow: 'Optical Lab',
     labTitle: 'From prescription to lens — *in our own lab*',
-    labText: 'We don’t order lenses from a catalogue: we make, centre and mount them in our own lab, part of Miftari Holding Group.',
+    labText: 'We don’t order lenses from a catalogue: we make, centre and mount them in our own lab, part of Miftari Vision Group.',
     labCta: 'Meet Optical Lab',
 
     adviceEyebrow: 'Advice',

@@ -65,6 +65,24 @@ const business = {
   parentOrganization: { '@type': 'Organization', name: s.legalName },
 };
 
+// The group: Miftari Vision Group (parent company) with three member companies — Klinika Miftari (clinic), Optika
+// Miftari (optical boutique, the business above) and Optical Lab. Each company page says whose it is.
+const address = business.address;
+const parent = { '@type': 'Organization', name: s.legalName, url: abs('rreth-nesh/') };
+const clinic = { '@type': 'MedicalClinic', name: 'Klinika Miftari', url: abs('klinika/'), image: abs('images/s/klinika.webp'), telephone: s.phone, address, medicalSpecialty: 'Optometric', parentOrganization: parent };
+const lab = { '@type': 'Organization', name: 'Optical Lab', url: abs('optical-lab/'), image: abs('images/s/lab-polish.webp'), telephone: s.phone, address, parentOrganization: parent };
+const group = {
+  '@context': 'https://schema.org',
+  ...parent,
+  logo: abs('icon-512.png'),
+  address,
+  subOrganization: [
+    { '@type': 'MedicalClinic', name: 'Klinika Miftari', url: clinic.url },
+    { '@type': 'Optician', name: brand, url: business.url },
+    { '@type': 'Organization', name: 'Optical Lab', url: lab.url },
+  ],
+};
+
 /** route → { title, description, image, type?, noindex?, jsonld? } */
 const pages = new Map();
 const put = (route, meta) => pages.set(route, meta);
@@ -92,13 +110,16 @@ const STATIC = [
   ['keshilla', 'Këshilla për syzet dhe shëndetin e syve', 'Si ta lexoni recetën, çfarë është PD, lentet progresive, lentet për ekran dhe më shumë — të shpjeguara thjesht.', '/images/misc/lens.webp'],
   ['provo-virtualisht', 'Provo virtualisht — syzet në fytyrën tuaj', 'Provoni kornizat me kamerën live, me një foto ose në 3D. Imazhi përpunohet vetëm në pajisjen tuaj.', '/images/hero/sun.webp'],
   ['klinika', 'Klinika Miftari — kujdes specialistik për sytë', 'Konsulta specialistike dhe vlerësim për sytë në Klinikën Miftari, Mitrovicë. Rezervoni termin online ose me telefon.', '/images/s/klinika.webp'],
-  ['optical-lab', 'Optical Lab — lente me recetë dhe partneritet B2B', 'Laboratori optik i Miftari Holding Group: punim, centrim, montim dhe kontroll i lenteve me recetë — edhe për optikat partnere në Kosovë dhe BE.', '/images/s/lab-polish.webp'],
+  ['optical-lab', 'Optical Lab — lente me recetë dhe partneritet B2B', 'Laboratori optik i Miftari Vision Group: punim, centrim, montim dhe kontroll i lenteve me recetë — edhe për optikat partnere në Kosovë dhe BE.', '/images/s/lab-polish.webp'],
   ['lentet', 'Udhëzuesi i lenteve — zgjidhni lentet e duhura', 'Njëvizore, progresive, për ekran, fotokromatike apo me dioptri dielli? Gjeni lentet dhe indeksin e duhur për recetën tuaj.', '/images/misc/lens.webp'],
   ['gjej-kornizen', 'Gjeni kornizën tuaj — kuiz i shpejtë', 'Pesë pyetje për formën e fytyrës, stilin dhe madhësinë — dhe tri korniza që ju shkojnë, me provë virtuale.', '/images/cat/optike.webp'],
   ['syze-inteligjente', 'Syze inteligjente — Ray-Ban Meta, Oakley Meta dhe Meta Ray-Ban Display', 'Syze me kamerë, audio dhe asistent zanor. Provojini në Optika Miftari në Mitrovicë; lente me dioptri nga laboratori ynë, kur modeli e lejon. Çmimi dhe disponueshmëria sipas kërkesës.', '/images/smart/hero.webp'],
   ['rezervo', 'Rezervo kontrollin e syve', 'Zgjidhni shërbimin, ditën dhe orën — kontroll i syve, përshtatje, lente kontakti ose konsultë në Klinikën Miftari.', '/images/hero/exam.webp'],
 ];
 for (const [r, t, d, img] of STATIC) put(r, { title: t, description: d, image: img });
+pages.get('rreth-nesh').jsonld = group;
+pages.get('klinika').jsonld = { '@context': 'https://schema.org', ...clinic };
+pages.get('optical-lab').jsonld = { '@context': 'https://schema.org', ...lab };
 
 // Smart glasses: the page and its live 3D model are lazy chunks. Preload them from the HTML so the download starts
 // while the main bundle is still arriving — the glasses then fade in sooner (there is no still image first).

@@ -18,13 +18,14 @@ import { isBookingHref, openBooking } from '@/site/components/utility/Booking';
 
 /** Footer-only copy (the shared footer strings live in `site`). */
 const F = defineDict({
-  me: { group: 'Deo grupe Miftari Holding Group', vatNo: 'PDV br.', country: 'Kosovo', bank: 'Uplata na račun' },
-  sq: { group: 'Pjesë e Miftari Holding Group', vatNo: 'Nr. TVSH', country: 'Kosovë', bank: 'Transfertë bankare' },
-  en: { group: 'Part of Miftari Holding Group', vatNo: 'VAT no.', country: 'Kosovo', bank: 'Bank transfer' },
+  me: { group: 'Deo grupe Miftari Vision Group', vatNo: 'PDV br.', country: 'Kosovo', bank: 'Uplata na račun' },
+  sq: { group: 'Pjesë e Miftari Vision Group', vatNo: 'Nr. TVSH', country: 'Kosovë', bank: 'Transfertë bankare' },
+  en: { group: 'Part of Miftari Vision Group', vatNo: 'VAT no.', country: 'Kosovo', bank: 'Bank transfer' },
 });
 
 /** The three parts of the group, shown under the logo. */
-const DIVISIONS = ['Optika Miftari', 'Optical Lab', 'Klinika Miftari'];
+/** The member companies of Miftari Vision Group (the parent company). */
+const DIVISIONS = ['Klinika Miftari', 'Optika Miftari', 'Optical Lab'];
 
 const socialCls = 'grid h-10 w-10 place-items-center rounded-full bg-white/[0.08] transition-colors hover:bg-white hover:text-ink';
 

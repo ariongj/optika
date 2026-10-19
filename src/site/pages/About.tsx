@@ -24,13 +24,16 @@ const T = defineDict({
     storyEyebrow: 'Naša priča',
     storyTitle: 'Porodična optika, *već 30 godina*',
     story1: 'Već trideset godina Optika Miftari je porodična optika u Mitrovici. Od prvog dana vodi nas isto pravilo: svakom kupcu posvetiti vreme, dati iskren savet i pomoći mu da pronađe par koji mu zaista pristaje.',
-    story2: 'Danas smo deo grupe Miftari Holding Group — sa dve optike, sopstvenom optičkom laboratorijom i Klinikom Miftari. Okvire biramo sa ukusom, sočiva pripremamo pažljivo, a svaki par lično prilagođavamo.',
-    groupEyebrow: 'Miftari Holding Group',
-    groupTitle: 'Tri dela, *jedna porodica*',
-    groupText: 'Optika, laboratorija i klinika rade zajedno — od pregleda i recepta do gotovih naočara.',
-    g1: 'Okviri i naočare za sunce, pregled vida i lično prilagođavanje u našoj optici.',
+    story2: 'Danas smo deo grupe Miftari Vision Group — sa dve optike, sopstvenom optičkom laboratorijom i Klinikom Miftari. Okvire biramo sa ukusom, sočiva pripremamo pažljivo, a svaki par lično prilagođavamo.',
+    groupEyebrow: 'Miftari Vision Group',
+    groupTitle: 'Tri kompanije, *jedna grupa*',
+    groupText: 'Miftari Vision Group je matična kompanija Klinike Miftari, Optike Miftari i Optical Lab-a — tri kompanije koje rade zajedno, od pregleda i recepta do gotovih naočara.',
+    typeClinic: 'Klinika',
+    typeBoutique: 'Optički butik',
+    typeLab: 'Optička laboratorija',
+    g1: 'Naš optički butik: okviri i naočare za sunce, pregled vida i lično prilagođavanje.',
     g2: 'Naša laboratorija za sočiva po receptu — za naše kupce i, kao B2B partner, za optike na Kosovu i u EU.',
-    g3: 'Klinički deo grupe: specijalistička briga o zdravlju oka, konsultacije i procena za lečenje.',
+    g3: 'Specijalistička briga o zdravlju oka: konsultacije i procena za lečenje.',
     g1cta: 'Pogledajte kolekciju',
     g2cta: 'Optical Lab za optike',
     g3cta: 'Zakažite konsultaciju',
@@ -64,13 +67,16 @@ const T = defineDict({
     storyEyebrow: 'Historia jonë',
     storyTitle: 'Optikë familjare, *prej 30 vjetësh*',
     story1: 'Prej tridhjetë vjetësh, Optika Miftari është optika e familjes në Mitrovicë. Që nga dita e parë na udhëheq i njëjti parim: çdo klienti t’i kushtojmë kohë, t’i japim këshillë të sinqertë dhe ta ndihmojmë të gjejë palën që i shkon vërtet.',
-    story2: 'Sot jemi pjesë e Miftari Holding Group — me dy optika, laboratorin tonë optik dhe Klinikën Miftari. Kornizat i zgjedhim me shije, lentet i përgatitim me kujdes dhe çdo palë e përshtatim personalisht.',
-    groupEyebrow: 'Miftari Holding Group',
-    groupTitle: 'Tri pjesë, *një familje*',
-    groupText: 'Optika, laboratori dhe klinika punojnë bashkë — nga kontrolli dhe receta deri te syzet e gatshme.',
-    g1: 'Korniza optike dhe syze dielli, kontroll i syve dhe përshtatje personale në optikën tonë.',
+    story2: 'Sot jemi pjesë e Miftari Vision Group — me dy optika, laboratorin tonë optik dhe Klinikën Miftari. Kornizat i zgjedhim me shije, lentet i përgatitim me kujdes dhe çdo palë e përshtatim personalisht.',
+    groupEyebrow: 'Miftari Vision Group',
+    groupTitle: 'Tri kompani, *një grup*',
+    groupText: 'Miftari Vision Group është kompania mëmë e Klinikës Miftari, Optikës Miftari dhe Optical Lab — tri kompani që punojnë bashkë, nga kontrolli dhe receta deri te syzet e gatshme.',
+    typeClinic: 'Klinikë',
+    typeBoutique: 'Butik optik',
+    typeLab: 'Laborator optik',
+    g1: 'Butiku ynë optik: korniza optike dhe syze dielli, kontroll i syve dhe përshtatje personale.',
     g2: 'Laboratori ynë për lente me recetë — për klientët tanë dhe, si partner B2B, për optikat në Kosovë dhe në BE.',
-    g3: 'Pjesa klinike e grupit: kujdes specialistik për shëndetin e syve, konsulta dhe vlerësim për trajtim.',
+    g3: 'Kujdes specialistik për shëndetin e syve: konsulta dhe vlerësim për trajtim.',
     g1cta: 'Shikoni koleksionin',
     g2cta: 'Optical Lab për optikat',
     g3cta: 'Rezervoni konsultë',
@@ -104,13 +110,16 @@ const T = defineDict({
     storyEyebrow: 'Our story',
     storyTitle: 'A family optician *for 30 years*',
     story1: 'For thirty years, Optika Miftari has been the family optician in Mitrovica. From day one the same rule has guided us: give every client time, honest advice and help finding the pair that truly suits them.',
-    story2: 'Today we are part of Miftari Holding Group — with two stores, our own optical lab and Klinika Miftari. We choose frames with taste, prepare lenses with care and fit every pair personally.',
-    groupEyebrow: 'Miftari Holding Group',
-    groupTitle: 'Three parts, *one family*',
-    groupText: 'Store, lab and clinic work together — from the eye exam and prescription to the finished glasses.',
-    g1: 'Optical frames and sunglasses, eye exams and personal fitting in our store.',
+    story2: 'Today we are part of Miftari Vision Group — with two stores, our own optical lab and Klinika Miftari. We choose frames with taste, prepare lenses with care and fit every pair personally.',
+    groupEyebrow: 'Miftari Vision Group',
+    groupTitle: 'Three companies, *one group*',
+    groupText: 'Miftari Vision Group is the parent company of Klinika Miftari, Optika Miftari and Optical Lab — three companies working together, from the eye exam and prescription to the finished glasses.',
+    typeClinic: 'Clinic',
+    typeBoutique: 'Optical boutique',
+    typeLab: 'Optical lab',
+    g1: 'Our optical boutique: optical frames and sunglasses, eye exams and personal fitting.',
     g2: 'Our prescription-lens laboratory — for our own clients and, as a B2B partner, for opticians in Kosovo and the EU.',
-    g3: 'The clinical arm of the group: specialist eye care, consultations and assessment for treatment.',
+    g3: 'Specialist eye care: consultations and assessment for treatment.',
     g1cta: 'Shop the collection',
     g2cta: 'Optical Lab for opticians',
     g3cta: 'Book a consultation',
@@ -165,9 +174,9 @@ export default function About() {
   ];
 
   const group = [
-    { name: 'Optika Miftari', text: t('g1'), image: '/images/lookbook/atelier-optical.webp', cta: t('g1cta'), to: '/produktet' },
-    { name: 'Optical Lab', text: t('g2'), image: '/images/s/laboratori.webp', cta: t('g2cta'), to: '/optical-lab' },
-    { name: 'Klinika Miftari', text: t('g3'), image: '/images/s/klinika.webp', cta: t('g3cta'), to: '/klinika' },
+    { name: 'Klinika Miftari', type: t('typeClinic'), text: t('g3'), image: '/images/s/klinika.webp', cta: t('g3cta'), to: '/klinika' },
+    { name: 'Optika Miftari', type: t('typeBoutique'), text: t('g1'), image: '/images/lookbook/atelier-optical.webp', cta: t('g1cta'), to: '/produktet' },
+    { name: 'Optical Lab', type: t('typeLab'), text: t('g2'), image: '/images/s/laboratori.webp', cta: t('g2cta'), to: '/optical-lab' },
   ];
 
   return (
@@ -254,7 +263,7 @@ export default function About() {
                 <>
                   <div className="relative aspect-[4/3] overflow-hidden bg-sand">
                     <Img src={g.image} small alt="" className="h-full w-full object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-[1.05]" />
-                    <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold tracking-[0.18em] text-ink backdrop-blur-md">{pad2(i + 1)}</span>
+                    <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-ink backdrop-blur-md">{g.type}</span>
                   </div>
                   <div className="flex flex-1 flex-col p-6 sm:p-7">
                     <h3 className="display text-[28px] leading-tight text-ink">{g.name}</h3>

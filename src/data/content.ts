@@ -9,7 +9,7 @@ const T = (me: string, sq: string, en: string): L10n => ({ me, sq, en });
 /* ------------------------------------------------------------------ */
 export const DEFAULT_SETTINGS: Settings = {
   companyName: 'Optika Miftari',
-  legalName: 'Miftari Holding Group',
+  legalName: 'Miftari Vision Group',
   tagline: T('Vidite drugačije. Budite svoji.', 'Shihni ndryshe. Jini vetvetja.', 'See differently. Be yourself.'),
   about: T(
     'Optika Miftari je porodična optika iz Mitrovice sa 30 godina iskustva. Biramo okvire sa ukusom, sočiva izrađujemo u sopstvenoj laboratoriji i svakom paru posvećujemo lično prilagođavanje — jer dobar vid počinje stručnim pregledom.',
@@ -988,7 +988,7 @@ As a general guide, adults should have their prescription checked every one to t
       slug: 'privatesia',
       title: T('Politika privatnosti', 'Politika e privatësisë', 'Privacy policy'),
       body: T(
-        `Optika Miftari (Miftari Holding Group) obrađuje vaše podatke samo u meri potrebnoj za narudžbe, termine i komunikaciju sa vama — u skladu sa Zakonom o zaštiti ličnih podataka Republike Kosovo.
+        `Optika Miftari (Miftari Vision Group) obrađuje vaše podatke samo u meri potrebnoj za narudžbe, termine i komunikaciju sa vama — u skladu sa Zakonom o zaštiti ličnih podataka Republike Kosovo.
 
 ## Koje podatke prikupljamo
 - Ime i prezime, broj telefona i e-mail
@@ -1010,7 +1010,7 @@ Račune i dokumentaciju narudžbi čuvamo onoliko koliko propisuje poreski zakon
 
 ## Vaša prava
 U svakom trenutku možete zatražiti uvid, ispravku, izvoz ili brisanje svojih podataka — pišite nam na info@optikamiftari.com ili dođite u optiku.`,
-        `Optika Miftari (Miftari Holding Group) i përpunon të dhënat tuaja vetëm për aq sa nevojitet për porositë, terminet dhe komunikimin me ju — në përputhje me Ligjin për Mbrojtjen e të Dhënave Personale të Republikës së Kosovës.
+        `Optika Miftari (Miftari Vision Group) i përpunon të dhënat tuaja vetëm për aq sa nevojitet për porositë, terminet dhe komunikimin me ju — në përputhje me Ligjin për Mbrojtjen e të Dhënave Personale të Republikës së Kosovës.
 
 ## Çfarë të dhënash mbledhim
 - Emrin dhe mbiemrin, numrin e telefonit dhe e-mailin
@@ -1032,7 +1032,7 @@ Faturat dhe dokumentet e porosive i ruajmë aq sa kërkon ligji tatimor. Kërkes
 
 ## Të drejtat tuaja
 Në çdo kohë mund të kërkoni qasje, korrigjim, eksport ose fshirje të të dhënave tuaja — na shkruani në info@optikamiftari.com ose ejani në optikë.`,
-        `Optika Miftari (Miftari Holding Group) processes your data only as far as needed for orders, appointments and communicating with you — in line with the Law on Personal Data Protection of the Republic of Kosovo.
+        `Optika Miftari (Miftari Vision Group) processes your data only as far as needed for orders, appointments and communicating with you — in line with the Law on Personal Data Protection of the Republic of Kosovo.
 
 ## What we collect
 - Name, phone number and e-mail
@@ -1064,7 +1064,7 @@ You can ask to access, correct, export or delete your data at any time — write
       slug: 'kushtet-e-perdorimit',
       title: T('Uslovi korišćenja', 'Kushtet e përdorimit', 'Terms of use'),
       body: T(
-        `Ovi uslovi uređuju korišćenje sajta i kupovinu u online prodavnici Optika Miftari, deo Miftari Holding Group, Mbretëresha Teutë 182, 40000 Mitrovica.
+        `Ovi uslovi uređuju korišćenje sajta i kupovinu u online prodavnici Optika Miftari, deo Miftari Vision Group, Mbretëresha Teutë 182, 40000 Mitrovica.
 
 ## Narudžba
 Narudžba je prihvaćena kada vam pošaljemo potvrdu e-mailom ili SMS-om. Za naočare sa dioptrijskim sočivima laboratorija počinje izradu tek kada su recept i merenja potvrđeni.
@@ -1083,7 +1083,7 @@ Virtuelna proba prikazuje okvir okvirno i ne zamenjuje probu u optici niti meren
 
 ## Merodavno pravo
 Na ove uslove primenjuje se pravo Republike Kosovo. Svaki eventualni spor nastojimo najpre da rešimo dogovorom.`,
-        `Këto kushte rregullojnë përdorimin e faqes dhe blerjet në dyqanin online të Optika Miftari, pjesë e Miftari Holding Group, Mbretëresha Teutë 182, 40000 Mitrovicë.
+        `Këto kushte rregullojnë përdorimin e faqes dhe blerjet në dyqanin online të Optika Miftari, pjesë e Miftari Vision Group, Mbretëresha Teutë 182, 40000 Mitrovicë.
 
 ## Porosia
 Porosia pranohet kur ju dërgojmë konfirmimin me e-mail ose SMS. Për syzet me lente me recetë, laboratori fillon punën vetëm pasi receta dhe matjet të jenë konfirmuar.
@@ -1102,7 +1102,7 @@ Prova virtuale tregon një pamje orientuese të kornizës dhe nuk e zëvendëson
 
 ## Ligji i zbatueshëm
 Për këto kushte zbatohet ligji i Republikës së Kosovës. Çdo mosmarrëveshje të mundshme përpiqemi ta zgjidhim fillimisht me marrëveshje.`,
-        `These terms govern the use of this website and purchases from the Optika Miftari online store, part of Miftari Holding Group, Mbretëresha Teutë 182, 40000 Mitrovica.
+        `These terms govern the use of this website and purchases from the Optika Miftari online store, part of Miftari Vision Group, Mbretëresha Teutë 182, 40000 Mitrovica.
 
 ## Orders
 An order is accepted once we send you a confirmation by e-mail or text. For glasses with prescription lenses, the lab starts work only after your prescription and measurements have been confirmed.

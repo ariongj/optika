@@ -9,7 +9,7 @@ export const CL = defineDict({
   me: {
     title: 'Briga o očima *počinje od vas*.',
     eyebrow: 'Klinika Miftari · Mitrovica',
-    subtitle: 'Klinika Miftari je klinički deo grupe Miftari Holding Group: specijalističke konsultacije za oči, procena pre lečenja i kontrolni pregledi — u direktnoj vezi sa našom optikom i laboratorijom.',
+    subtitle: 'Klinika Miftari je klinika grupe Miftari Vision Group: specijalističke konsultacije za oči, procena pre lečenja i kontrolni pregledi — u direktnoj vezi sa našom optikom i laboratorijom.',
     ctaBook: 'Zakažite konsultaciju',
     heroNote: 'Uslugu, specijalistu i termin potvrđuje naš tim nakon razgovora.',
     floatText: 'Klinički deo grupe',
@@ -99,7 +99,7 @@ export const CL = defineDict({
   sq: {
     title: 'Kujdesi për sytë *fillon me ju*.',
     eyebrow: 'Klinika Miftari · Mitrovicë',
-    subtitle: 'Klinika Miftari është pjesa klinike e Miftari Holding Group: konsultë specialistike për sytë, vlerësim para trajtimit dhe vizita kontrolli — e lidhur drejtpërdrejt me optikën dhe laboratorin tonë.',
+    subtitle: 'Klinika Miftari është kompania klinike e Miftari Vision Group: konsultë specialistike për sytë, vlerësim para trajtimit dhe vizita kontrolli — e lidhur drejtpërdrejt me optikën dhe laboratorin tonë.',
     ctaBook: 'Rezervoni konsultë',
     heroNote: 'Shërbimi, specialisti dhe orari konfirmohen nga ekipi pas kontaktit.',
     floatText: 'Departamenti klinik i grupit',
@@ -189,7 +189,7 @@ export const CL = defineDict({
   en: {
     title: 'Eye care *starts with you*.',
     eyebrow: 'Klinika Miftari · Mitrovica',
-    subtitle: 'Klinika Miftari is the clinical arm of Miftari Holding Group: specialist eye consultations, assessment before treatment and follow-up visits — directly connected to our store and our lab.',
+    subtitle: 'Klinika Miftari is the clinic of Miftari Vision Group: specialist eye consultations, assessment before treatment and follow-up visits — directly connected to our store and our lab.',
     ctaBook: 'Book a consultation',
     heroNote: 'The service, specialist and time are confirmed by our team after we speak.',
     floatText: 'The group’s clinical division',

@@ -6,7 +6,7 @@ import { defineDict } from '@/i18n';
  */
 export const LB = defineDict({
   me: {
-    eyebrow: 'Optical Lab · Miftari Holding Group',
+    eyebrow: 'Optical Lab · Miftari Vision Group',
     title: 'Vaš recept. *Naša preciznost.*',
     subtitle: 'Optical Lab spaja recept, mere i okvir u jedan proces: izradu, centriranje, montažu i završnu proveru — za naše kupce i za optike na Kosovu i u EU.',
     ctaPartner: 'Postanite partner',
@@ -15,7 +15,7 @@ export const LB = defineDict({
     fact2: 'Provera na fokometru',
     fact3: 'Kosovo i EU',
     chip: 'Svaki par proveren pre predaje',
-    strip1: 'Deo grupe Miftari Holding Group',
+    strip1: 'Deo grupe Miftari Vision Group',
     strip2: 'Privatna laboratorija · Kosovo',
     strip3: 'Direktan kontakt sa laboratorijom',
 
@@ -59,7 +59,7 @@ export const LB = defineDict({
     howItStarts: 'Kako počinje saradnja',
 
     xkTitle: 'Vaša laboratorija, *bliže vašem poslu*.',
-    xkText: 'Sočiva po receptu, montaža i provera za optike i stručnjake na Kosovu. Direktna saradnja sa Optical Lab-om, delom grupe Miftari Holding Group.',
+    xkText: 'Sočiva po receptu, montaža i provera za optike i stručnjake na Kosovu. Direktna saradnja sa Optical Lab-om, kompanijom grupe Miftari Vision Group.',
     xk1t: 'Sočiva po receptu',
     xk1: 'Razgovaramo o receptu, materijalu i nameni pre nego što definišemo specifikaciju porudžbine.',
     xk2t: 'Montaža i provera',
@@ -80,7 +80,7 @@ export const LB = defineDict({
     xkD3: 'Cena, rok, transport i ponovna izrada potvrđuju se pismeno.',
 
     euTitle: 'Vaša praksa. *Naš optički zanat.*',
-    euText: 'Direktno partnerstvo za sočiva po receptu za optičare u Evropskoj uniji — sa Optical Lab-om, proizvodnim delom grupe Miftari Holding Group na Kosovu.',
+    euText: 'Direktno partnerstvo za sočiva po receptu za optičare u Evropskoj uniji — sa Optical Lab-om, proizvodnom kompanijom grupe Miftari Vision Group na Kosovu.',
     eu1t: 'Izrada sočiva po receptu',
     eu1: 'Razgovarajte sa laboratorijom o dizajnu sočiva, materijalima i zahtevima recepta pre definisanja obima.',
     eu2t: 'Montaža i verifikacija',
@@ -116,14 +116,14 @@ export const LB = defineDict({
     q3: 'Kako šaljemo recepte i okvire?',
     a3: 'Način slanja recepata, mera i okvira — i vraćanja gotovih poslova — dogovara se u prvom razgovoru, prema vašem gradu ili zemlji.',
     q4: 'Gde se nalazi laboratorija?',
-    a4: 'Optical Lab je proizvodni deo grupe Miftari Holding Group na Kosovu. Partnere iz EU opslužuje ista laboratorija — ne postoji posebna fabrika u EU.',
+    a4: 'Optical Lab je proizvodna kompanija grupe Miftari Vision Group na Kosovu. Partnere iz EU opslužuje ista laboratorija — ne postoji posebna fabrika u EU.',
     q5: 'Mogu li ovde da vidim sertifikate?',
     a5: 'Ne. Na ovoj stranici nisu objavljeni provereni sertifikati. U formularu izaberite „Tehnička dokumentacija“ da zatražite pregled dokumenata za vaš proizvod i tržište.',
     q6: 'Ja sam fizičko lice — gde da se obratim?',
     a6: 'Ovaj deo je za poslovnu saradnju. Za lične naočare izaberite sočiva u prodavnici ili zakažite pregled vida — vaša sočiva se izrađuju upravo u ovoj laboratoriji.',
   },
   sq: {
-    eyebrow: 'Optical Lab · Miftari Holding Group',
+    eyebrow: 'Optical Lab · Miftari Vision Group',
     title: 'Receta juaj. *Precizioni ynë.*',
     subtitle: 'Optical Lab lidh recetën, matjet dhe kornizën në një proces të vetëm: përgatitje, centrim, montim dhe kontroll përfundimtar — për klientët tanë dhe për optika në Kosovë e në BE.',
     ctaPartner: 'Bëhuni partner',
@@ -132,7 +132,7 @@ export const LB = defineDict({
     fact2: 'Kontroll në fokometër',
     fact3: 'Kosovë & BE',
     chip: 'Çdo palë kontrollohet para dorëzimit',
-    strip1: 'Pjesë e Miftari Holding Group',
+    strip1: 'Pjesë e Miftari Vision Group',
     strip2: 'Laborator privat · Kosovë',
     strip3: 'Kontakt i drejtpërdrejtë me laboratorin',
 
@@ -176,7 +176,7 @@ export const LB = defineDict({
     howItStarts: 'Si fillon bashkëpunimi',
 
     xkTitle: 'Laboratori juaj, *më afër biznesit tuaj*.',
-    xkText: 'Lente me recetë, montim dhe kontroll për optikat dhe profesionistët në Kosovë. Një bashkëpunim i drejtpërdrejtë me Optical Lab, pjesë e Miftari Holding Group.',
+    xkText: 'Lente me recetë, montim dhe kontroll për optikat dhe profesionistët në Kosovë. Një bashkëpunim i drejtpërdrejtë me Optical Lab, pjesë e Miftari Vision Group.',
     xk1t: 'Lente sipas recetës',
     xk1: 'Diskutojmë recetën, materialin dhe përdorimin para se të përcaktojmë specifikimin e porosisë.',
     xk2t: 'Montim & kontroll',
@@ -197,7 +197,7 @@ export const LB = defineDict({
     xkD3: 'Çmimi, afati, transporti dhe ripunimet konfirmohen me shkrim.',
 
     euTitle: 'Praktika juaj. *Mjeshtëria jonë optike.*',
-    euText: 'Partneritet i drejtpërdrejtë për lente me recetë për profesionistët optikë në Bashkimin Evropian — me Optical Lab, divizionin e prodhimit të Miftari Holding Group në Kosovë.',
+    euText: 'Partneritet i drejtpërdrejtë për lente me recetë për profesionistët optikë në Bashkimin Evropian — me Optical Lab, kompaninë e prodhimit të Miftari Vision Group në Kosovë.',
     eu1t: 'Punim i lenteve me recetë',
     eu1: 'Diskutoni dizajnin e lenteve, materialet dhe kërkesat e recetës me laboratorin para se të përcaktohet fushëveprimi.',
     eu2t: 'Montim & verifikim',
@@ -233,14 +233,14 @@ export const LB = defineDict({
     q3: 'Si i dërgojmë recetat dhe kornizat?',
     a3: 'Mënyra e dërgimit të recetave, matjeve dhe kornizave — dhe e kthimit të punimeve — dakordësohet në bisedën e parë, sipas qytetit ose vendit tuaj.',
     q4: 'Ku ndodhet laboratori?',
-    a4: 'Optical Lab është divizioni i prodhimit të Miftari Holding Group në Kosovë. Partnerët në BE shërbehen nga i njëjti laborator — nuk ka fabrikë të veçantë në BE.',
+    a4: 'Optical Lab është kompania e prodhimit e Miftari Vision Group në Kosovë. Partnerët në BE shërbehen nga i njëjti laborator — nuk ka fabrikë të veçantë në BE.',
     q5: 'A mund t’i shoh certifikatat këtu?',
     a5: 'Jo. Në këtë faqe nuk publikohen certifikata të verifikuara. Në formular zgjidhni “Dokumentacion teknik” për të kërkuar shqyrtimin e dokumenteve për produktin dhe tregun tuaj.',
     q6: 'Jam klient individual — ku të drejtohem?',
     a6: 'Kjo pjesë është për bashkëpunim mes bizneseve. Për syze personale, zgjidhni lentet në dyqan ose rezervoni kontrollin e syve — lentet tuaja punohen pikërisht në këtë laborator.',
   },
   en: {
-    eyebrow: 'Optical Lab · Miftari Holding Group',
+    eyebrow: 'Optical Lab · Miftari Vision Group',
     title: 'Your prescription. *Our precision.*',
     subtitle: 'Optical Lab brings prescription, measurements and frame together in one process: surfacing, centring, mounting and a final check — for our own clients and for opticians in Kosovo and the EU.',
     ctaPartner: 'Become a partner',
@@ -249,7 +249,7 @@ export const LB = defineDict({
     fact2: 'Lensmeter-checked',
     fact3: 'Kosovo & EU',
     chip: 'Every pair checked before handover',
-    strip1: 'Part of Miftari Holding Group',
+    strip1: 'Part of Miftari Vision Group',
     strip2: 'Private laboratory · Kosovo',
     strip3: 'Direct contact with the lab',
 
@@ -293,7 +293,7 @@ export const LB = defineDict({
     howItStarts: 'How it starts',
 
     xkTitle: 'Your lab, *closer to your business*.',
-    xkText: 'Prescription lenses, mounting and verification for opticians and professionals in Kosovo. A direct partnership with Optical Lab, part of Miftari Holding Group.',
+    xkText: 'Prescription lenses, mounting and verification for opticians and professionals in Kosovo. A direct partnership with Optical Lab, part of Miftari Vision Group.',
     xk1t: 'Lenses to prescription',
     xk1: 'We discuss the prescription, material and use before defining the order specification.',
     xk2t: 'Mounting & verification',
@@ -314,7 +314,7 @@ export const LB = defineDict({
     xkD3: 'Price, lead time, transport and remakes are confirmed in writing.',
 
     euTitle: 'Your practice. *Our optical craft.*',
-    euText: 'A direct prescription-lens partnership for optical professionals in the European Union. Work with Optical Lab, the production division of Miftari Holding Group in Kosovo.',
+    euText: 'A direct prescription-lens partnership for optical professionals in the European Union. Work with Optical Lab, the production company of Miftari Vision Group in Kosovo.',
     eu1t: 'Prescription lens work',
     eu1: 'Discuss lens designs, materials and prescription requirements with the laboratory before defining the scope.',
     eu2t: 'Glazing & verification',
@@ -350,7 +350,7 @@ export const LB = defineDict({
     q3: 'How do we send prescriptions and frames?',
     a3: 'How prescriptions, measurements and frames reach us — and how finished jobs come back — is agreed in the first conversation, depending on your city or country.',
     q4: 'Where is the laboratory based?',
-    a4: 'Optical Lab is the production division of Miftari Holding Group in Kosovo. EU partners are served by the same lab — there is no separate EU factory.',
+    a4: 'Optical Lab is the production company of Miftari Vision Group in Kosovo. EU partners are served by the same lab — there is no separate EU factory.',
     q5: 'Can I view certificates here?',
     a5: 'No. No verified certificates are currently published on this page. Choose “Technical documentation” in the form to request a review of the documents for your product and market.',
     q6: 'I’m an individual customer — where should I go?',

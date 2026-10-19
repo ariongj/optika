@@ -115,7 +115,7 @@ export default function Clinic() {
                 <LogoMark className="h-9" />
               </span>
               <div className="min-w-0">
-                <div className="display text-[22px] leading-tight text-ink">Miftari Holding Group</div>
+                <div className="display text-[22px] leading-tight text-ink">Miftari Vision Group</div>
                 <div className="mt-0.5 text-[12px] font-bold uppercase tracking-[0.16em] text-brand-700">{t('floatText')}</div>
               </div>
             </div>

@@ -33,7 +33,7 @@ const STATIC_PAGES: StaticPage[] = [
   { to: '/provo-virtualisht', icon: ScanFace, title: T('Virtuelna proba', 'Provo virtualisht', 'Virtual try-on'), sub: T('Kamera, fotografija ili 3D', 'Kamera, foto ose 3D', 'Camera, photo or 3D'), keys: 'provo virtual virtuelno try on kamera camera foto selfie 3d' },
   { to: '/gjurmo-porosine', icon: PackageSearch, title: T('Pratite porudžbinu', 'Gjurmo porosinë', 'Track your order'), sub: T('Status porudžbine', 'Statusi i porosisë', 'Order status'), keys: 'gjurmo porosi porosine status order track narudzba porudzbina dergesa delivery dostava' },
   { to: '/kontakt', icon: MapPin, title: T('Kontakt', 'Kontakt', 'Contact'), sub: T('Mbretëresha Teutë 182, Mitrovica', 'Mbretëresha Teutë 182, Mitrovicë', 'Mbretëresha Teutë 182, Mitrovica'), keys: 'kontakt contact adresa address telefon phone whatsapp orari hours mitrovice mitrovica' },
-  { to: '/rreth-nesh', icon: Users, title: T('O nama', 'Rreth nesh', 'About'), sub: T('30 godina porodične tradicije', '30 vjet traditë familjare', '30 years of family tradition'), keys: 'rreth nesh o nama about histori familje family miftari holding' },
+  { to: '/rreth-nesh', icon: Users, title: T('O nama', 'Rreth nesh', 'About'), sub: T('30 godina porodične tradicije', '30 vjet traditë familjare', '30 years of family tradition'), keys: 'rreth nesh o nama about histori familje family miftari vision group grupi kompani holding' },
   { to: '/lookbook', icon: Images, title: T('Lookbook', 'Lookbook', 'Lookbook'), sub: T('Kampanje i editorijali', 'Fushata dhe editoriale', 'Campaigns and editorials'), keys: 'lookbook kampanje fushata campaign foto editorial' },
 ];
 
