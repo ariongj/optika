@@ -1009,6 +1009,7 @@ Virtuelna proba naočara radi **u potpunosti u vašem pregledaču**. Slika sa ka
 
 ## Šta se čuva u vašem pregledaču
 Da bi radio, sajt čuva nekoliko stvari u lokalnoj memoriji vašeg pregledača — nikada u kolačićima. Ništa od toga ne napušta vaš uređaj, osim podataka iz obrasca koji pošaljete:
+
 - jezik, korpu, listu želja, kodove za popust i nedavno pregledane proizvode;
 - odgovore iz vodiča za izbor okvira i izabrani prikaz prodavnice;
 - kopije narudžbi i zahteva koje ste poslali i nacrt narudžbe (samo za trenutnu karticu pregledača), da ne izgubite uneto;
@@ -1047,6 +1048,7 @@ Prova virtuale e syzeve funksionon **tërësisht në shfletuesin tuaj**. Imazhi 
 
 ## Çfarë ruhet në shfletuesin tuaj
 Që të funksionojë, faqja ruan disa gjëra në hapësirën lokale të shfletuesit tuaj — asnjëherë në cookies. Asgjë prej tyre nuk largohet nga pajisja juaj, përveç të dhënave të formularit që dërgoni:
+
 - gjuhën, shportën, listën e dëshirave, kodet e zbritjes dhe produktet e shikuara së fundi;
 - përgjigjet në udhëzuesin për zgjedhjen e kornizës dhe pamjen e dyqanit që keni zgjedhur;
 - kopjet e porosive dhe kërkesave që keni dërguar dhe draftin e porosisë (vetëm për skedën aktuale), që të mos humbni atë që keni shkruar;
@@ -1085,6 +1087,7 @@ The virtual try-on runs **entirely in your browser**. Your camera feed or the ph
 
 ## Stored in your browser
 To work, the site keeps a few things in your browser’s local storage — never in cookies. None of it leaves your device, except the form entries you send:
+
 - your language, cart, wishlist, discount codes and recently viewed products;
 - your answers in the frame finder and the shop layout you picked;
 - copies of the orders and requests you sent, and a checkout draft (current browser tab only) so you don’t lose what you typed;
