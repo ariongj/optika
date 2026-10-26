@@ -100,11 +100,6 @@ const heroPreload = heroRel
       ]
     : [`<link rel="preload" as="image" href="${BASE}${heroRel}" fetchpriority="high" />`]
   : [];
-/** Product pages: the first gallery photo is the largest paint — fetch it with the JavaScript, not after it. */
-const imagePreload = (img) => {
-  const rel = img ? (BASE !== '/' && img.startsWith(BASE) ? img.slice(BASE.length) : img).replace(/^\/+/, '') : '';
-  return rel.startsWith('images/') ? [`<link rel="preload" as="image" href="${BASE}${rel}" fetchpriority="high" />`] : [];
-};
 put('', { title: s.seo.title, description: s.seo.description, image: '/images/hero/optical.webp', jsonld: business, raw: true, preload: heroPreload });
 const STATIC = [
   ['produktet', 'Produktet — syze optike, syze dielli dhe lente', 'Korniza optike dhe syze dielli në titan dhe acetat, lente me recetë nga laboratori ynë. Dërgesë në gjithë Kosovën.', '/images/cat/optike.webp'],
@@ -164,7 +159,6 @@ for (const p of db.products.filter((x) => x.status === 'active')) {
     description: p.seo?.description || `${plain(p.short.sq)} ${onRequest ? 'Çmimi sipas kërkesës' : `${price} €`} · ${brand}, Mitrovicë.`,
     image: p.images[0],
     type: 'product',
-    preload: imagePreload(p.images[0]),
     jsonld: {
       '@context': 'https://schema.org',
       '@type': 'Product',
