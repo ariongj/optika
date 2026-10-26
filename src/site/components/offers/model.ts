@@ -8,6 +8,7 @@ import { offerState } from '@/lib/offers';
 import { collectionProducts } from '@/lib/collections';
 import { discountState, discountValueLabel } from '@/lib/discounts';
 import { date, money } from '@/lib/format';
+import { OFFER_STATS } from '@/lib/launch';
 import type { Discount, Lang, Offer, OfferState, Product } from '@/lib/types';
 
 export type ProductScope = 'offer' | 'all' | 'collection';
@@ -126,6 +127,7 @@ export function daysLeft(endsAt: string | undefined, now = Date.now()) {
 /* Campaign counters (offers centre → "vizita në ofertë, klikime në CTA")  */
 /* ------------------------------------------------------------------ */
 export function bumpOfferMetric(id: string, key: 'visits' | 'ctaClicks') {
+  if (!OFFER_STATS) return; // optional statistics: off until visitors can opt in (lib/launch.ts)
   useDb.setState((s) => ({ offers: s.offers.map((o) => (o.id === id ? { ...o, metrics: { ...o.metrics, [key]: o.metrics[key] + 1 } } : o)) }));
 }
 
@@ -133,7 +135,7 @@ export function bumpOfferMetric(id: string, key: 'visits' | 'ctaClicks') {
 export function useCountVisit(offer: Offer | undefined, live: boolean) {
   const id = offer?.id;
   useEffect(() => {
-    if (!id || !live) return;
+    if (!OFFER_STATS || !id || !live) return;
     const key = `optika-offer-visit:${id}`;
     try {
       if (sessionStorage.getItem(key)) return;

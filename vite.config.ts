@@ -68,7 +68,8 @@ function asyncCss(): Plugin {
         return html.replace(/<link rel="stylesheet" crossorigin href="([^"]+\.css)">/g, (_m, href: string) =>
           [
             `<link rel="preload" as="style" crossorigin href="${href}">`,
-            `<link rel="stylesheet" crossorigin href="${href}" media="print" onload="this.media='all'" data-app-css>`,
+            // no inline onload (the CSP allows no inline script): main.tsx switches media to "all"
+            `<link rel="stylesheet" crossorigin href="${href}" media="print" data-app-css>`,
             `<noscript><link rel="stylesheet" crossorigin href="${href}"></noscript>`,
             // until the sheet is in: no default body margin and the page colour (main.tsx removes it — unlayered, it
             // would otherwise beat the sheet's layered base styles)
@@ -80,9 +81,74 @@ function asyncCss(): Plugin {
   };
 }
 
+/**
+ * Content-Security-Policy for every built page. GitHub Pages can't send response headers, so it goes in a <meta> —
+ * which browsers honour for everything except frame-ancestors, report-uri and sandbox. The full header set
+ * (+ frame-ancestors, X-Frame-Options, nosniff, Permissions-Policy) is written to dist/_headers for hosts that read
+ * it (Cloudflare Pages, Netlify) and copied in vercel.json — keep that copy in step. On GitHub Pages main.tsx guards
+ * against cross-origin framing instead. What the site really loads:
+ *  - only its own scripts, styles, fonts, images and the self-hosted MediaPipe runtime (wasm → 'wasm-unsafe-eval');
+ *  - inline style attributes (React, the static first screen) → style-src 'unsafe-inline'; no inline script at all;
+ *  - data:/blob: images (CMS uploads, try-on snapshots), the try-on's blob wasm and camera stream;
+ *  - Web3Forms — the only outside host, contacted only when a form is sent (src/lib/leads.ts);
+ *  - same-origin frames only (the CMS previews).
+ * Build-only: the dev server injects inline scripts of its own.
+ */
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'wasm-unsafe-eval'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self' data:",
+  "connect-src 'self' blob: data: https://api.web3forms.com",
+  "media-src 'self' blob:",
+  "worker-src 'self' blob:",
+  "frame-src 'self'",
+  "manifest-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  'upgrade-insecure-requests',
+].join('; ');
+
+/** Response headers for hosts that can send them. Camera stays allowed for the site itself (virtual try-on). */
+const HEADERS = {
+  'Content-Security-Policy': `${CSP}; frame-ancestors 'self'`,
+  'X-Frame-Options': 'SAMEORIGIN',
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'camera=(self), microphone=(), geolocation=(), payment=(), usb=()',
+};
+
+function securityMeta(prefix: string): Plugin {
+  return {
+    name: 'optika-security-meta',
+    apply: 'build',
+    generateBundle() {
+      const all = Object.entries(HEADERS).map(([k, v]) => `  ${k}: ${v}`);
+      this.emitFile({
+        type: 'asset',
+        fileName: '_headers',
+        source: [`${prefix}*`, ...all, '', `${prefix}assets/*`, '  Cache-Control: public, max-age=31536000, immutable', ''].join('\n'),
+      });
+    },
+    // first in <head> (after the charset, which must stay in the first 1024 bytes), before anything is fetched
+    transformIndexHtml: {
+      order: 'post',
+      handler: (html) =>
+        html
+          .replace(/\s*<meta charset="UTF-8" \/>/, '')
+          .replace(
+            '<head>',
+            `<head>\n    <meta charset="UTF-8" />\n    <meta http-equiv="Content-Security-Policy" content="${CSP}">\n    <meta name="referrer" content="strict-origin-when-cross-origin">`,
+          ),
+    },
+  };
+}
+
 export default defineConfig({
   base,
-  plugins: [baseImages(base), preloadFonts(base), asyncCss(), react(), tailwindcss()],
+  plugins: [baseImages(base), preloadFonts(base), asyncCss(), securityMeta(base), react(), tailwindcss()],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },

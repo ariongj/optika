@@ -32,13 +32,38 @@ function cssReady(): Promise<void> {
   });
 }
 
-void cssReady().then(() =>
-  createRoot(document.getElementById('root')!).render(
-    <StrictMode>
-      <App />
-    </StrictMode>,
-  ),
-);
+/**
+ * Clickjacking guard. GitHub Pages can't send X-Frame-Options / CSP frame-ancestors (and browsers ignore
+ * frame-ancestors in a <meta>), so a page framed by another site gets a link to open it instead of the shop. The
+ * CMS previews frame the site from the same origin and keep working.
+ */
+function framedByOtherSite(): boolean {
+  if (window.top === window.self) return false;
+  try {
+    return window.top!.location.origin !== window.location.origin;
+  } catch {
+    return true;
+  }
+}
+
+if (framedByOtherSite()) {
+  const root = document.getElementById('root')!;
+  const link = document.createElement('a');
+  link.href = window.location.href;
+  link.target = '_top';
+  link.rel = 'noopener';
+  link.textContent = 'Optika Miftari →';
+  link.style.cssText = 'display:block;padding:24px;font:600 16px system-ui,sans-serif;color:#1c1a17';
+  root.replaceChildren(link);
+} else {
+  void cssReady().then(() =>
+    createRoot(document.getElementById('root')!).render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    ),
+  );
+}
 
 // Production only: the service worker keeps build files and photos on the device for fast repeat visits on phones
 // (pages are still fetched fresh — see public/sw.js).

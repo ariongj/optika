@@ -61,7 +61,7 @@ export function Gallery({ images, alt, className }: { images: string[]; alt: str
               className="group/slide relative h-full w-full shrink-0 snap-center overflow-hidden lg:cursor-zoom-in"
             >
               <div className="h-full w-full transition-transform duration-500 ease-out lg:group-hover/slide:scale-[1.35]">
-                {src && <Img src={src} eager={i === 0} alt={i === 0 ? alt : ''} className="h-full w-full object-cover" />}
+                {src && <Img src={src} eager={i === 0} fetchPriority={i === 0 ? 'high' : undefined} alt={i === 0 ? alt : ''} className="h-full w-full object-cover" />}
               </div>
             </button>
           ))}

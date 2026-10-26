@@ -988,72 +988,120 @@ As a general guide, adults should have their prescription checked every one to t
       slug: 'privatesia',
       title: T('Politika privatnosti', 'Politika e privatësisë', 'Privacy policy'),
       body: T(
-        `Optika Miftari (Miftari Vision Group) obrađuje vaše podatke samo u meri potrebnoj za narudžbe, termine i komunikaciju sa vama — u skladu sa Zakonom o zaštiti ličnih podataka Republike Kosovo.
+        `Ovo obaveštenje objašnjava šta se dešava sa vašim podacima kada koristite ovaj sajt Optike Miftari (Miftari Vision Group), Mbretëresha Teutë 182, 40000 Mitrovica. Opisuje kako sajt radi danas; ako se to promeni, ažuriraćemo ovu stranicu.
 
-## Koje podatke prikupljamo
-- Ime i prezime, broj telefona i e-mail
-- Adresu dostave i istoriju narudžbi
-- Termine pregleda vida i beleške sa termina
-- Recept i merenja (PD, visina montaže) kada naručujete sočiva
+## Bez analitike i reklamnih kolačića
+Sajt **ne postavlja kolačiće** i **ne koristi alate za analitiku, reklame ili praćenje**. Dok pregledate sajt, ništa se ne učitava od drugih kompanija: stranice, slike, fontovi i virtuelna proba dolaze sa samog sajta.
+
+## Hosting
+Sajt je hostovan na GitHub Pages (GitHub, Inc.) i isporučuje se preko njihove mreže za isporuku sadržaja. Kao kod svakog sajta, IP adresa vašeg uređaja i tražena stranica stižu do njihovih servera; GitHub navodi da IP adrese posetilaca beleži iz bezbednosnih razloga. Pogledajte [GitHub izjavu o privatnosti](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
+
+## Šta nam šaljete putem obrazaca
+Narudžbe, zahtevi za termin, kontakt i partnerski upiti i prijave na newsletter sadrže ono što unesete — na primer ime, broj telefona, e-mail, adresu dostave i, za dioptrijska sočiva, recept i merenja (PD, visina montaže). Koristimo ih samo da obradimo vaš zahtev.
+
+Sajt nema bazu podataka na serveru: kopija onoga što pošaljete čuva se u vašem pregledaču, kako bi sajt mogao da prikaže potvrdu i status narudžbe. Da bi stigli do nas, podaci iz obrasca šalju nam se e-mailom preko Web3Forms, servisa za dostavu obrazaca. Web3Forms prima sadržaj obrasca da bi ga isporučio nama; pogledajte [Web3Forms politiku privatnosti](https://web3forms.com/privacy). Da li je slanje trenutno uključeno, piše na kraju ove stranice.
 
 ## Recept je osetljiv podatak
 Vrednosti sa recepta odnose se na vaše zdravlje. Koristimo ih isključivo za izradu sočiva; pristup imaju samo naši optičari i laboratorija i nikada ih ne koristimo za marketing.
 
 ## Virtuelna proba
-Virtuelna proba naočara radi **u potpunosti u vašem pregledaču**. Slika sa kamere ili fotografija koju izaberete obrađuje se na vašem uređaju i **ne otprema se, ne čuva i ne šalje** nama niti trećim licima. Kada zatvorite probu, kamera se isključuje.
+Virtuelna proba naočara radi **u potpunosti u vašem pregledaču**. Slika sa kamere ili fotografija koju izaberete obrađuje se na vašem uređaju i **ne otprema se, ne čuva i ne šalje** nama niti trećim licima. Kada zatvorite probu, kamera se isključuje. Softver za praćenje lica (Google MediaPipe) učitava se sa ovog sajta.
 
-## Kolačići
-Koristimo samo kolačiće neophodne za korpu, jezik i bezbednost. Analitički kolačići uključuju se tek uz vašu saglasnost, koju možete povući u bilo kom trenutku.
+## Šta se čuva u vašem pregledaču
+Da bi radio, sajt čuva nekoliko stvari u lokalnoj memoriji vašeg pregledača — nikada u kolačićima. Ništa od toga ne napušta vaš uređaj, osim podataka iz obrasca koji pošaljete:
+- jezik, korpu, listu želja, kodove za popust i nedavno pregledane proizvode;
+- odgovore iz vodiča za izbor okvira i izabrani prikaz prodavnice;
+- kopije narudžbi i zahteva koje ste poslali i nacrt narudžbe (samo za trenutnu karticu pregledača), da ne izgubite uneto;
+- obrasce koji čekaju slanje ako ste bili bez interneta;
+- poziciju na stranicama koje ste posetili i tehničke oznake (samo za trenutnu karticu pregledača);
+- keš fajlova i fotografija sajta, da ponovne posete budu brže.
+
+Sve to možete u svakom trenutku obrisati brisanjem podataka ovog sajta u podešavanjima pregledača.
+
+## Linkovi ka drugim servisima
+Dugmad za WhatsApp, Instagram i Google Maps su obični linkovi: ovim servisima se ništa ne šalje dok ne kliknete. Nakon toga važe njihove politike privatnosti.
 
 ## Koliko dugo čuvamo podatke
 Račune i dokumentaciju narudžbi čuvamo onoliko koliko propisuje poreski zakon. Upite i marketinške saglasnosti brišemo čim to zatražite.
 
 ## Vaša prava
-U svakom trenutku možete zatražiti uvid, ispravku, izvoz ili brisanje svojih podataka — pišite nam na info@optikamiftari.com ili dođite u optiku.`,
-        `Optika Miftari (Miftari Vision Group) i përpunon të dhënat tuaja vetëm për aq sa nevojitet për porositë, terminet dhe komunikimin me ju — në përputhje me Ligjin për Mbrojtjen e të Dhënave Personale të Republikës së Kosovës.
+U svakom trenutku možete zatražiti uvid, ispravku, izvoz ili brisanje podataka koje ste nam poslali — pišite nam na info@optikamiftari.com ili dođite u optiku.`,
+        `Ky njoftim shpjegon çfarë ndodh me të dhënat tuaja kur përdorni këtë faqe të Optika Miftari (Miftari Vision Group), Mbretëresha Teutë 182, 40000 Mitrovicë. Ai përshkruan si funksionon faqja sot; nëse kjo ndryshon, do ta përditësojmë këtë faqe.
 
-## Çfarë të dhënash mbledhim
-- Emrin dhe mbiemrin, numrin e telefonit dhe e-mailin
-- Adresën e dërgesës dhe historinë e porosive
-- Terminet për kontroll të syve dhe shënimet nga takimi
-- Recetën dhe matjet (PD, lartësia e montimit), kur porositni lente
+## Pa analitikë dhe pa cookies reklamuese
+Faqja **nuk vendos cookies** dhe **nuk përdor mjete analitike, reklamash apo gjurmimi**. Gjatë shfletimit nuk ngarkohet asgjë nga kompani të tjera: faqet, fotot, fontet dhe prova virtuale vijnë nga vetë faqja.
+
+## Hostimi
+Faqja hostohet në GitHub Pages (GitHub, Inc.) dhe shpërndahet përmes rrjetit të tyre për shpërndarjen e përmbajtjes. Si në çdo faqe interneti, adresa IP e pajisjes suaj dhe faqja që kërkoni arrijnë te serverët e tyre; GitHub deklaron se adresat IP të vizitorëve i regjistron për qëllime sigurie. Shihni [Deklaratën e privatësisë së GitHub](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
+
+## Çfarë na dërgoni përmes formularëve
+Porositë, kërkesat për termin, mesazhet e kontaktit, kërkesat për bashkëpunim dhe regjistrimet në newsletter përmbajnë atë që shkruani — p.sh. emrin, numrin e telefonit, e-mailin, adresën e dërgesës dhe, për lente me recetë, recetën dhe matjet (PD, lartësia e montimit). I përdorim vetëm për të trajtuar kërkesën tuaj.
+
+Faqja nuk ka bazë të dhënash në server: një kopje e asaj që dërgoni ruhet në shfletuesin tuaj, që faqja t’ju tregojë konfirmimin dhe statusin e porosisë. Që të na arrijnë, të dhënat e formularit na dërgohen me e-mail përmes Web3Forms, një shërbim për dërgimin e formularëve. Web3Forms e merr përmbajtjen e formularit për ta dorëzuar te ne; shihni [politikën e privatësisë së Web3Forms](https://web3forms.com/privacy). Nëse dërgimi është aktiv tani, e shihni në fund të kësaj faqeje.
 
 ## Receta është e dhënë e ndjeshme
 Vlerat e recetës kanë të bëjnë me shëndetin tuaj. I përdorim vetëm për punimin e lenteve; qasje kanë vetëm optikët dhe laboratori ynë, dhe nuk i përdorim kurrë për marketing.
 
 ## Prova virtuale
-Prova virtuale e syzeve funksionon **tërësisht në shfletuesin tuaj**. Imazhi i kamerës ose fotografia që zgjidhni përpunohen në pajisjen tuaj dhe **nuk ngarkohen, nuk ruhen dhe nuk u dërgohen** as neve, as palëve të treta. Kur e mbyllni provën, kamera fiket.
+Prova virtuale e syzeve funksionon **tërësisht në shfletuesin tuaj**. Imazhi i kamerës ose fotografia që zgjidhni përpunohen në pajisjen tuaj dhe **nuk ngarkohen, nuk ruhen dhe nuk u dërgohen** as neve, as palëve të treta. Kur e mbyllni provën, kamera fiket. Softueri për ndjekjen e fytyrës (Google MediaPipe) ngarkohet nga vetë kjo faqe.
 
-## Cookies
-Përdorim vetëm cookies të nevojshme për shportën, gjuhën dhe sigurinë. Cookies analitike aktivizohen vetëm me pëlqimin tuaj, të cilin mund ta tërhiqni në çdo kohë.
+## Çfarë ruhet në shfletuesin tuaj
+Që të funksionojë, faqja ruan disa gjëra në hapësirën lokale të shfletuesit tuaj — asnjëherë në cookies. Asgjë prej tyre nuk largohet nga pajisja juaj, përveç të dhënave të formularit që dërgoni:
+- gjuhën, shportën, listën e dëshirave, kodet e zbritjes dhe produktet e shikuara së fundi;
+- përgjigjet në udhëzuesin për zgjedhjen e kornizës dhe pamjen e dyqanit që keni zgjedhur;
+- kopjet e porosive dhe kërkesave që keni dërguar dhe draftin e porosisë (vetëm për skedën aktuale), që të mos humbni atë që keni shkruar;
+- formularët që presin të dërgohen, nëse keni qenë pa internet;
+- pozicionin në faqet që keni vizituar dhe shenja teknike (vetëm për skedën aktuale);
+- një kopje (cache) të skedarëve dhe fotove të faqes, që vizitat e radhës të jenë më të shpejta.
+
+Të gjitha këto mund t’i fshini në çdo kohë, duke fshirë të dhënat e kësaj faqeje te cilësimet e shfletuesit.
+
+## Lidhjet me shërbime të tjera
+Butonat për WhatsApp, Instagram dhe Google Maps janë lidhje të thjeshta: këtyre shërbimeve nuk u dërgohet asgjë derisa të klikoni. Pas kësaj vlejnë politikat e tyre të privatësisë.
 
 ## Sa kohë i ruajmë
 Faturat dhe dokumentet e porosive i ruajmë aq sa kërkon ligji tatimor. Kërkesat e kontaktit dhe pëlqimet për marketing i fshijmë sapo të na e kërkoni.
 
 ## Të drejtat tuaja
-Në çdo kohë mund të kërkoni qasje, korrigjim, eksport ose fshirje të të dhënave tuaja — na shkruani në info@optikamiftari.com ose ejani në optikë.`,
-        `Optika Miftari (Miftari Vision Group) processes your data only as far as needed for orders, appointments and communicating with you — in line with the Law on Personal Data Protection of the Republic of Kosovo.
+Në çdo kohë mund të kërkoni qasje, korrigjim, eksport ose fshirje të të dhënave që na keni dërguar — na shkruani në info@optikamiftari.com ose ejani në optikë.`,
+        `This notice explains what happens to your data when you use this website of Optika Miftari (Miftari Vision Group), Mbretëresha Teutë 182, 40000 Mitrovica. It describes how the site works today; if that changes, we will update this page.
 
-## What we collect
-- Name, phone number and e-mail
-- Delivery address and order history
-- Eye-exam appointments and appointment notes
-- Your prescription and measurements (PD, fitting height) when you order lenses
+## No analytics, no advertising cookies
+The site sets **no cookies** and uses **no analytics, advertising or tracking tools**. Nothing is loaded from other companies while you browse: pages, images, fonts and the virtual try-on all come from the site itself.
+
+## Hosting
+The website is hosted on GitHub Pages (GitHub, Inc.) and delivered through its content delivery network. As with any website, your device’s IP address and the page you request reach their servers; GitHub states that it logs visitors’ IP addresses for security purposes. See the [GitHub Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
+
+## What you send us through forms
+Orders, appointment requests, contact and partner enquiries and newsletter sign-ups contain what you enter — for example your name, phone number, e-mail, delivery address and, for prescription lenses, your prescription and measurements (PD, fitting height). We use them only to handle your request.
+
+The site has no server-side database: a copy of what you send is kept in your browser so the site can show your confirmation and order status. To reach us, form entries are e-mailed to us through Web3Forms, a form-delivery service. Web3Forms receives the form content in order to deliver it to us; see the [Web3Forms privacy policy](https://web3forms.com/privacy). Whether sending is switched on right now is shown at the end of this page.
 
 ## Your prescription is sensitive data
 Prescription values relate to your health. We use them only to make your lenses; only our opticians and our lab have access, and we never use them for marketing.
 
 ## Virtual try-on
-The virtual try-on runs **entirely in your browser**. Your camera feed or the photo you choose is processed on your own device and is **never uploaded, stored or sent** to us or to any third party. When you close the try-on, the camera switches off.
+The virtual try-on runs **entirely in your browser**. Your camera feed or the photo you choose is processed on your own device and is **never uploaded, stored or sent** to us or to any third party. When you close the try-on, the camera switches off. The face-tracking software (Google MediaPipe) is served from this site.
 
-## Cookies
-We only use cookies needed for the cart, language and security. Analytics cookies are enabled only with your consent, which you can withdraw at any time.
+## Stored in your browser
+To work, the site keeps a few things in your browser’s local storage — never in cookies. None of it leaves your device, except the form entries you send:
+- your language, cart, wishlist, discount codes and recently viewed products;
+- your answers in the frame finder and the shop layout you picked;
+- copies of the orders and requests you sent, and a checkout draft (current browser tab only) so you don’t lose what you typed;
+- forms waiting to be sent if you were offline;
+- your position on pages you visited and technical markers (current browser tab only);
+- a cache of the site’s files and photos so repeat visits are faster.
+
+You can remove all of it at any time by clearing this site’s data in your browser settings.
+
+## Links to other services
+The WhatsApp, Instagram and Google Maps buttons are plain links: nothing is sent to these services until you click one. After that, their own privacy policies apply.
 
 ## How long we keep data
 Invoices and order records are kept for as long as tax law requires. Enquiries and marketing consents are deleted as soon as you ask.
 
 ## Your rights
-You can ask to access, correct, export or delete your data at any time — write to info@optikamiftari.com or visit us in store.`,
+You can ask to access, correct, export or delete the data you sent us at any time — write to info@optikamiftari.com or visit us in store.`,
       ),
       published: true,
       showInFooter: true,
@@ -1073,7 +1121,7 @@ Narudžba je prihvaćena kada vam pošaljemo potvrdu e-mailom ili SMS-om. Za nao
 Sve cene su u eurima i uključuju PDV od 18%. Za potvrđene narudžbe važi cena u trenutku naručivanja.
 
 ## Plaćanje i dostava
-Plaćanje je moguće pouzećem, uplatom na račun ili karticom. Uslove dostave pronaći ćete na stranici [Dostava i plaćanje](/faqe/dergesa-dhe-pagesa).
+Plaćanje je moguće pouzećem ili uplatom na račun; plaćanje karticom uskoro. Uslove dostave pronaći ćete na stranici [Dostava i plaćanje](/faqe/dergesa-dhe-pagesa).
 
 ## Povraćaj i garancija
 Pravo na povraćaj i garancija na okvire opisani su na stranici [Povraćaj i garancija](/faqe/kthimet-dhe-garancia).
@@ -1092,7 +1140,7 @@ Porosia pranohet kur ju dërgojmë konfirmimin me e-mail ose SMS. Për syzet me 
 Të gjitha çmimet janë në euro dhe përfshijnë TVSH-në 18%. Për porositë e konfirmuara vlen çmimi në momentin e porosisë.
 
 ## Pagesa dhe dërgesa
-Mund të paguani me para në dorëzim, me transfertë bankare ose me kartelë. Kushtet e dërgesës i gjeni te [Dërgesa & pagesa](/faqe/dergesa-dhe-pagesa).
+Mund të paguani me para në dorëzim ose me transfertë bankare; pagesa me kartelë së shpejti. Kushtet e dërgesës i gjeni te [Dërgesa & pagesa](/faqe/dergesa-dhe-pagesa).
 
 ## Kthimet dhe garancia
 E drejta e kthimit dhe garancia për kornizat përshkruhen te [Kthimet & garancia](/faqe/kthimet-dhe-garancia).
@@ -1111,7 +1159,7 @@ An order is accepted once we send you a confirmation by e-mail or text. For glas
 All prices are in euros and include 18% VAT. Confirmed orders keep the price at the time of ordering.
 
 ## Payment and delivery
-You can pay cash on delivery, by bank transfer or by card. Delivery terms are on the [Delivery & payment](/faqe/dergesa-dhe-pagesa) page.
+You can pay cash on delivery or by bank transfer; card payment is coming soon. Delivery terms are on the [Delivery & payment](/faqe/dergesa-dhe-pagesa) page.
 
 ## Returns and warranty
 Your right of return and the frame warranty are described on the [Returns & warranty](/faqe/kthimet-dhe-garancia) page.

@@ -59,6 +59,18 @@ with its own title, description, social preview image (`public/og/*.jpg`), canon
 and `robots.txt`; `dist/404.html` stays the SPA fallback. For a root deployment (Vercel, Netlify or a custom domain) build
 without `BASE_PATH` and set `SITE_URL`; `vercel.json` and `public/_redirects` handle client-side routes.
 
+### Security headers and privacy
+
+GitHub Pages cannot send custom response headers or change its TLS settings (HSTS there is GitHub's own). The build
+therefore puts the Content-Security-Policy and Referrer-Policy in a `<meta>` on every page (`vite.config.ts`), and
+`src/main.tsx` refuses to run inside another site's frame. The full header set — CSP with `frame-ancestors`,
+`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` — is written to `dist/_headers`
+(Cloudflare Pages, Netlify) and copied in `vercel.json`; behind a CDN such as Cloudflare in front of a custom domain,
+add the same headers as response-header rules. The site sets no cookies and loads nothing from other hosts while
+browsing; the only outside request is the form delivery to Web3Forms when `WEB3FORMS_KEY` is set. Anything optional
+(analytics, the offer statistics switch in `src/lib/launch.ts`) needs an opt-in first, and the privacy notice
+(*Faqe → Privatësia*) must be updated to match.
+
 ## The previous PHP site
 
 The earlier React + PHP version (Hostinger deployment with server-side accounts, orders and the staff portal) is preserved

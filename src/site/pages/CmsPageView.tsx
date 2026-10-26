@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Link, useParams } from 'react-router';
-import { ArrowRight, ChevronRight, Clock, FileSearch, FileText, Mail, Phone, RefreshCw } from 'lucide-react';
+import { ArrowRight, ChevronRight, Clock, FileSearch, FileText, Mail, Phone, RefreshCw, Send } from 'lucide-react';
 import { Markdown } from '@/components/ui/Markdown';
 import { ButtonLink } from '@/components/ui/Button';
 import { PageHero } from '@/site/components/SectionHeading';
@@ -12,6 +12,7 @@ import { defineDict, useDict, useL, useLang } from '@/i18n';
 import { useDb } from '@/store/db';
 import { useSettings } from '@/store/hooks';
 import { date } from '@/lib/format';
+import { leadsLive } from '@/lib/leads';
 import { cn } from '@/lib/utils';
 
 const T = defineDict({
@@ -26,6 +27,8 @@ const T = defineDict({
     nf_title: 'Ova stranica *ne postoji*',
     nf_text: 'Možda je uklonjena ili je adresa pogrešno unesena. Evo stranica koje bi vam mogle pomoći.',
     nf_contact: 'Kontakt',
+    forms_on: 'Slanje obrazaca je uključeno: ono što pošaljete putem obrazaca stiže nam e-mailom preko Web3Forms.',
+    forms_off: 'Slanje obrazaca još nije uključeno: ono što unesete u obrasce ostaje samo u vašem pregledaču i ne šalje se nama niti bilo kome drugom. Pozovite nas ili nam pišite na WhatsApp ili e-mail.',
   },
   sq: {
     eyebrow: 'Informacione për klientët',
@@ -38,6 +41,8 @@ const T = defineDict({
     nf_title: 'Kjo faqe *nuk ekziston*',
     nf_text: 'Mund të jetë hequr ose adresa është shkruar gabim. Ja disa faqe që mund t’ju ndihmojnë.',
     nf_contact: 'Kontakt',
+    forms_on: 'Dërgimi i formularëve është aktiv: ajo që dërgoni përmes formularëve na arrin me e-mail përmes Web3Forms.',
+    forms_off: 'Dërgimi i formularëve ende nuk është aktiv: ajo që shkruani në formularë mbetet vetëm në shfletuesin tuaj dhe nuk i dërgohet as neve, as askujt tjetër. Na telefononi ose na shkruani në WhatsApp ose me e-mail.',
   },
   en: {
     eyebrow: 'Customer information',
@@ -50,6 +55,8 @@ const T = defineDict({
     nf_title: 'This page *doesn’t exist*',
     nf_text: 'It may have been removed or the address was mistyped. Here are some pages that might help.',
     nf_contact: 'Contact',
+    forms_on: 'Form sending is on: what you send through the forms reaches us by e-mail via Web3Forms.',
+    forms_off: 'Form sending is not switched on yet: what you enter in the forms stays only in your browser and is not sent to us or anyone else. Call us, or write to us on WhatsApp or by e-mail.',
   },
 });
 
@@ -139,6 +146,13 @@ export default function CmsPageView() {
         <div className="container-x grid gap-12 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-20">
           <article className="min-w-0 max-w-[740px] animate-fade-up">
             <Markdown source={l(page.body)} className={PROSE} />
+            {/* the privacy notice says whether forms are actually delivered (a Web3Forms key in the build) */}
+            {page.slug === 'privatesia' && (
+              <p className="mt-12 flex gap-3 rounded-2xl bg-white p-5 text-[15px] leading-relaxed text-ink-soft ring-1 ring-line">
+                <Send className="mt-1 h-4 w-4 shrink-0 text-brand-600" />
+                <span>{t(leadsLive ? 'forms_on' : 'forms_off')}</span>
+              </p>
+            )}
           </article>
 
           <aside className="space-y-5 lg:sticky lg:top-28 lg:self-start">
