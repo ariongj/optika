@@ -67,18 +67,22 @@
   color: transparent;
 }
 
-/* Hairline grid that slowly drifts, faded out towards the edges */
+/* Hairline grid that slowly drifts, faded out towards the edges. The lines move with a transform (GPU only — no
+   repaint per frame) by one 64px tile per loop; the fade mask sits on the still wrapper, so it doesn't move along. */
+.sg-grid-mask {
+  mask-image: radial-gradient(ellipse 70% 60% at 60% 45%, #000 0%, rgb(0 0 0 / 0.5) 45%, transparent 80%);
+}
 .sg-grid {
   background-image:
     linear-gradient(to right, rgb(255 255 255 / 0.055) 1px, transparent 1px),
     linear-gradient(to bottom, rgb(255 255 255 / 0.055) 1px, transparent 1px);
   background-size: 64px 64px;
-  mask-image: radial-gradient(ellipse 70% 60% at 60% 45%, #000 0%, rgb(0 0 0 / 0.5) 45%, transparent 80%);
   animation: sg-grid-drift 24s linear infinite;
+  will-change: transform;
 }
 @keyframes sg-grid-drift {
-  from { background-position: 0 0, 0 0; }
-  to { background-position: 64px 64px, 64px 64px; }
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(64px, 64px, 0); }
 }
 
 /* Soft breathing glow */
@@ -96,9 +100,15 @@
   isolation: isolate;
   background: rgb(255 255 255 / 0.035);
   border: 1px solid rgb(255 255 255 / 0.09);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   transition: border-color 0.4s ease, background-color 0.4s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+/* Frosted glass only with a mouse: on phones the blur re-renders under every card on every scroll frame, and over
+   this page's smooth dark backdrop it changes next to nothing. */
+@media (pointer: fine) {
+  .sg-card {
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
 }
 .sg-card::before {
   content: '';
@@ -242,4 +252,10 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .sg-scan { animation: none; display: none; }
+}
+
+/* A section out of view (SmartGlasses.tsx sets data-sg-off) pauses its endless loops; they resume where they were. */
+.sg-page > [data-sg-off],
+.sg-page > [data-sg-off] * {
+  animation-play-state: paused !important;
 }

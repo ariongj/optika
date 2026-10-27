@@ -1,4 +1,4 @@
-import { startTransition, useCallback, useEffect, useState } from 'react';
+import { startTransition, useCallback, useEffect, useRef, useState } from 'react';
 import { usePageTitle } from '@/site/layout/SiteLayout';
 import { scrollToId } from '@/site/components/company/data';
 import { SG } from '@/site/components/smart/dict';
@@ -65,8 +65,22 @@ export default function SmartGlasses() {
     requestAnimationFrame(() => scrollToId('kerkesa'));
   }, []);
 
+  // Sections out of view pause their endless decorative loops (glows, equaliser, pings, LEDs, the grid — smart.css):
+  // a running CSS animation restyles its element every frame even off screen, which kept phones busy all scroll long.
+  const page = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const sections = [...(page.current?.children ?? [])];
+    if (!sections.length || !('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.target.toggleAttribute('data-sg-off', !e.isIntersecting)),
+      { rootMargin: '25% 0px' },
+    );
+    sections.forEach((s) => io.observe(s));
+    return () => io.disconnect();
+  }, [count]);
+
   return (
-    <div className="sg-page bg-[#07090a] text-white">
+    <div ref={page} className="sg-page bg-[#07090a] text-white">
       <SmartHero onReady={heroReady} />
       {[
         <SmartSpecs key="specs" />,

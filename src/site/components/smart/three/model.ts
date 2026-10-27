@@ -278,11 +278,24 @@ function subdivide(tris: [V2, V2, V2][], maxLen: number) {
   return out;
 }
 
+/** Runs a stepwise build (see buildGlassesModel) to the end. */
+function finish<T>(steps: Generator<void, T, void>): T {
+  for (;;) {
+    const step = steps.next();
+    if (step.done) return step.value;
+  }
+}
+
 /**
  * Plate between z = 0 (front cap) and z = −depth with a pill-profile edge of radius r on every loop. The edge
  * grows outwards from the outline and into the holes by r. Bent by `bend` (x offset `ox`).
  */
 function slab(outline: V2[], holes: V2[][], depth: number, r: number, rt: number, bend: Bend | null, uvScale: number, ox = 0, seg = 8) {
+  return finish(slabSteps(outline, holes, depth, r, rt, bend, uvScale, ox, seg));
+}
+
+/** The slab in steps (triangulate, subdivide, caps, edges, bend) — the front frame is the biggest single piece. */
+function* slabSteps(outline: V2[], holes: V2[][], depth: number, r: number, rt: number, bend: Bend | null, uvScale: number, ox = 0, seg = 8): Generator<void, THREE.BufferGeometry, void> {
   const pos: number[] = [];
   const nor: number[] = [];
   const uv: number[] = [];
@@ -294,6 +307,7 @@ function slab(outline: V2[], holes: V2[][], depth: number, r: number, rt: number
   const holePts = holes.map((h) => h.slice());
   const all = contour.concat(...holePts);
   const faces = THREE.ShapeUtils.triangulateShape(contour, holePts);
+  yield;
   const tris = subdivide(
     faces.map((f) => [all[f[0]], all[f[1]], all[f[2]]] as [V2, V2, V2]),
     2.6 / Math.sqrt(geometryDetail()), // fewer, larger triangles at lower detail (phones)
@@ -312,6 +326,7 @@ function slab(outline: V2[], holes: V2[][], depth: number, r: number, rt: number
       base += 3;
     }
   }
+  yield;
 
   // pill edges
   const prof: { off: number; z: number; no: number; nz: number }[] = [];
@@ -366,6 +381,7 @@ function slab(outline: V2[], holes: V2[][], depth: number, r: number, rt: number
     else idx.push(...quad);
     base += n * rows;
   }
+  yield;
 
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
@@ -738,9 +754,19 @@ function hingeGroup(look: Look, at: THREE.Vector3, templeW: number) {
 /* ------------------------------------------------------------------ */
 /* Model                                                               */
 /* ------------------------------------------------------------------ */
+/** Builds the whole model at once. */
 export function createGlassesModel(o: ModelOptions): GlassesModel {
+  return finish(buildGlassesModel(o));
+}
+
+/**
+ * The same build, one part per step (front, lenses, display, camera, bridge, each temple, then centring): a caller
+ * with time to spare can spread it over several idle periods instead of blocking the page for all of it at once.
+ */
+export function* buildGlassesModel(o: ModelOptions): Generator<void, GlassesModel, void> {
   const look = createLook(o.colorway, o.variant, o.transparentBg);
   const b: Built = { look, movers: [], anchors: {}, emissive: [], glows: [], ghosts: [], rings: [] };
+  yield;
   const spec = frontSpec(o.shape, o.variant);
   const metalFront = o.shape === 'aviator';
   const hasCamera = o.variant !== 'audio';
@@ -781,7 +807,9 @@ export function createGlassesModel(o: ModelOptions): GlassesModel {
     const outline = stitchFront(O, cx, spec);
     const holeR = hole.map((p) => v2(p.x + cx, p.y));
     const holeL = holeR.map((p) => v2(-p.x, p.y)).reverse();
-    const frontMesh = new THREE.Mesh(slab(outline, [holeR, holeL], spec.depth, spec.r, spec.rt, bend, look.uvScale), look.acetate);
+    yield;
+    const frontGeo = yield* slabSteps(outline, [holeR, holeL], spec.depth, spec.r, spec.rt, bend, look.uvScale);
+    const frontMesh = new THREE.Mesh(frontGeo, look.acetate);
     front.add(frontMesh);
 
     // hinge on the outer edge
@@ -887,6 +915,7 @@ export function createGlassesModel(o: ModelOptions): GlassesModel {
     lensZ0 = zRim;
   }
 
+  yield;
   // ------------------------------------------------------------------ lenses
   const sagEdge = glassC.reduce((acc, p) => acc + lensSag(p.x, p.y), 0) / glassC.length;
   const lensSurface = (sideX: number) => (x: number, y: number) => lensZ0 + bend.z(x) + lensSag(x - sideX, y) - sagEdge * 0.85;
@@ -906,6 +935,7 @@ export function createGlassesModel(o: ModelOptions): GlassesModel {
     addMover(b, lens, v3(0, 0, 9), 0.08);
   }
 
+  yield;
   // ------------------------------------------------------------------ display (right lens)
   if (hasDisplay) {
     const dg = new THREE.Group();
@@ -938,6 +968,7 @@ export function createGlassesModel(o: ModelOptions): GlassesModel {
     b.emissive.push({ part: 'display', mat: look.displayGlass, color: MINT, k: 0.35 });
   }
 
+  yield;
   // ------------------------------------------------------------------ camera + LED
   if (hasCamera) {
     const camPos = centreCamera ? v3(0, bridgeMic.y - 4.2, (metalFront ? bridgeMic.z : 0) + 0.02) : v3(-cornerR.x, cornerR.y, cornerR.z);
@@ -960,6 +991,7 @@ export function createGlassesModel(o: ModelOptions): GlassesModel {
     addGlow(b, 'led', led, v3(0, 0, 1.0), LED_WHITE, 15, 1);
   }
 
+  yield;
   // ------------------------------------------------------------------ bridge mic
   {
     const m = micHole(look);
@@ -971,6 +1003,7 @@ export function createGlassesModel(o: ModelOptions): GlassesModel {
   }
   b.emissive.push({ part: 'mics', mat: look.micRing, color: MINT, k: 2.4 });
 
+  yield;
   // ------------------------------------------------------------------ temples + hinges
   const start = v3(hingeX, hingeY, hingeZ);
   const tw = templeDims(o.variant, o.shape, start).w[0][1];
@@ -983,6 +1016,7 @@ export function createGlassesModel(o: ModelOptions): GlassesModel {
     h.group.scale.x = side;
     model.add(h.group);
     addMover(b, h.group, v3(side * 12, 0, -5), 0.2);
+    yield;
     if (side > 0) {
       addAnchor(b, 'hinge', h.group, h.top, v3(0.35, 1, -0.2));
       addGlow(b, 'hinge', h.group, h.top.clone().add(v3(1.2, 0.6, 1.5)), MINT, 26, 1);
@@ -1002,6 +1036,7 @@ export function createGlassesModel(o: ModelOptions): GlassesModel {
   front.position.set(0, -hingeY, -hingeZ);
   frontPivot.rotation.x = spec.tilt;
 
+  yield;
   // ------------------------------------------------------------------ centre + scale
   const root = new THREE.Group();
   model.scale.setScalar(MM);

@@ -380,10 +380,18 @@ export function Header({ transparentTop = false, dark = false }: { transparentTo
   const { items: nav, fallback } = useMainNav();
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 24);
-    fn();
-    window.addEventListener('scroll', fn, { passive: true });
-    return () => window.removeEventListener('scroll', fn);
+    // "scrolled past 24 px", without a scroll listener: reading scrollY on every scroll event forced a style and layout
+    // pass each time (and re-rendered the header). A 25 px marker at the top of the page leaves view exactly then.
+    const marker = document.createElement('div');
+    marker.setAttribute('aria-hidden', 'true');
+    marker.style.cssText = 'position:absolute;top:0;left:0;width:1px;height:25px;pointer-events:none;visibility:hidden';
+    document.body.prepend(marker);
+    const io = new IntersectionObserver(([entry]) => setScrolled(!entry.isIntersecting));
+    io.observe(marker);
+    return () => {
+      io.disconnect();
+      marker.remove();
+    };
   }, []);
 
   useEffect(() => {

@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { HorizontalBlurShader } from 'three/examples/jsm/shaders/HorizontalBlurShader.js';
 import { VerticalBlurShader } from 'three/examples/jsm/shaders/VerticalBlurShader.js';
-import { createGlassesModel, type GlassesModel } from './model';
+import { buildGlassesModel, createGlassesModel, type GlassesModel, type ModelFrameState, type ModelOptions } from './model';
 import { setGeometryDetail } from './geometry';
 import { SHAPE_FOR_VARIANT, partsForVariant, type SmartBackground, type SmartColorway, type SmartPart, type SmartPartPoints, type SmartShape, type SmartVariant } from './types';
 
@@ -280,12 +280,78 @@ export interface Stage {
   render(): void;
   /** Compile the current look's shaders without stalling the page (KHR_parallel_shader_compile where available). */
   compile(): Promise<void>;
+  /**
+   * Get another variant of the current look ready (built, shaders compiled) so switching to it later is instant.
+   * Returns null when it already is; otherwise call `step()` in idle time until it returns true.
+   */
+  prepare(variant: SmartVariant): { step(): boolean } | null;
   project(pose: StagePose): SmartPartPoints;
   /** Free everything (waits for a compile in flight) and release the WebGL context. */
   dispose(): void;
 }
 
+/* ------------------------------------------------------------------ */
+/* Built models, kept for reuse                                        */
+/* ------------------------------------------------------------------ */
+/**
+ * The procedural geometry is the slow part of a scene (a few hundred ms on a phone), and the page shows the same
+ * glasses in several places — the hero, then the scroll story, which also switches between two variants. A stage that
+ * lets a model go hands it here instead of freeing it, and the next stage asking for that look takes it (a model is in
+ * one scene at a time). All of a model's per-frame state is set by `update`, so nothing carries over.
+ */
+const MODEL_CACHE_MAX = 3;
+const modelCache = new Map<string, GlassesModel>();
+const modelKey = (m: ModelOptions, detail: number) => `${m.variant}|${m.colorway}|${m.shape}|${m.transparentBg ? 't' : 'o'}|${detail}`;
+
+/** Builds being prepared bit by bit (Stage.prepare): a switch that can't wait finishes one instead of starting over. */
+const building = new Map<string, Generator<void, GlassesModel, void>>();
+
+/** A built model's resting pose: assembled, nothing lit — how a fresh build comes out (framing measures it so). */
+const REST: ModelFrameState = {
+  exploded: 0,
+  spread: 1,
+  highlight: { camera: 0, led: 0, speaker: 0, mics: 0, touch: 0, battery: 0, display: 0, hinge: 0 },
+  hud: 0,
+  led: 0,
+  time: 0,
+  reduced: true,
+};
+
+function takeModel(m: ModelOptions, detail: number): GlassesModel {
+  const key = modelKey(m, detail);
+  const hit = modelCache.get(key);
+  if (hit) {
+    modelCache.delete(key);
+    hit.update(REST); // it may come back exploded from the scroll story
+    return hit;
+  }
+  setGeometryDetail(detail);
+  const started = building.get(key);
+  if (started) {
+    building.delete(key);
+    for (;;) {
+      const step = started.next();
+      if (step.done) return step.value;
+    }
+  }
+  return createGlassesModel(m);
+}
+
+function keepModel(m: ModelOptions, detail: number, model: GlassesModel) {
+  const key = modelKey(m, detail);
+  const old = modelCache.get(key);
+  modelCache.delete(key);
+  if (old && old !== model) old.dispose();
+  modelCache.set(key, model);
+  for (const [k, v] of modelCache) {
+    if (modelCache.size <= MODEL_CACHE_MAX) break;
+    modelCache.delete(k); // oldest first
+    v.dispose();
+  }
+}
+
 export function createStage(canvas: HTMLCanvasElement, opts: { antialias?: boolean; preserveDrawingBuffer?: boolean; shadowRes?: number; detail?: number } = {}): Stage {
+  const detail = opts.detail ?? 1;
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: opts.antialias ?? true,
@@ -334,7 +400,11 @@ export function createStage(canvas: HTMLCanvasElement, opts: { antialias?: boole
   };
 
   let model: GlassesModel | null = null;
+  /** what `model` was built from (its cache key) */
+  let modelOpts: ModelOptions | null = null;
   let look: StageLook | null = null;
+  /** the shape asked for (undefined: each variant's own shape) — what a prepared variant is built with */
+  let requestedShape: SmartShape | undefined;
   let tuning: StudioTuning = { ...STUDIO.dark };
   let framing: StageFraming = { ...DEFAULT_FRAMING };
   let width = 1;
@@ -442,6 +512,7 @@ export function createStage(canvas: HTMLCanvasElement, opts: { antialias?: boole
     renderer,
     camera,
     setLook(next) {
+      requestedShape = next.shape;
       const shape = next.shape ?? SHAPE_FOR_VARIANT[next.variant];
       const prev = look;
       const prevShape = prev ? prev.shape ?? SHAPE_FOR_VARIANT[prev.variant] : null;
@@ -452,13 +523,14 @@ export function createStage(canvas: HTMLCanvasElement, opts: { antialias?: boole
         setEnv(next.background === 'light' ? 'light' : 'dark');
       }
       if (!model || !prev || prev.variant !== next.variant || prev.colorway !== next.colorway || prevShape !== shape || transparentChanged) {
-        if (model) {
+        if (model && modelOpts) {
           pivot.remove(model.root);
           const old = model;
-          afterCompiles(() => old.dispose());
+          const oldOpts = modelOpts;
+          afterCompiles(() => keepModel(oldOpts, detail, old));
         }
-        setGeometryDetail(opts.detail ?? 1);
-        model = createGlassesModel({ variant: next.variant, colorway: next.colorway, shape, transparentBg: next.background === 'transparent' });
+        modelOpts = { variant: next.variant, colorway: next.colorway, shape, transparentBg: next.background === 'transparent' };
+        model = takeModel(modelOpts, detail);
         pivot.add(model.root);
         samples = collectSamples(model.root);
         parts = partsForVariant(next.variant);
@@ -497,7 +569,8 @@ export function createStage(canvas: HTMLCanvasElement, opts: { antialias?: boole
         anchor.anchor.getWorldPosition(aimTarget).multiplyScalar(amount);
       }
       // glide the aim between parts instead of cutting (frame-rate independent)
-      const dt = aimTime < 0 ? 1 : Math.min(0.1, Math.max(0, pose.time - aimTime));
+      // (a clock that went back means a new engine took this stage over: start from the new aim)
+      const dt = aimTime < 0 || pose.time < aimTime ? 1 : Math.min(0.1, pose.time - aimTime);
       aimTime = pose.time;
       aim.lerp(aimTarget, pose.reduced ? 1 : 1 - Math.exp(-4.5 * dt));
       const d = baseDistance * (1 + 0.18 * pose.exploded * spread) * (1 - 0.55 * amount);
@@ -521,6 +594,42 @@ export function createStage(canvas: HTMLCanvasElement, opts: { antialias?: boole
       });
       pending = all;
       return p;
+    },
+    prepare(variant) {
+      if (!look) return null;
+      const m: ModelOptions = {
+        variant,
+        colorway: look.colorway,
+        shape: requestedShape ?? SHAPE_FOR_VARIANT[variant],
+        transparentBg: look.background === 'transparent',
+      };
+      const key = modelKey(m, detail);
+      if (modelCache.has(key) || building.has(key) || (modelOpts && modelKey(modelOpts, detail) === key)) return null;
+      const build = buildGlassesModel(m);
+      building.set(key, build);
+      let done = false;
+      return {
+        step() {
+          if (done) return true;
+          if (building.get(key) !== build) return (done = true); // a switch finished it already
+          setGeometryDetail(detail);
+          const r = build.next();
+          if (!r.done) return false;
+          done = true;
+          building.delete(key);
+          keepModel(m, detail, r.value);
+          // its shaders too (this renderer, this scene's lights), off the main thread where the GPU driver allows
+          const p = renderer.compileAsync(r.value.root, camera, scene).then(
+            () => undefined,
+            () => undefined,
+          );
+          const all: Promise<void> = (pending ? Promise.all([pending, p]) : p).then(() => {
+            if (pending === all) pending = null;
+          });
+          pending = all;
+          return true;
+        },
+      };
     },
     project(pose) {
       const out: SmartPartPoints = {};
@@ -548,10 +657,12 @@ export function createStage(canvas: HTMLCanvasElement, opts: { antialias?: boole
     },
     dispose() {
       const last = model;
+      const lastOpts = modelOpts;
       model = null;
       if (last) pivot.remove(last.root);
       afterCompiles(() => {
-        last?.dispose();
+        // the model outlives this stage: the next one showing these glasses picks it up instead of rebuilding
+        if (last && lastOpts) keepModel(lastOpts, detail, last);
         shadow.dispose();
         backdrop.mesh.geometry.dispose();
         (backdrop.mesh.material as THREE.Material).dispose();

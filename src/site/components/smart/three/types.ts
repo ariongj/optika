@@ -42,6 +42,8 @@ export interface SmartGlasses3DProps {
   zoom?: number;
   /** first screen: build the scene right after the first paint instead of waiting for the browser to be idle */
   eager?: boolean;
+  /** variants this stage will switch to later: built bit by bit in idle time after the first frame, so the switch is instant */
+  prepare?: SmartVariant[];
   /** radians; null = autoRotate / idle sway */
   rotation?: { yaw: number; pitch: number } | null;
   /** gentle idle motion (off under prefers-reduced-motion) */

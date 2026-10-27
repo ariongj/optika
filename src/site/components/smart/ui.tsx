@@ -119,8 +119,14 @@ export function Backdrop({ glow = 'right', grid = true, className }: { glow?: 'r
           }}
         />
       )}
-      {grid && <div className="sg-grid absolute inset-0" />}
-      <div className="bg-grain absolute inset-0 opacity-[0.35] mix-blend-overlay" />
+      {grid && (
+        <div className="sg-grid-mask absolute inset-0">
+          <div className="sg-grid absolute -left-16 -top-16 bottom-0 right-0" />
+        </div>
+      )}
+      {/* film grain, blended: phones skip it (a blend mode costs a compositing pass every frame, and on this near-black
+          page it is all but invisible) */}
+      <div className="bg-grain absolute inset-0 opacity-[0.35] mix-blend-overlay pointer-coarse:hidden" />
     </div>
   );
 }

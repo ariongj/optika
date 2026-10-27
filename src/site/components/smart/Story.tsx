@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useReducedMotion } from 'motion/react';
 import { useDict } from '@/i18n';
-import type { SmartPart } from './three/SmartGlasses3D';
+import type { SmartPart, SmartVariant } from './three/SmartGlasses3D';
 import { SG, type SGKey } from './dict';
 import { POSTER, POSTER_M, STORY_PARTS } from './data';
 import { Stage } from './Stage';
@@ -53,6 +53,9 @@ const YAW: Record<string, number> = {
   display: 0.2,
 };
 
+/** The story switches to the display variant for its last step: get that model ready while the first steps play. */
+const PREPARE: SmartVariant[] = ['display'];
+
 /** Scroll lengths, in screens: the opening (headline → the glasses open up), then one per part. */
 const INTRO = 0.75;
 const STEP = 0.95;
@@ -103,6 +106,18 @@ export function SmartStory() {
     let raf = 0;
     // "reduce motion": plain fades — no sliding, scaling or blur
     const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // A style is written only when its value changes: every write makes the browser restyle and re-layer the element,
+    // and most of them (texts waiting their turn or done, the settled model) hold still for most of the scroll.
+    const written = new WeakMap<HTMLElement, { opacity?: string; transform?: string }>();
+    const put = (node: HTMLElement, prop: 'opacity' | 'transform', value: string) => {
+      const was = written.get(node) ?? {};
+      if (was[prop] === value) return;
+      was[prop] = value;
+      written.set(node, was);
+      node.style[prop] = value;
+    };
+    const r3 = (x: number) => Math.round(x * 1000) / 1000;
+    let shown = { k: 0, u: 0, s: 0 };
     const update = () => {
       raf = 0;
       const el = track.current;
@@ -113,19 +128,19 @@ export function SmartStory() {
       const k = Math.min(n - 1, Math.max(0, Math.floor((s - INTRO) / STEP)));
       const u = s < INTRO ? 0 : clamp01((s - INTRO - k * STEP) / STEP);
 
-      // Text is scrubbed straight from the scroll position (DOM writes, no React render per frame).
+      // Text is scrubbed straight from the scroll position (DOM writes, no React render per frame) — opacity and
+      // transform only, which the GPU composites without repainting (no animated blur: it repainted every frame).
       // the product rises into place as the headline leaves (Apple-style), so the line is never over the glasses
       if (model.current) {
-        const r = smooth(0, INTRO * 0.85, s);
-        model.current.style.opacity = String(0.3 + 0.7 * r);
-        if (!still) model.current.style.transform = `translate3d(0, ${(1 - r) * 22}%, 0) scale(${0.9 + 0.1 * r})`;
-        else model.current.style.transform = 'none';
+        const r = r3(smooth(0, INTRO * 0.85, s));
+        put(model.current, 'opacity', String(r3(0.3 + 0.7 * r)));
+        put(model.current, 'transform', still ? 'none' : `translate3d(0, ${r3((1 - r) * 22)}%, 0) scale(${r3(0.9 + 0.1 * r)})`);
       }
       if (intro.current) {
-        const o = 1 - smooth(0.12, INTRO * 0.8, s);
-        intro.current.style.opacity = String(o);
-        intro.current.style.transform = still ? 'none' : `translate3d(0, ${-s * 70}px, 0) scale(${1 - s * 0.05})`;
-        intro.current.style.filter = !still && o < 0.98 ? `blur(${(1 - o) * 8}px)` : '';
+        // once it has faded out it stays where it left (it would otherwise keep moving, invisibly, all scroll long)
+        const si = Math.min(s, INTRO);
+        put(intro.current, 'opacity', String(r3(1 - smooth(0.12, INTRO * 0.8, si))));
+        put(intro.current, 'transform', still ? 'none' : `translate3d(0, ${r3(-si * 70)}px, 0) scale(${r3(1 - si * 0.05)})`);
       }
       texts.current.forEach((node, i) => {
         if (!node) return;
@@ -133,22 +148,18 @@ export function SmartStory() {
         const last = i === n - 1;
         const fadeIn = smooth(-0.02, 0.22, local);
         const fadeOut = last ? 1 : 1 - smooth(0.76, 0.98, local);
-        const o = fadeIn * fadeOut;
         const y = (1 - smooth(-0.02, 0.3, local)) * 56 - (last ? 0 : smooth(0.74, 1, local) * 40);
-        node.style.opacity = String(o);
-        node.style.transform = still ? 'none' : `translate3d(0, ${y}px, 0)`;
-        node.style.filter = !still && o > 0.01 && o < 0.98 ? `blur(${(1 - o) * 10}px)` : '';
+        put(node, 'opacity', String(r3(fadeIn * fadeOut)));
+        put(node, 'transform', still ? 'none' : `translate3d(0, ${r3(y)}px, 0)`);
       });
-      if (rail.current) rail.current.style.transform = `scaleX(${clamp01((s - INTRO) / (n * STEP))})`;
+      if (rail.current) put(rail.current, 'transform', `scaleX(${r3(clamp01((s - INTRO) / (n * STEP)))})`);
 
-      setView((cur) => {
-        const next = {
-          k,
-          u: Math.round(u * 40) / 40,
-          s: Math.round(Math.min(s, INTRO) * 40) / 40,
-        };
-        return next.k === cur.k && next.u === cur.u && next.s === cur.s ? cur : next;
-      });
+      // the 3D and the step counter follow in coarse steps; React only hears about a real change
+      const next = { k, u: Math.round(u * 40) / 40, s: Math.round(Math.min(s, INTRO) * 40) / 40 };
+      if (next.k !== shown.k || next.u !== shown.u || next.s !== shown.s) {
+        shown = next;
+        setView(next);
+      }
     };
     const schedule = () => {
       if (!raf) raf = requestAnimationFrame(update);
@@ -199,6 +210,66 @@ export function SmartStory() {
     [activePart, k, t],
   );
 
+  // The headline and the step texts only change with the language — kept out of the re-render each scroll step does.
+  const introText = useMemo(
+    () => (
+      <>
+        <Kicker n="02" className="justify-center">
+          {t('storyEyebrow')}
+        </Kicker>
+        <Headline text={t('storyTitle')} className="mx-auto mt-5 max-w-4xl text-[40px] leading-[1.02] sm:text-[60px] lg:text-[80px] xl:text-[92px]" />
+        <p className="mx-auto mt-5 max-w-xl text-[15.5px] leading-relaxed text-white/60 sm:text-[17px]">{t('storyText')}</p>
+      </>
+    ),
+    [t],
+  );
+  const steps = useMemo(
+    () =>
+      STORY_PARTS.map((sp, i) => {
+        const num = String(i + 1).padStart(2, '0');
+        return (
+          <li
+            key={sp}
+            ref={(el) => {
+              texts.current[i] = el;
+            }}
+            className="pointer-events-none absolute inset-x-0 bottom-0 will-change-transform"
+            style={{ opacity: 0 }}
+          >
+            {/* the step number, huge and outlined (decorative SVG) */}
+            <svg
+              aria-hidden
+              viewBox="0 0 320 170"
+              className="pointer-events-none -mb-3 -ml-2 h-[96px] w-[180px] select-none sm:h-[120px] sm:w-[226px] lg:h-[150px] lg:w-[282px]"
+            >
+              <text
+                x="0"
+                y="150"
+                fill="none"
+                stroke="#6fd3a5"
+                strokeOpacity="0.5"
+                strokeWidth="1.2"
+                fontSize="176"
+                fontWeight="600"
+                letterSpacing="-8"
+                style={{ fontFamily: 'var(--font-sans)' }}
+              >
+                {num}
+              </text>
+            </svg>
+            <div className="sg-mono flex items-center gap-3 text-[11px] text-white/55">
+              <span className="text-[#6fd3a5]">{num}</span>
+              <span aria-hidden className="h-px w-12 bg-[#6fd3a5]" />
+              {TAG[sp] && <span>{TAG[sp]}</span>}
+            </div>
+            <h3 className="mt-3 text-[30px] font-semibold leading-[1.02] tracking-[-0.035em] sm:text-[40px] lg:text-[56px]">{t(TITLE[sp])}</h3>
+            <p className="mt-3 max-w-md text-[15px] leading-relaxed text-white/70 sm:text-[17px]">{t(TEXT[sp])}</p>
+          </li>
+        );
+      }),
+    [t],
+  );
+
   return (
     <section id="brenda" className="relative bg-[#07090a] text-white">
       <div ref={track} className="relative" style={{ height: `${(INTRO + n * STEP + 1) * 100}svh` }}>
@@ -227,6 +298,7 @@ export function SmartStory() {
               posterClassName="object-[70%_42%] max-lg:object-[50%_30%]"
               variant={part === 'display' && !inIntro ? 'display' : 'camera'}
               showDisplayHud={part === 'display' && !inIntro}
+              prepare={PREPARE}
               exploded={exploded}
               spread={desktop ? 1.7 : 1.45}
               zoom={zoom}
@@ -259,59 +331,12 @@ export function SmartStory() {
 
           {/* opening: a big centred line over the assembled glasses */}
           <div ref={intro} className="container-x pointer-events-none absolute inset-x-0 top-[13svh] text-center will-change-transform lg:top-[11svh]">
-            <Kicker n="02" className="justify-center">
-              {t('storyEyebrow')}
-            </Kicker>
-            <Headline text={t('storyTitle')} className="mx-auto mt-5 max-w-4xl text-[40px] leading-[1.02] sm:text-[60px] lg:text-[80px] xl:text-[92px]" />
-            <p className="mx-auto mt-5 max-w-xl text-[15.5px] leading-relaxed text-white/60 sm:text-[17px]">{t('storyText')}</p>
+            {introText}
           </div>
 
           {/* the parts: stacked in one place, each scrubbed in and out by the scroll */}
           <div className="container-x absolute inset-x-0 bottom-[12svh] lg:bottom-[13svh]">
-            <ol className="relative h-[200px] max-w-xl sm:h-[210px] lg:h-[250px]">
-              {STORY_PARTS.map((sp, i) => {
-                const num = String(i + 1).padStart(2, '0');
-                return (
-                  <li
-                    key={sp}
-                    ref={(el) => {
-                      texts.current[i] = el;
-                    }}
-                    className="pointer-events-none absolute inset-x-0 bottom-0 will-change-transform"
-                    style={{ opacity: 0 }}
-                  >
-                    {/* the step number, huge and outlined (decorative SVG) */}
-                    <svg
-                      aria-hidden
-                      viewBox="0 0 320 170"
-                      className="pointer-events-none -mb-3 -ml-2 h-[96px] w-[180px] select-none sm:h-[120px] sm:w-[226px] lg:h-[150px] lg:w-[282px]"
-                    >
-                      <text
-                        x="0"
-                        y="150"
-                        fill="none"
-                        stroke="#6fd3a5"
-                        strokeOpacity="0.5"
-                        strokeWidth="1.2"
-                        fontSize="176"
-                        fontWeight="600"
-                        letterSpacing="-8"
-                        style={{ fontFamily: 'var(--font-sans)' }}
-                      >
-                        {num}
-                      </text>
-                    </svg>
-                    <div className="sg-mono flex items-center gap-3 text-[11px] text-white/55">
-                      <span className="text-[#6fd3a5]">{num}</span>
-                      <span aria-hidden className="h-px w-12 bg-[#6fd3a5]" />
-                      {TAG[sp] && <span>{TAG[sp]}</span>}
-                    </div>
-                    <h3 className="mt-3 text-[30px] font-semibold leading-[1.02] tracking-[-0.035em] sm:text-[40px] lg:text-[56px]">{t(TITLE[sp])}</h3>
-                    <p className="mt-3 max-w-md text-[15px] leading-relaxed text-white/70 sm:text-[17px]">{t(TEXT[sp])}</p>
-                  </li>
-                );
-              })}
-            </ol>
+            <ol className="relative h-[200px] max-w-xl sm:h-[210px] lg:h-[250px]">{steps}</ol>
           </div>
 
           {/* progress (desktop: the right half, clear of the corner badge) */}

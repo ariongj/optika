@@ -53,6 +53,7 @@ function toEngine(p: SmartGlasses3DProps): EngineProps {
     background: p.background ?? 'transparent',
     framing: p.framing,
     wantParts: !!p.onParts,
+    prepare: p.prepare ?? [],
   };
 }
 
