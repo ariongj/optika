@@ -2,23 +2,23 @@
    (src/admin/admin.css). Imported after Tailwind by both. */
 
 /* ------------------------------------------------------------------ */
-/*  Design tokens — warm paper palette with the Optika Miftari forest green */
+/*  Design tokens — warm paper palette with the Miftari Vision gold (lib/color.ts rebuilds the scale from settings) */
 /*  Brand scale is overridable at runtime from Admin → Postavke.        */
 /* ------------------------------------------------------------------ */
 @theme {
   --font-sans: "Manrope Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display: "Fraunces Variable", ui-serif, Georgia, "Times New Roman", serif;
 
-  --color-brand-50: #f7f8f7;
-  --color-brand-100: #ebefed;
-  --color-brand-200: #d3dfd8;
-  --color-brand-300: #acc8b9;
-  --color-brand-400: #4e8467;
-  --color-brand-500: #3b644e;
-  --color-brand-600: #2c4a3a;
-  --color-brand-700: #1f3428;
-  --color-brand-800: #132019;
-  --color-brand-900: #080d0a;
+  --color-brand-50: #f8f8f7;
+  --color-brand-100: #f0eeea;
+  --color-brand-200: #e0dbd1;
+  --color-brand-300: #cbbfa9;
+  --color-brand-400: #ad9466;
+  --color-brand-500: #927a4e;
+  --color-brand-600: #776440;
+  --color-brand-700: #605034;
+  --color-brand-800: #4c4029;
+  --color-brand-900: #382f1e;
 
   --color-ink: #1c1a17;
   --color-ink-soft: #3a3631;

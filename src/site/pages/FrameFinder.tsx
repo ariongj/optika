@@ -164,7 +164,7 @@ export default function FrameFinder() {
 /** Front view with lens/bridge dimensions + the temple with its printed size. Numbers only — labels are in HTML. */
 function SizeDiagram() {
   const ink = '#1c1a17';
-  const brand = '#2c4a3a';
+  const brand = '#776440';
   const oak = '#a4774c';
   return (
     <svg viewBox="0 0 360 230" className="h-auto w-full" role="img" aria-label="52□18 145">

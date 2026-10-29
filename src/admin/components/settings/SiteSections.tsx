@@ -143,7 +143,7 @@ export function AnnouncementsSection({ s, set }: SectionProps) {
 /* ------------------------------------------------------------------ */
 /* Izgled                                                              */
 /* ------------------------------------------------------------------ */
-export const DEFAULT_BRAND = '#2c4a3a';
+export const DEFAULT_BRAND = '#776440';
 
 const PRESETS: { hex: string; key: Key }[] = [
   { hex: DEFAULT_BRAND, key: 'preset_brand' },
@@ -266,7 +266,7 @@ export function AppearanceSection({ s, set, savedBrand }: SectionProps & { saved
           <div className="p-5">
             <p className="eyebrow">{t('sampleEyebrow')}</p>
             <p className="display mt-2 text-[28px] leading-[1.08] text-ink">
-              <Accent text={accentLast(l(s.tagline) || 'Optika Miftari')} />
+              <Accent text={accentLast(l(s.tagline) || 'Miftari Vision')} />
             </p>
             <div className="mt-4 flex items-center gap-2">
               <Badge tone="brand">{t('sampleBadge')}</Badge>
@@ -328,7 +328,7 @@ export function SeoSection({ s, set }: SectionProps) {
               <LogoMark className="h-3.5!" />
             </span>
             <span className="min-w-0 leading-tight">
-              <span className="block truncate text-[14px] text-[#202124]">{s.companyName || 'Optika Miftari'}</span>
+              <span className="block truncate text-[14px] text-[#202124]">{s.companyName || 'Miftari Vision'}</span>
               <span className="block truncate text-[12px] text-[#4d5156]">https://{siteHost()}</span>
             </span>
           </div>

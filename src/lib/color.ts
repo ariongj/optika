@@ -57,7 +57,7 @@ export function brandScale(hex: string): Record<string, string> {
   };
 }
 
-export const DEFAULT_BRAND = '#2c4a3a';
+export const DEFAULT_BRAND = '#776440'; // Miftari Vision bronze (the identity's gold, dark enough for white text)
 
 /* ------------------------------------------------------------------ */
 /* CMS v2: the admin is neutral — black, grey, white (proposal p.07).   */
@@ -65,7 +65,7 @@ export const DEFAULT_BRAND = '#2c4a3a';
 /* 700 = #000) and the warm tokens to neutral ones, so every            */
 /* `bg-brand-600` / `Button variant="primary"` renders black there.     */
 /* The storefront (and the builder's preview iframe, which is its own   */
-/* document) keeps the Optika brand.                                     */
+/* document) keeps the Miftari Vision brand.                             */
 /* ------------------------------------------------------------------ */
 export const NEUTRAL_SCALE: Record<string, string> = {
   50: '#f7f7f7',
@@ -113,7 +113,7 @@ export function applyBrand(hex: string) {
   if (!adminMode) setScale(brandScale(brandHex));
 }
 
-/** Switch the neutral CMS theme on (route starts with /admin) or off (storefront: Optika brand restored). */
+/** Switch the neutral CMS theme on (route starts with /admin) or off (storefront: Miftari Vision brand restored). */
 export function setAdminTheme(on: boolean) {
   const root = document.documentElement;
   adminMode = on;

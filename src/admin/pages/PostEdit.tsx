@@ -106,7 +106,7 @@ const blankPost = (): PostX => ({
   body: emptyL10n(),
   cover: '',
   tag: emptyL10n(),
-  author: 'Optika Miftari',
+  author: 'Miftari Vision',
   readMinutes: 3,
   publishedAt: new Date().toISOString(),
   published: false,
@@ -161,7 +161,7 @@ function PostEditor({ id }: { id: string }) {
     posts.forEach((p) => p.tag.me.trim() && !seen.has(p.tag.me.trim().toLowerCase()) && seen.set(p.tag.me.trim().toLowerCase(), p.tag));
     return [...seen.values()];
   }, [posts]);
-  const authors = useMemo(() => Array.from(new Set(['Optika Miftari', ...staff.filter((s) => s.active).map((s) => s.name), ...posts.map((p) => p.author)].filter(Boolean))), [staff, posts]);
+  const authors = useMemo(() => Array.from(new Set(['Miftari Vision', ...staff.filter((s) => s.active).map((s) => s.name), ...posts.map((p) => p.author)].filter(Boolean))), [staff, posts]);
   const tagSuggestions = useMemo(() => Array.from(new Set(posts.flatMap((p) => p.tags ?? []))), [posts]);
 
   const suggestedMinutes = readMinutesFor(draft.body.sq || draft.body.me);

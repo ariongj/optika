@@ -134,7 +134,7 @@ function PageEditor({ id }: { id: string }) {
   };
 
   const authors = useMemo(
-    () => Array.from(new Set(['Optika Miftari', ...staff.filter((s) => s.active).map((s) => s.name), ...posts.map((p) => p.author), ...pages.map((p) => p.author ?? '')].filter(Boolean))),
+    () => Array.from(new Set(['Miftari Vision', ...staff.filter((s) => s.active).map((s) => s.name), ...posts.map((p) => p.author), ...pages.map((p) => p.author ?? '')].filter(Boolean))),
     [staff, posts, pages],
   );
   const tagSuggestions = useMemo(() => Array.from(new Set(pages.flatMap((p) => p.tags ?? []))), [pages]);

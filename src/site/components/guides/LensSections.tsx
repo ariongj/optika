@@ -60,7 +60,7 @@ export function LensTypes({ lenses }: { lenses: Product[] }) {
 /** Small schematic of where a lens type is sharp (illustrative). */
 export function LensZones({ kind, className }: { kind: ZoneKind; className?: string }) {
   const id = useId().replace(/:/g, '');
-  const ring = <circle cx="60" cy="60" r="52" fill="none" stroke="#2c4a3a" strokeOpacity="0.55" strokeWidth="1.5" />;
+  const ring = <circle cx="60" cy="60" r="52" fill="none" stroke="#776440" strokeOpacity="0.55" strokeWidth="1.5" />;
   return (
     <svg viewBox="0 0 120 120" className={className} aria-hidden>
       <defs>
@@ -83,8 +83,8 @@ export function LensZones({ kind, className }: { kind: ZoneKind; className?: str
         {kind === 'single' && (
           <>
             <rect width="120" height="120" fill={`url(#${id}-glass)`} />
-            <circle cx="60" cy="60" r="34" fill="none" stroke="#2c4a3a" strokeOpacity="0.18" strokeDasharray="2 4" />
-            <path d="M54 60h12M60 54v12" stroke="#2c4a3a" strokeOpacity="0.55" strokeWidth="1.5" strokeLinecap="round" />
+            <circle cx="60" cy="60" r="34" fill="none" stroke="#776440" strokeOpacity="0.18" strokeDasharray="2 4" />
+            <path d="M54 60h12M60 54v12" stroke="#776440" strokeOpacity="0.55" strokeWidth="1.5" strokeLinecap="round" />
           </>
         )}
         {kind === 'progressive' && (
@@ -96,17 +96,17 @@ export function LensZones({ kind, className }: { kind: ZoneKind; className?: str
               filter={`url(#${id}-blur)`}
             />
             <path d="M0 0H120V50C96 56 80 58 72 62C66 66 65 76 66 84C76 90 98 98 120 108V120H0V108C22 98 44 90 54 84C55 76 54 66 48 62C40 58 24 56 0 50Z" fill={`url(#${id}-glass)`} />
-            <text x="60" y="34" textAnchor="middle" fontSize="9" fontWeight="700" fill="#2c4a3a" opacity="0.7">∞</text>
-            <circle cx="60" cy="71" r="2" fill="#2c4a3a" opacity="0.55" />
-            <path d="M52 100h16" stroke="#2c4a3a" strokeOpacity="0.55" strokeWidth="1.5" strokeLinecap="round" />
+            <text x="60" y="34" textAnchor="middle" fontSize="9" fontWeight="700" fill="#776440" opacity="0.7">∞</text>
+            <circle cx="60" cy="71" r="2" fill="#776440" opacity="0.55" />
+            <path d="M52 100h16" stroke="#776440" strokeOpacity="0.55" strokeWidth="1.5" strokeLinecap="round" />
           </>
         )}
         {kind === 'screen' && (
           <>
             <rect width="120" height="120" fill={`url(#${id}-glass)`} />
             <path d="M22 44a44 44 0 0 1 50-28" stroke="#7d8fd8" strokeOpacity="0.75" strokeWidth="7" strokeLinecap="round" fill="none" filter={`url(#${id}-blur)`} />
-            <rect x="40" y="52" width="40" height="26" rx="3" fill="none" stroke="#2c4a3a" strokeOpacity="0.5" strokeWidth="1.5" />
-            <path d="M54 84h12" stroke="#2c4a3a" strokeOpacity="0.5" strokeWidth="1.5" strokeLinecap="round" />
+            <rect x="40" y="52" width="40" height="26" rx="3" fill="none" stroke="#776440" strokeOpacity="0.5" strokeWidth="1.5" />
+            <path d="M54 84h12" stroke="#776440" strokeOpacity="0.5" strokeWidth="1.5" strokeLinecap="round" />
           </>
         )}
         {kind === 'photo' && (
@@ -130,8 +130,8 @@ export function LensZones({ kind, className }: { kind: ZoneKind; className?: str
         {kind === 'thin' && (
           <>
             <rect width="120" height="120" fill="#f1ede6" />
-            <path d="M30 20 Q 42 60 30 100 L 46 100 Q 38 60 46 20 Z" fill="#dbe7e0" stroke="#2c4a3a" strokeOpacity="0.35" strokeWidth="1.2" />
-            <path d="M74 24 Q 82 60 74 96 L 84 96 Q 79 60 84 24 Z" fill="#acc8b9" stroke="#2c4a3a" strokeOpacity="0.7" strokeWidth="1.2" />
+            <path d="M30 20 Q 42 60 30 100 L 46 100 Q 38 60 46 20 Z" fill="#dbe7e0" stroke="#776440" strokeOpacity="0.35" strokeWidth="1.2" />
+            <path d="M74 24 Q 82 60 74 96 L 84 96 Q 79 60 84 24 Z" fill="#cbbfa9" stroke="#776440" strokeOpacity="0.7" strokeWidth="1.2" />
           </>
         )}
       </g>

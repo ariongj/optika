@@ -44,7 +44,7 @@ const clip = (v, n = 158) => {
   const t = plain(v);
   return t.length <= n ? t : `${t.slice(0, n - 1).replace(/\s+\S*$/, '')}…`;
 };
-const brand = s.companyName || 'Optika Miftari';
+const brand = s.companyName || 'Miftari Vision';
 const titled = (t) => `${plain(t)} · ${brand}`;
 const shell = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
 const today = new Date().toISOString().slice(0, 10);
@@ -104,8 +104,8 @@ put('', { title: s.seo.title, description: s.seo.description, image: '/images/he
 const STATIC = [
   ['produktet', 'Produktet — syze optike, syze dielli dhe lente', 'Korniza optike dhe syze dielli në titan dhe acetat, lente me recetë nga laboratori ynë. Dërgesë në gjithë Kosovën.', '/images/cat/optike.webp'],
   ['sherbimet', 'Shërbimet — kontroll i syve, laborator dhe klinikë', 'Kontroll profesional i syve, matje e PD-së dhe përshtatje, lente nga laboratori ynë, riparime, Klinika Miftari dhe Optical Lab për optikat.', '/images/s/kontrolli.webp'],
-  ['lookbook', 'Lookbook — fytyra, dritë dhe stil', 'Fushatat dhe fotografitë editoriale të Optika Miftari — nga Mitrovica deri në Rugovë.', '/images/lookbook/riviera.webp'],
-  ['rreth-nesh', 'Rreth nesh — 30 vjet traditë familjare', 'Optika Miftari: optikë familjare nga Mitrovica me laborator optik dhe Klinikën Miftari — qartësi, brez pas brezi.', '/images/hero/family.webp'],
+  ['lookbook', 'Lookbook — fytyra, dritë dhe stil', 'Fushatat dhe fotografitë editoriale të Miftari Vision — nga Mitrovica deri në Rugovë.', '/images/lookbook/riviera.webp'],
+  ['rreth-nesh', 'Rreth nesh — 30 vjet traditë familjare', 'Miftari Vision: optikë familjare nga Mitrovica me laborator optik dhe Klinikën Miftari — qartësi, brez pas brezi.', '/images/hero/family.webp'],
   ['kontakt', 'Kontakt — Mbretëresha Teutë 182, Mitrovicë', `Na telefononi në ${s.phone}, na shkruani në WhatsApp ose ejani në optikë. Hën–Sht 10:00–19:30.`, '/images/misc/contact.webp'],
   ['keshilla', 'Këshilla për syzet dhe shëndetin e syve', 'Si ta lexoni recetën, çfarë është PD, lentet progresive, lentet për ekran dhe më shumë — të shpjeguara thjesht.', '/images/misc/lens.webp'],
   ['provo-virtualisht', 'Provo virtualisht — syzet në fytyrën tuaj', 'Provoni kornizat me kamerën live, me një foto ose në 3D. Imazhi përpunohet vetëm në pajisjen tuaj.', '/images/hero/sun.webp'],
@@ -113,7 +113,7 @@ const STATIC = [
   ['optical-lab', 'Optical Lab — lente me recetë dhe partneritet B2B', 'Laboratori optik i Miftari Vision Group: punim, centrim, montim dhe kontroll i lenteve me recetë — edhe për optikat partnere në Kosovë dhe BE.', '/images/s/lab-polish.webp'],
   ['lentet', 'Udhëzuesi i lenteve — zgjidhni lentet e duhura', 'Njëvizore, progresive, për ekran, fotokromatike apo me dioptri dielli? Gjeni lentet dhe indeksin e duhur për recetën tuaj.', '/images/misc/lens.webp'],
   ['gjej-kornizen', 'Gjeni kornizën tuaj — kuiz i shpejtë', 'Pesë pyetje për formën e fytyrës, stilin dhe madhësinë — dhe tri korniza që ju shkojnë, me provë virtuale.', '/images/cat/optike.webp'],
-  ['syze-inteligjente', 'Syze inteligjente — Ray-Ban Meta, Oakley Meta dhe Meta Ray-Ban Display', 'Syze me kamerë, audio dhe asistent zanor. Provojini në Optika Miftari në Mitrovicë; lente me dioptri nga laboratori ynë, kur modeli e lejon. Çmimi dhe disponueshmëria sipas kërkesës.', '/images/smart/hero.webp'],
+  ['syze-inteligjente', 'Syze inteligjente — Ray-Ban Meta, Oakley Meta dhe Meta Ray-Ban Display', 'Syze me kamerë, audio dhe asistent zanor. Provojini te Miftari Vision në Mitrovicë; lente me dioptri nga laboratori ynë, kur modeli e lejon. Çmimi dhe disponueshmëria sipas kërkesës.', '/images/smart/hero.webp'],
   ['rezervo', 'Rezervo kontrollin e syve', 'Zgjidhni shërbimin, ditën dhe orën — kontroll i syve, përshtatje, lente kontakti ose konsultë në Klinikën Miftari.', '/images/hero/exam.webp'],
 ];
 for (const [r, t, d, img] of STATIC) put(r, { title: t, description: d, image: img });

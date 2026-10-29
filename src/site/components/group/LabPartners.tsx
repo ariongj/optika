@@ -82,7 +82,7 @@ export function LabPartners() {
   return (
     <section id={PARTNER_ID} className="relative isolate scroll-mt-20 overflow-hidden bg-ink py-24 text-white sm:py-32">
       <div className="bg-grain pointer-events-none absolute inset-0 -z-10" />
-      <div className="pointer-events-none absolute inset-0 -z-10" style={{ background: 'radial-gradient(560px circle at 100% 0%, rgb(44 74 58 / 0.45), transparent 70%)' }} />
+      <div className="pointer-events-none absolute inset-0 -z-10" style={{ background: 'radial-gradient(560px circle at 100% 0%, rgb(173 148 102 / 0.32), transparent 70%)' }} />
       <div className="container-x">
         <Reveal>
           <SectionHeading tone="light" eyebrow={t('b2bEyebrow')} title={t('b2bTitle')} subtitle={t('b2bText')} />

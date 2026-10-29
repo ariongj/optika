@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 
 /**
  * Shared pieces of the group pages (/klinika, /optical-lab) — Miftari Vision Group is the parent company of Klinika
- * Miftari (clinic), Optika Miftari (optical boutique) and Optical Lab: the cross-links between the three companies,
+ * Miftari (clinic), Miftari Vision (optical boutique) and Optical Lab: the cross-links between the three companies,
  * the FAQ block and the phone / WhatsApp buttons.
  */
 export const G = defineDict({
@@ -133,7 +133,7 @@ export type Division = 'optika' | 'lab' | 'clinic';
 /** The member companies of Miftari Vision Group, in the group's order. */
 const DIVISIONS: { id: Division; name: string; type: 'typeClinic' | 'typeBoutique' | 'typeLab'; image: string; to: string; cta: 'optikaCta' | 'labCta' | 'clinicCta' }[] = [
   { id: 'clinic', name: 'Klinika Miftari', type: 'typeClinic', image: '/images/s/klinika.webp', to: '/klinika', cta: 'clinicCta' },
-  { id: 'optika', name: 'Optika Miftari', type: 'typeBoutique', image: '/images/lookbook/atelier-optical.webp', to: '/produktet', cta: 'optikaCta' },
+  { id: 'optika', name: 'Miftari Vision', type: 'typeBoutique', image: '/images/lookbook/atelier-optical.webp', to: '/produktet', cta: 'optikaCta' },
   { id: 'lab', name: 'Optical Lab', type: 'typeLab', image: '/images/s/laboratori.webp', to: '/optical-lab', cta: 'labCta' },
 ];
 

@@ -20,7 +20,7 @@ import { Sidebar } from './Sidebar';
 import { activeNav, navFor } from './nav';
 import { MOD_KEY, useScrollLock } from './popover';
 
-/** "CMS" + small Optika Miftari mark (top bar, left). */
+/** "CMS" + small Miftari Vision mark (top bar, left). */
 function Brand({ onClick }: { onClick?: () => void }) {
   return (
     <Link to="/admin" onClick={onClick} className="flex items-center gap-2.5 rounded-md px-1.5 py-1 text-white">
@@ -35,7 +35,7 @@ function Brand({ onClick }: { onClick?: () => void }) {
 function StoreLabel({ className, dark = true }: { className?: string; dark?: boolean }) {
   const t = useDict(adm, 'admin');
   const company = useDb((s) => s.settings.companyName);
-  const name = company.replace(/\s*(?:d\.?\s?o\.?\s?o\.?|sh\.?\s?p\.?\s?k\.?|l\.?\s?l\.?\s?c\.?)$/i, '') || 'Optika Miftari';
+  const name = company.replace(/\s*(?:d\.?\s?o\.?\s?o\.?|sh\.?\s?p\.?\s?k\.?|l\.?\s?l\.?\s?c\.?)$/i, '') || 'Miftari Vision';
   return (
     <a
       href={href('/')}
@@ -90,7 +90,7 @@ export default function AdminLayout() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  // Tab title: "Porositë · CMS — Optika Miftari"
+  // Tab title: "Porositë · CMS — Miftari Vision"
   const screen = useMemo(() => activeNav(pathname, navFor(role)).leaf, [pathname, role]);
   useEffect(() => {
     document.title = `${screen ? `${t(screen.label)} · ` : ''}CMS — ${companyName}`;

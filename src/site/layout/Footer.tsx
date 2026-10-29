@@ -25,7 +25,7 @@ const F = defineDict({
 
 /** The three parts of the group, shown under the logo. */
 /** The member companies of Miftari Vision Group (the parent company). */
-const DIVISIONS = ['Klinika Miftari', 'Optika Miftari', 'Optical Lab'];
+const DIVISIONS = ['Klinika Miftari', 'Miftari Vision', 'Optical Lab'];
 
 const socialCls = 'grid h-10 w-10 place-items-center rounded-full bg-white/[0.08] transition-colors hover:bg-white hover:text-ink';
 
@@ -84,7 +84,7 @@ export function Footer({ dark = false }: { dark?: boolean }) {
         {/* Columns */}
         <div className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-12">
           <div className="lg:col-span-4">
-            <Logo tone="light" className="h-14" />
+            <Logo tone="light" accent className="h-14" />
             <p className="mt-5 max-w-xs text-[14px] leading-relaxed text-paper/60">{t('footerAbout')}</p>
             <div className="mt-5">
               <div className="text-[10.5px] font-bold uppercase tracking-[0.2em] text-paper/40">{f('group')}</div>

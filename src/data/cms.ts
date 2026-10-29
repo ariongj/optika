@@ -1,7 +1,7 @@
 // CMS v2 demo data — collections, discounts, offers, placements, staff, appointments, segments,
 // inventory, purchasing, drafts, returns, quotes, menus, content models and the audit log.
 // Everything is relative to `now` so the demo always looks current, and coherent with the
-// Optika Miftari catalogue (optical frames, sunglasses, prescription lenses from Optical Lab),
+// Miftari Vision catalogue (optical frames, sunglasses, prescription lenses from Optical Lab),
 // Klinika Miftari and Mitrovicë / Kosovo.
 import type {
   AuditEntry, Booking, Collection, ContentModel, Discount, DraftOrder, HomeSection, HomeVersion, Inquiry, InventoryMovement, L10n,
@@ -116,7 +116,7 @@ export function buildCollections(now: Date): Collection[] {
       rules: [{ field: 'category', op: 'eq', value: 'cat-dielli' }],
       sort: 'bestselling',
       published: true,
-      seo: { title: 'Fund sezoni: syze dielli −20% — Optika Miftari', description: 'Syze dielli të polarizuara dhe UV400 me 20% zbritje deri në fund të sezonit. Edhe me dioptri, nga laboratori ynë.' },
+      seo: { title: 'Fund sezoni: syze dielli −20% — Miftari Vision', description: 'Syze dielli të polarizuara dhe UV400 me 20% zbritje deri në fund të sezonit. Edhe me dioptri, nga laboratori ynë.' },
       createdAt: iso(now, -9),
     },
     {
@@ -548,7 +548,7 @@ export function buildOffers(now: Date, discounts: Discount[], orders: Order[]): 
       badge: T('−10% uz MIFTARI10', '−10% me MIFTARI10', '−10% with MIFTARI10'),
       image: '/images/misc/about.webp',
       landing: {
-        title: T('Dobro došli u *Optiku Miftari*', 'Mirë se vini te *Optika Miftari*', 'Welcome to *Optika Miftari*'),
+        title: T('Dobro došli u *Miftari Vision*', 'Mirë se vini te *Miftari Vision*', 'Welcome to *Miftari Vision*'),
         text: T(
           'Za prvu kupovinu unesite kod MIFTARI10 u korpi i ostvarite 10% popusta na narudžbe od 100 €. Pregled vida uz kupovinu okvira je besplatan.',
           'Për blerjen e parë shkruani kodin MIFTARI10 në shportë dhe përfitoni 10% zbritje për porosi nga 100 €. Kontrolli i syve me blerjen e kornizës është falas.',
@@ -786,7 +786,7 @@ export function buildPlacements(home: HomeSection[]): Placement[] {
       subtitle: T('Za narudžbe od 100 € — kombinuje se sa besplatnom dostavom.', 'Për porosi nga 100 € — kombinohet me transportin falas.', 'On orders from €100 — combines with free delivery.'),
       cta: { label: T('Kupujte sada', 'Blini tani', 'Shop now'), href: '/produktet' },
       image: '/images/misc/about.webp',
-      alt: T('Optika Miftari u Mitrovici', 'Optika Miftari në Mitrovicë', 'Optika Miftari in Mitrovica'),
+      alt: T('Miftari Vision u Mitrovici', 'Miftari Vision në Mitrovicë', 'Miftari Vision in Mitrovica'),
       overlay: 40,
       offerId: 'of-mireseardhja',
       order: 2,
@@ -802,7 +802,7 @@ export function buildPlacements(home: HomeSection[]): Placement[] {
 /* Staff, services, bookings                                           */
 /* ================================================================== */
 export const STAFF: Staff[] = [
-  { id: 'st-gent', name: 'Gent Berisha', email: 'gent@optikamiftari.com', role: 'owner', color: '#2c4a3a', active: true, phone: '+383 44 120 456', title: T('Optometrista · rukovodilac optike', 'Optometrist · drejtues i optikës', 'Optometrist · store lead') },
+  { id: 'st-gent', name: 'Gent Berisha', email: 'gent@optikamiftari.com', role: 'owner', color: '#776440', active: true, phone: '+383 44 120 456', title: T('Optometrista · rukovodilac optike', 'Optometrist · drejtues i optikës', 'Optometrist · store lead') },
   { id: 'st-arta', name: 'Arta Krasniqi', email: 'arta@optikamiftari.com', role: 'manager', color: '#7a5c3e', active: true, phone: '+383 44 210 334', title: T('Optičarka · menadžerka prodaje', 'Optike · menaxhere e shitjes', 'Optician · sales manager') },
   { id: 'st-milica', name: 'Milica Jovanović', email: 'info@optikamiftari.com', role: 'reception', color: '#4f6d7a', active: true, phone: '+383 43 777 667', title: T('Optičarka · prijem klijenata', 'Optike · pritja e klientëve', 'Optician · front desk') },
   { id: 'st-blerim', name: 'Blerim Gashi', email: 'lab@optikamiftari.com', role: 'orders', color: '#5b6b3a', active: true, phone: '+383 49 330 118', title: T('Tehničar laboratorije — Optical Lab', 'Teknik laboratori — Optical Lab', 'Lab technician — Optical Lab') },
@@ -822,7 +822,7 @@ export const SERVICES: Service[] = [
     durationMin: 30,
     capacity: 2,
     price: 15,
-    color: '#2c4a3a',
+    color: '#776440',
     staffIds: ['st-gent', 'st-arta'],
     location: 'loc-mitrovice',
   },
@@ -1546,7 +1546,7 @@ export function buildMenus(): Menu[] {
           url('mi-f-lens-guide', L.lensGuide, '/lentet'),
           url('mi-f-sale', L.sale, '/produktet?akcija=1'),
         ]),
-        url('mi-f-company', T('Optika Miftari', 'Optika Miftari', 'Optika Miftari'), '/rreth-nesh', [
+        url('mi-f-company', T('Miftari Vision', 'Miftari Vision', 'Miftari Vision'), '/rreth-nesh', [
           url('mi-f-about', L.about, '/rreth-nesh'),
           url('mi-f-services', L.services, '/sherbimet'),
           url('mi-f-clinic', L.clinic, '/klinika'),

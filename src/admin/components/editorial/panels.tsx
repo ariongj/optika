@@ -154,7 +154,7 @@ export function SeoCard({
   const description = s.description[lang]?.trim() || s.description.sq.trim() || fallbackDescription;
   return (
     <Card title={t('seo')} description={`${t('seoHint')} ${t('seoFallback')}`} bodyClassName="space-y-5">
-      <SearchPreview domain={domain} path={path} title={`${title} | Optika Miftari`} description={description} />
+      <SearchPreview domain={domain} path={path} title={`${title} | Miftari Vision`} description={description} />
       <fieldset disabled={readOnly} className="space-y-5">
         <L10nInput label={t('seoTitle')} value={s.title} onChange={(title) => onChange({ ...s, title })} placeholder={fallbackTitle} hint={<CountHint value={s.title} limit={60} />} />
         <L10nInput label={t('seoDesc')} value={s.description} onChange={(description) => onChange({ ...s, description })} multiline rows={3} placeholder={fallbackDescription} hint={<CountHint value={s.description} limit={160} />} />

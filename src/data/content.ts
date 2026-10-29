@@ -8,13 +8,13 @@ const T = (me: string, sq: string, en: string): L10n => ({ me, sq, en });
 /* Settings (placeholders marked "Shembull" in Admin → Konfigurimet)   */
 /* ------------------------------------------------------------------ */
 export const DEFAULT_SETTINGS: Settings = {
-  companyName: 'Optika Miftari',
+  companyName: 'Miftari Vision',
   legalName: 'Miftari Vision Group',
   tagline: T('Vidite drugačije. Budite svoji.', 'Shihni ndryshe. Jini vetvetja.', 'See differently. Be yourself.'),
   about: T(
-    'Optika Miftari je porodična optika iz Mitrovice sa 30 godina iskustva. Biramo okvire sa ukusom, sočiva izrađujemo u sopstvenoj laboratoriji i svakom paru posvećujemo lično prilagođavanje — jer dobar vid počinje stručnim pregledom.',
-    'Optika Miftari është optikë familjare nga Mitrovica me 30 vjet përvojë. Kornizat i zgjedhim me shije, lentet i punojmë në laboratorin tonë dhe çdo palë e përshtatim personalisht — sepse shikimi i mirë fillon me një kontroll profesional.',
-    'Optika Miftari is a family optician from Mitrovica with 30 years of experience. We choose frames with taste, make lenses in our own lab and fit every pair personally — because good vision starts with a professional eye exam.',
+    'Miftari Vision je porodična optika iz Mitrovice sa 30 godina iskustva. Biramo okvire sa ukusom, sočiva izrađujemo u sopstvenoj laboratoriji i svakom paru posvećujemo lično prilagođavanje — jer dobar vid počinje stručnim pregledom.',
+    'Miftari Vision është optikë familjare nga Mitrovica me 30 vjet përvojë. Kornizat i zgjedhim me shije, lentet i punojmë në laboratorin tonë dhe çdo palë e përshtatim personalisht — sepse shikimi i mirë fillon me një kontroll profesional.',
+    'Miftari Vision is a family optician from Mitrovica with 30 years of experience. We choose frames with taste, make lenses in our own lab and fit every pair personally — because good vision starts with a professional eye exam.',
   ),
   email: 'info@optikamiftari.com',
   phone: '+383 43 777 667',
@@ -52,10 +52,10 @@ export const DEFAULT_SETTINGS: Settings = {
     T('Besplatna dostava širom Kosova za narudžbe preko 150 €', 'Transport falas në gjithë Kosovën për porosi mbi 150 €', 'Free delivery across Kosovo on orders over €150'),
     T('Kraj sezone: do −20% na naočare za sunce', 'Fund sezoni: deri −20% në syze dielli', 'End of season: up to −20% on sunglasses'),
   ],
-  brandColor: '#2c4a3a',
+  brandColor: '#776440',
   demoBanner: true,
   seo: {
-    title: 'Optika Miftari — Syze optike, dielli dhe lente me recetë',
+    title: 'Miftari Vision — Syze optike, dielli dhe lente me recetë',
     description: 'Optikë familjare në Mitrovicë prej 30 vjetësh: syze optike dhe dielli, lente me recetë nga laboratori ynë dhe kontroll profesional i syve.',
   },
   adminEmail: 'admin@optikamiftari.com',
@@ -64,7 +64,7 @@ export const DEFAULT_SETTINGS: Settings = {
   timezone: 'Europe/Belgrade',
   orderPrefix: 'OM-',
   locations: [
-    { id: 'loc-mitrovice', name: 'Optika Miftari', address: 'Mbretëresha Teutë 182', city: 'Mitrovicë', pickup: true, isDefault: true },
+    { id: 'loc-mitrovice', name: 'Miftari Vision', address: 'Mbretëresha Teutë 182', city: 'Mitrovicë', pickup: true, isDefault: true },
     { id: 'loc-lab', name: 'Optical Lab', address: 'Laboratori optik', city: 'Mitrovicë', pickup: false, isDefault: false },
     { id: 'loc-klinika', name: 'Klinika Miftari', address: 'Klinika e syve', city: 'Mitrovicë', pickup: false, isDefault: false },
   ],
@@ -212,8 +212,8 @@ export function buildHome(now = new Date()): HomeSection[] {
       type: 'spotlight',
       enabled: true,
       data: {
-        eyebrow: T('Novo u Optici Miftari', 'E re te Optika Miftari', 'New at Optika Miftari'),
-        title: T('*Pametne* naočare — sada u Optici Miftari', 'Syze *inteligjente* — tani te Optika Miftari', '*Smart* glasses — now at Optika Miftari'),
+        eyebrow: T('Novo u Miftari Vision', 'E re te Miftari Vision', 'New at Miftari Vision'),
+        title: T('*Pametne* naočare — sada u Miftari Vision', 'Syze *inteligjente* — tani te Miftari Vision', '*Smart* glasses — now at Miftari Vision'),
         text: T(
           'Ray-Ban Meta, Oakley Meta i Meta Ray-Ban Display: naočare sa kamerom, otvorenim zvučnicima i glasovnim asistentom. Probajte ih u optici — kada model to dozvoljava, izrađujemo ih i sa dioptrijom.',
           'Ray-Ban Meta, Oakley Meta dhe Meta Ray-Ban Display: syze me kamerë, altoparlantë të hapur dhe asistent zanor. Provojini në optikë — kur modeli e lejon, ua punojmë edhe me dioptri.',
@@ -988,7 +988,7 @@ As a general guide, adults should have their prescription checked every one to t
       slug: 'privatesia',
       title: T('Politika privatnosti', 'Politika e privatësisë', 'Privacy policy'),
       body: T(
-        `Ovo obaveštenje objašnjava šta se dešava sa vašim podacima kada koristite ovaj sajt Optike Miftari (Miftari Vision Group), Mbretëresha Teutë 182, 40000 Mitrovica. Opisuje kako sajt radi danas; ako se to promeni, ažuriraćemo ovu stranicu.
+        `Ovo obaveštenje objašnjava šta se dešava sa vašim podacima kada koristite ovaj sajt Miftari Vision (Miftari Vision Group), Mbretëresha Teutë 182, 40000 Mitrovica. Opisuje kako sajt radi danas; ako se to promeni, ažuriraćemo ovu stranicu.
 
 ## Bez analitike i reklamnih kolačića
 Sajt **ne postavlja kolačiće** i **ne koristi alate za analitiku, reklame ili praćenje**. Dok pregledate sajt, ništa se ne učitava od drugih kompanija: stranice, slike, fontovi i virtuelna proba dolaze sa samog sajta.
@@ -1027,7 +1027,7 @@ Račune i dokumentaciju narudžbi čuvamo onoliko koliko propisuje poreski zakon
 
 ## Vaša prava
 U svakom trenutku možete zatražiti uvid, ispravku, izvoz ili brisanje podataka koje ste nam poslali — pišite nam na info@optikamiftari.com ili dođite u optiku.`,
-        `Ky njoftim shpjegon çfarë ndodh me të dhënat tuaja kur përdorni këtë faqe të Optika Miftari (Miftari Vision Group), Mbretëresha Teutë 182, 40000 Mitrovicë. Ai përshkruan si funksionon faqja sot; nëse kjo ndryshon, do ta përditësojmë këtë faqe.
+        `Ky njoftim shpjegon çfarë ndodh me të dhënat tuaja kur përdorni këtë faqe të Miftari Vision (Miftari Vision Group), Mbretëresha Teutë 182, 40000 Mitrovicë. Ai përshkruan si funksionon faqja sot; nëse kjo ndryshon, do ta përditësojmë këtë faqe.
 
 ## Pa analitikë dhe pa cookies reklamuese
 Faqja **nuk vendos cookies** dhe **nuk përdor mjete analitike, reklamash apo gjurmimi**. Gjatë shfletimit nuk ngarkohet asgjë nga kompani të tjera: faqet, fotot, fontet dhe prova virtuale vijnë nga vetë faqja.
@@ -1066,7 +1066,7 @@ Faturat dhe dokumentet e porosive i ruajmë aq sa kërkon ligji tatimor. Kërkes
 
 ## Të drejtat tuaja
 Në çdo kohë mund të kërkoni qasje, korrigjim, eksport ose fshirje të të dhënave që na keni dërguar — na shkruani në info@optikamiftari.com ose ejani në optikë.`,
-        `This notice explains what happens to your data when you use this website of Optika Miftari (Miftari Vision Group), Mbretëresha Teutë 182, 40000 Mitrovica. It describes how the site works today; if that changes, we will update this page.
+        `This notice explains what happens to your data when you use this website of Miftari Vision (Miftari Vision Group), Mbretëresha Teutë 182, 40000 Mitrovica. It describes how the site works today; if that changes, we will update this page.
 
 ## No analytics, no advertising cookies
 The site sets **no cookies** and uses **no analytics, advertising or tracking tools**. Nothing is loaded from other companies while you browse: pages, images, fonts and the virtual try-on all come from the site itself.
@@ -1115,7 +1115,7 @@ You can ask to access, correct, export or delete the data you sent us at any tim
       slug: 'kushtet-e-perdorimit',
       title: T('Uslovi korišćenja', 'Kushtet e përdorimit', 'Terms of use'),
       body: T(
-        `Ovi uslovi uređuju korišćenje sajta i kupovinu u online prodavnici Optika Miftari, deo Miftari Vision Group, Mbretëresha Teutë 182, 40000 Mitrovica.
+        `Ovi uslovi uređuju korišćenje sajta i kupovinu u online prodavnici Miftari Vision, deo Miftari Vision Group, Mbretëresha Teutë 182, 40000 Mitrovica.
 
 ## Narudžba
 Narudžba je prihvaćena kada vam pošaljemo potvrdu e-mailom ili SMS-om. Za naočare sa dioptrijskim sočivima laboratorija počinje izradu tek kada su recept i merenja potvrđeni.
@@ -1134,7 +1134,7 @@ Virtuelna proba prikazuje okvir okvirno i ne zamenjuje probu u optici niti meren
 
 ## Merodavno pravo
 Na ove uslove primenjuje se pravo Republike Kosovo. Svaki eventualni spor nastojimo najpre da rešimo dogovorom.`,
-        `Këto kushte rregullojnë përdorimin e faqes dhe blerjet në dyqanin online të Optika Miftari, pjesë e Miftari Vision Group, Mbretëresha Teutë 182, 40000 Mitrovicë.
+        `Këto kushte rregullojnë përdorimin e faqes dhe blerjet në dyqanin online të Miftari Vision, pjesë e Miftari Vision Group, Mbretëresha Teutë 182, 40000 Mitrovicë.
 
 ## Porosia
 Porosia pranohet kur ju dërgojmë konfirmimin me e-mail ose SMS. Për syzet me lente me recetë, laboratori fillon punën vetëm pasi receta dhe matjet të jenë konfirmuar.
@@ -1153,7 +1153,7 @@ Prova virtuale tregon një pamje orientuese të kornizës dhe nuk e zëvendëson
 
 ## Ligji i zbatueshëm
 Për këto kushte zbatohet ligji i Republikës së Kosovës. Çdo mosmarrëveshje të mundshme përpiqemi ta zgjidhim fillimisht me marrëveshje.`,
-        `These terms govern the use of this website and purchases from the Optika Miftari online store, part of Miftari Vision Group, Mbretëresha Teutë 182, 40000 Mitrovica.
+        `These terms govern the use of this website and purchases from the Miftari Vision online store, part of Miftari Vision Group, Mbretëresha Teutë 182, 40000 Mitrovica.
 
 ## Orders
 An order is accepted once we send you a confirmation by e-mail or text. For glasses with prescription lenses, the lab starts work only after your prescription and measurements have been confirmed.
@@ -1184,7 +1184,7 @@ These terms are governed by the law of the Republic of Kosovo. We always try to 
 /* Advice — "Këshilla" (informative, never a diagnosis)                */
 /* ------------------------------------------------------------------ */
 /** In-house author — PostCard shows the brand monogram for it. */
-const TEAM = 'Optika Miftari';
+const TEAM = 'Miftari Vision';
 
 export function buildPosts(now = new Date()): Post[] {
   const d = (n: number) => new Date(now.getTime() - n * 86400000).toISOString();

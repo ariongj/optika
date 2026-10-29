@@ -255,7 +255,7 @@ export function buildProduct(row: ImportRow, opts: ImportOptions, categories: Ca
   return base;
 }
 
-/** A ready-made sample (realistic Optika Miftari data incl. one existing SKU, one duplicate and one error). */
+/** A ready-made sample (realistic Miftari Vision data incl. one existing SKU, one duplicate and one error). */
 export const SAMPLE_CSV = [
   'Emri (SQ);Naziv (SR);SKU;Barkodi;Kategoria;Çmimi;Çmimi referues;Kosto;Stoku;Furnitori;Etiketat',
   'Kornizë optike Aria A03 — havana;Okvir Aria A03 — havana;OM-ARI-A03;2000000770011;Syze optike;149,00;;62,00;8;Miftari Atelier;acetat|havana|e-re',

@@ -145,7 +145,7 @@ export function MatchRing({ pct, label, className }: { pct: number; label: strin
     <span className={cn('grid h-14 w-14 place-items-center rounded-full bg-white/95 shadow-md backdrop-blur', className ?? 'relative')} title={label}>
       <svg viewBox="0 0 48 48" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden>
         <circle cx="24" cy="24" r={r} fill="none" stroke="#efe7dc" strokeWidth="3.5" />
-        <circle cx="24" cy="24" r={r} fill="none" stroke="#2c4a3a" strokeWidth="3.5" strokeLinecap="round" strokeDasharray={`${(pct / 100) * c} ${c}`} />
+        <circle cx="24" cy="24" r={r} fill="none" stroke="#776440" strokeWidth="3.5" strokeLinecap="round" strokeDasharray={`${(pct / 100) * c} ${c}`} />
       </svg>
       <span aria-hidden className="relative text-[13px] font-bold tabular-nums text-ink">
         {pct}

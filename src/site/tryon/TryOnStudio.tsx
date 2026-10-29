@@ -135,7 +135,7 @@ function drawCaption(ctx: CanvasRenderingContext2D, w: number, h: number, s: num
   ctx.fillText(sub, 18 * s, h - 17 * s);
   ctx.textAlign = 'right';
   ctx.font = `italic 400 ${15 * s}px "Fraunces Variable", Fraunces, Georgia, serif`;
-  ctx.fillText('Optika Miftari', w - 18 * s, h - 17 * s);
+  ctx.fillText('Miftari Vision', w - 18 * s, h - 17 * s);
   ctx.textAlign = 'left';
 }
 

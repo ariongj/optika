@@ -48,7 +48,7 @@ export default function Login() {
         <img src="/images/hero/optical.webp" alt="" className="absolute inset-0 h-full w-full object-cover object-[50%_30%] opacity-70" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-ink/10" />
         <div className="relative flex h-full flex-col justify-between p-12 text-white">
-          <Logo tone="light" className="h-14" />
+          <Logo tone="light" accent className="h-14" />
           <div>
             <p className="display max-w-md text-4xl leading-tight">{t('loginHero')}</p>
             <p className="mt-4 max-w-sm text-paper/70">{t('loginHeroText')}</p>

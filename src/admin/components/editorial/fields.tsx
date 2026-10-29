@@ -300,7 +300,7 @@ export function SearchPreview({ domain, path, title, description, className }: {
         <div className="flex items-center gap-2.5">
           <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white text-[11px] font-extrabold text-brand-700 ring-1 ring-line">S</span>
           <div className="min-w-0 leading-tight">
-            <div className="truncate text-[13px] font-medium text-ink">Optika Miftari</div>
+            <div className="truncate text-[13px] font-medium text-ink">Miftari Vision</div>
             <div className="truncate text-[12px] text-muted">
               https://{domain}
               {path.filter(Boolean).map((p, i) => (

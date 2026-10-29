@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useUi } from '@/store/ui';
 import type { L10n, Lang } from '@/lib/types';
 
-// Optika Miftari: Albanian first, English second. The `me` slot (inherited from the base build) holds the
+// Miftari Vision: Albanian first, English second. The `me` slot (inherited from the base build) holds the
 // Serbian (Latin) copy for Mitrovica; it is switched off on the storefront by default (Konfigurimet → Gjuhët).
 export const LANGS: { code: Lang; label: string; short: string; htmlLang: string }[] = [
   { code: 'sq', label: 'Shqip', short: 'SQ', htmlLang: 'sq' },

@@ -58,7 +58,7 @@ export function defaultRules(now = new Date()): BookingRules {
   // 17 February — the next one still ahead
   const indepYear = now.getMonth() > 1 || (now.getMonth() === 1 && now.getDate() > 17) ? y + 1 : y;
   return {
-    // Optika Miftari: Mon–Sat 10:00–19:30, Sunday closed
+    // Miftari Vision: Mon–Sat 10:00–19:30, Sunday closed
     hours: [
       { open: true, from: '10:00', to: '19:30' },
       { open: true, from: '10:00', to: '19:30' },

@@ -446,7 +446,7 @@ function ThemeCard() {
         <div className="flex flex-col p-5 sm:p-6">
           <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted">{t('currentTheme')}</div>
           <div className="mt-1.5 flex flex-wrap items-center gap-2.5">
-            <h2 className="text-[20px] font-bold tracking-tight text-ink">Optika Miftari</h2>
+            <h2 className="text-[20px] font-bold tracking-tight text-ink">Miftari Vision</h2>
             <span className="inline-flex h-6 items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 text-[12px] font-semibold text-emerald-800 ring-1 ring-inset ring-emerald-700/15">
               <span className="h-2 w-2 rounded-full bg-emerald-600" /> {t('live')}
             </span>

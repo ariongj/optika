@@ -1,10 +1,11 @@
-# Optika Miftari — storefront + CMS
+# Miftari Vision — storefront + CMS
 
 **Live demo:** https://ariongj.github.io/optika/ · CMS: https://ariongj.github.io/optika/admin
 
-A complete, clickable web shop and back office for **Optika Miftari** (Mitrovicë, Kosovo), rebuilt on the design and
+A complete, clickable web shop and back office for **Miftari Vision** (formerly Optika Miftari; Mitrovicë, Kosovo), rebuilt on the design and
 architecture of the [Selca](https://ariongj.github.io/Selca/) build: warm paper palette, serif headings with an italic accent,
-pill buttons, a full-bleed hero slider and a client-side CMS. Optika's own brand photography, frames and copy are carried over,
+pill buttons, a full-bleed hero slider and a client-side CMS. The 2026 Miftari Vision identity (mark, Montserrat wordmark,
+black / cream / gold) lives in `src/components/brand/Logo.tsx` and the brand colour setting. The shop's own brand photography, frames and copy are carried over,
 together with the **virtual try-on** (live camera, photo and 3D, processed on the device).
 
 - **Storefront** — home page (hero slider, categories, bestsellers, end-of-season offer with countdown, process, services,

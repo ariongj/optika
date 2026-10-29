@@ -1,4 +1,4 @@
-/* Optika Miftari service worker — fast repeat visits on phones and a basic offline fallback.
+/* Miftari Vision service worker — fast repeat visits on phones and a basic offline fallback.
  *  - hashed build files (/assets/…: JS, CSS, fonts) never change → cache-first
  *  - photos (/images/…, /og/…, icons) → stale-while-revalidate, capped
  *  - pages (navigations) → network-first, so new deploys show up at once; the cached copy is used offline

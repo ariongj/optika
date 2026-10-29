@@ -52,7 +52,7 @@ if (framedByOtherSite()) {
   link.href = window.location.href;
   link.target = '_top';
   link.rel = 'noopener';
-  link.textContent = 'Optika Miftari →';
+  link.textContent = 'Miftari Vision →';
   link.style.cssText = 'display:block;padding:24px;font:600 16px system-ui,sans-serif;color:#1c1a17';
   root.replaceChildren(link);
 } else {

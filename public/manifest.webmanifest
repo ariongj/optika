@@ -1,12 +1,12 @@
 {
-  "name": "Optika Miftari",
-  "short_name": "Optika Miftari",
+  "name": "Miftari Vision",
+  "short_name": "Miftari Vision",
   "description": "Syze optike dhe dielli, lente me recetë dhe kontroll i syve — Mitrovicë.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f7f3ee",
-  "theme_color": "#2c4a3a",
+  "theme_color": "#f7f3ee",
   "icons": [
     {
       "src": "icon-192.png",

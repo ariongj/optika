@@ -104,7 +104,7 @@ function Root() {
   const brand = useDb((s) => s.settings.brandColor);
   const { pathname } = useLocation();
   const admin = pathname === '/admin' || pathname.startsWith('/admin/');
-  // Neutral CMS theme under /admin (PDF p.07); the storefront (and the builder's preview iframe) keeps the Optika Miftari green.
+  // Neutral CMS theme under /admin (PDF p.07); the storefront (and the builder's preview iframe) keeps the Miftari Vision gold.
   useLayoutEffect(() => setAdminTheme(admin), [admin]);
   useEffect(() => applyBrand(brand), [brand]);
   useEffect(() => startCrossTabSync(), []);

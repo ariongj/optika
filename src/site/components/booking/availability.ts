@@ -161,7 +161,7 @@ export function buildIcs(ev: { uid: string; start: string; durationMin: number; 
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Optika Miftari//Rezervime//SQ',
+    'PRODID:-//Miftari Vision//Rezervime//SQ',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',

@@ -118,7 +118,7 @@ export function ThicknessCompare({ strength, onStrength }: { strength: Strength 
                 <defs>
                   <linearGradient id={`${gid}-${r.label}`} x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0" stopColor="#eef4f0" />
-                    <stop offset="1" stopColor={rec ? '#acc8b9' : '#cfddd5'} />
+                    <stop offset="1" stopColor={rec ? '#cbbfa9' : '#cfddd5'} />
                   </linearGradient>
                 </defs>
                 <motion.path
@@ -126,7 +126,7 @@ export function ThicknessCompare({ strength, onStrength }: { strength: Strength 
                   animate={{ d: lensPath(r.th.centre, r.th.edge) }}
                   transition={transition}
                   fill={`url(#${gid}-${r.label})`}
-                  stroke="#2c4a3a"
+                  stroke="#776440"
                   strokeOpacity={rec ? 0.85 : 0.45}
                   strokeWidth="1.4"
                   strokeLinejoin="round"

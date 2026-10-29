@@ -357,7 +357,7 @@ export function GeneralSection({ s, set, setExt, errors }: SecProps) {
                   <LogoMark className="h-3.5!" />
                 </span>
                 <span className="min-w-0 leading-tight">
-                  <span className="block truncate text-[14px] text-[#202124]">{s.companyName || 'Optika Miftari'}</span>
+                  <span className="block truncate text-[14px] text-[#202124]">{s.companyName || 'Miftari Vision'}</span>
                   <span className="block truncate text-[12px] text-[#4d5156]">https://{s.ext.domain || 'optikamiftari.com'}</span>
                 </span>
               </div>

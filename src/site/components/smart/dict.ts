@@ -8,7 +8,7 @@ import { defineDict } from '@/i18n';
 export const SG = defineDict({
   me: {
     pageTitle: 'Pametne naočare',
-    kicker: 'Novo u Optici Miftari',
+    kicker: 'Novo u Miftari Vision',
     title: 'Naočare koje *vide*, čuju i govore',
     text: 'Ray-Ban Meta, Oakley Meta i Meta Ray-Ban Display: kamera, zvuk i glasovni asistent u okviru naočara. Probajte ih u optici u Mitrovici — sa dioptrijskim sočivima iz naše laboratorije, kada model to dozvoljava.',
     ctaModels: 'Pogledajte modele',
@@ -178,7 +178,7 @@ export const SG = defineDict({
   },
   sq: {
     pageTitle: 'Syze inteligjente',
-    kicker: 'E re te Optika Miftari',
+    kicker: 'E re te Miftari Vision',
     title: 'Syze që *shohin*, dëgjojnë dhe flasin',
     text: 'Ray-Ban Meta, Oakley Meta dhe Meta Ray-Ban Display: kamerë, audio dhe asistent zanor në një kornizë syzesh. Provojini në optikë në Mitrovicë — me lente me dioptri nga laboratori ynë, kur modeli e lejon.',
     ctaModels: 'Shiko modelet',
@@ -348,7 +348,7 @@ export const SG = defineDict({
   },
   en: {
     pageTitle: 'Smart glasses',
-    kicker: 'New at Optika Miftari',
+    kicker: 'New at Miftari Vision',
     title: 'Glasses that *see*, hear and speak',
     text: 'Ray-Ban Meta, Oakley Meta and Meta Ray-Ban Display: a camera, audio and a voice assistant in a pair of glasses. Try them in our Mitrovica store — with prescription lenses from our own lab where the model allows.',
     ctaModels: 'See the models',
