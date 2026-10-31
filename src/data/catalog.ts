@@ -1,4 +1,5 @@
 import type { Category, L10n, Product, ProductOption, ProductSpec } from '@/lib/types';
+import { FRAMES, type FrameRow, type FrameShapeKey } from './frames';
 
 // L10n order is (me, sq, en): `me` holds the Serbian (Latin) copy for Mitrovica — off by default on the storefront.
 const T = (me: string, sq: string, en: string): L10n => ({ me, sq, en });
@@ -1289,11 +1290,183 @@ const DRAFTS: Draft[] = [
   },
 ];
 
+/* ------------------------------------------------------------------ */
+/* The shop's own frames — photographed in store (src/data/frames.ts)  */
+/* ------------------------------------------------------------------ */
+// The concept frames above came with the first demo; the real stock replaces them in the shop. They stay in the data as
+// archived, so demo orders, stock moves and purchase orders that mention them still resolve.
+const CONCEPT_FRAMES = new Set(['p-prism-m2', 'p-nova-n04', 'p-origin-o06', 'p-vortex-x1', 'p-eclipse-e05', 'p-solstice-s7', 'p-riviera-r8', 'p-meridian-m9', 'p-nera-n10', 'p-lumen-l11', 'p-arc-v3', 'p-atlas-a12']);
+
+// [spec value, adjective in a name/sentence] per language; the spec's English value drives the shop's shape filter.
+const SHAPE: Record<FrameShapeKey, { spec: L10n; name: L10n; sunName: L10n; adj: L10n }> = {
+  rectangle: { spec: T('Pravougaoni', 'Drejtkëndore', 'Rectangle'), name: T('Pravougaoni', 'Drejtkëndore', 'Rectangle'), sunName: T('Pravougaone', 'Drejtkëndore', 'Rectangle'), adj: T('pravougaon', 'drejtkëndore', 'rectangular') },
+  square: { spec: T('Kvadratni', 'Katrore', 'Square'), name: T('Kvadratni', 'Katrore', 'Square'), sunName: T('Kvadratne', 'Katrore', 'Square'), adj: T('kvadratn', 'katrore', 'square') },
+  round: { spec: T('Okrugli', 'E rrumbullakët', 'Round'), name: T('Okrugli', 'Rrethore', 'Round'), sunName: T('Okrugle', 'Rrethore', 'Round'), adj: T('okrugl', 'rrethore', 'round') },
+  oval: { spec: T('Ovalni', 'Ovale', 'Oval'), name: T('Ovalni', 'Ovale', 'Oval'), sunName: T('Ovalne', 'Ovale', 'Oval'), adj: T('ovaln', 'ovale', 'oval') },
+  panto: { spec: same('Panto'), name: same('Panto'), sunName: same('Panto'), adj: T('panto', 'panto', 'panto') },
+  aviator: { spec: T('Avijator', 'Aviator', 'Aviator'), name: T('Avijator', 'Aviator', 'Aviator'), sunName: T('Avijator', 'Aviator', 'Aviator'), adj: T('avijator', 'aviator', 'aviator') },
+  'cat-eye': { spec: same('Cat-eye'), name: same('Cat-eye'), sunName: same('Cat-eye'), adj: T('cat-eye', 'cat-eye', 'cat-eye') },
+  geometric: { spec: T('Geometrijski', 'Gjeometrike', 'Geometric'), name: T('Geometrijski', 'Gjeometrike', 'Geometric'), sunName: T('Geometrijske', 'Gjeometrike', 'Geometric'), adj: T('geometrijsk', 'gjeometrike', 'geometric') },
+  browline: { spec: same('Browline'), name: same('Browline'), sunName: same('Browline'), adj: T('browline', 'browline', 'browline') },
+  wrap: { spec: T('Sportski', 'Sportive', 'Sport'), name: T('Sportski', 'Sportive', 'Sport'), sunName: T('Sportske', 'Sportive', 'Sport'), adj: T('sportsk', 'sportive', 'sport') },
+};
+// Serbian adjectives above are stems: + "i" for a frame (okvir), + "e" for sunglasses (naočare); invariable words stay as they are.
+const srAdj = (stem: string, sun: boolean) => (/[^aeiou]$/.test(stem) && !/^(panto|cat-eye|browline|avijator)$/.test(stem) ? stem + (sun ? 'e' : 'i') : stem);
+
+const TITANIUM: Partial<Record<FrameRow['material'], { spec: L10n; of: L10n }>> = {
+  metal: { spec: T('Titan', 'Titan', 'Titanium'), of: T('od titana', 'prej titani', 'in titanium') },
+  mixed: { spec: T('Acetat i titan', 'Acetat dhe titan', 'Acetate and titanium'), of: T('od acetata i titana', 'prej acetati dhe titani', 'in acetate and titanium') },
+};
+
+const MATERIAL: Record<FrameRow['material'], { spec: L10n; of: L10n; tag: string }> = {
+  acetate: { spec: T('Acetat', 'Acetat', 'Acetate'), of: T('od acetata', 'prej acetati', 'in acetate'), tag: 'acetat' },
+  metal: { spec: T('Metal', 'Metal', 'Metal'), of: T('od metala', 'prej metali', 'in metal'), tag: 'metal' },
+  mixed: { spec: T('Acetat i metal', 'Acetat dhe metal', 'Acetate and metal'), of: T('od acetata i metala', 'prej acetati dhe metali', 'in acetate and metal'), tag: 'acetat' },
+};
+
+const AUDIENCE: Record<FrameRow['audience'], { spec: L10n; tags: string[] }> = {
+  men: { spec: T('Muškarci', 'Meshkuj', 'Men'), tags: ['meshkuj'] },
+  women: { spec: T('Žene', 'Femra', 'Women'), tags: ['femra'] },
+  unisex: { spec: T('Uniseks', 'Unisex', 'Unisex'), tags: ['meshkuj', 'femra', 'unisex'] },
+  kids: { spec: T('Deca', 'Fëmijë', 'Kids'), tags: ['femije'] },
+};
+
+const F = {
+  brand: T('Brend', 'Marka', 'Brand'),
+  model: T('Model', 'Modeli', 'Model'),
+  frameColour: T('Boja okvira', 'Ngjyra e kornizës', 'Frame colour'),
+  forWhom: T('Za', 'Për', 'For'),
+  clip: T('Klips za sunce', 'Klips dielli', 'Sun clip-on'),
+  clipValue: T('Magnetni, u kompletu', 'Magnetik, i përfshirë', 'Magnetic, included'),
+  sunRx: T('Prema modelu — pitajte u optici', 'Sipas modelit — pyetni në optikë', 'Depends on the model — ask in store'),
+};
+const low = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
+const lowL = (v: L10n): L10n => ({ me: low(v.me), sq: low(v.sq), en: low(v.en) });
+const DAY = 86400000;
+// shown first in the shop's default order and in the try-on studio (the home page's "From our display" picks)
+const FEATURED_FRAMES = new Set([
+  'guess-gu50192-o215', 'ray-ban-rb4147-d009', 'max-co-mo5176-o227', 'harley-davidson-hd50134-o232',
+  'ray-ban-rb3016-d100', 'timberland-tb50125-o214', 'vogue-eyewear-vo5313-o050', 'armani-exchange-aviator-d017',
+]);
+
+/** Names: "Brand model" when the model code is printed on the frame, else "Brand shape"; clashes get the colour, then a number. */
+function frameNames(rows: FrameRow[]): L10n[] {
+  const base = rows.map((r) => {
+    const s = SHAPE[r.shape];
+    const sun = r.kind === 'sun';
+    const label = (k: keyof L10n) => (r.brand ? `${r.brand} ${r.model ?? (sun ? s.sunName : s.name)[k]}` : '');
+    const generic: L10n = sun
+      ? T(`${s.sunName.me} naočare za sunce`, `Syze dielli ${lowL(s.name).sq}`, `${s.name.en} sunglasses`)
+      : T(`${s.name.me} okvir`, `Kornizë ${lowL(s.name).sq}`, `${s.name.en} frame`);
+    const name: L10n = r.brand ? { me: label('me'), sq: label('sq'), en: label('en') } : generic;
+    return r.clip ? T(`${name.me} + klips za sunce`, `${name.sq} + klips dielli`, `${name.en} + sun clip`) : name;
+  });
+  const out = base.map((n, i) => {
+    const clash = base.some((m, j) => j !== i && m.en === n.en);
+    return clash ? T(`${n.me} · ${lowL(rows[i].colour).me}`, `${n.sq} · ${lowL(rows[i].colour).sq}`, `${n.en} · ${lowL(rows[i].colour).en}`) : n;
+  });
+  const seen = new Map<string, number>();
+  return out.map((n) => {
+    const k = (seen.get(n.en) ?? 0) + 1;
+    seen.set(n.en, k);
+    return k > 1 ? T(`${n.me} ${k}`, `${n.sq} ${k}`, `${n.en} ${k}`) : n;
+  });
+}
+
+function frameDraft(r: FrameRow, name: L10n, now: number): Draft {
+  const sun = r.kind === 'sun';
+  const s = SHAPE[r.shape];
+  const m = { ...MATERIAL[r.material], ...(r.titanium ? TITANIUM[r.material] : undefined) };
+  const c = lowL(r.colour);
+  const tint = r.lens && (r.polarised ? T(`${r.lens.me}, polarizovana`, `${r.lens.sq}, të polarizuara`, `${r.lens.en}, polarised`) : r.lens);
+  const lens = tint && lowL(tint);
+  const adjMe = srAdj(s.adj.me, sun);
+  const short = sun
+    ? T(
+        `${adjMe.charAt(0).toUpperCase() + adjMe.slice(1)} naočare za sunce ${m.of.me}, boja ${c.me}, sočiva ${lens?.me}.`,
+        `Syze dielli ${s.adj.sq} ${m.of.sq}, ngjyrë ${c.sq}, me lente ${lens?.sq}.`,
+        `${s.adj.en.charAt(0).toUpperCase() + s.adj.en.slice(1)} sunglasses ${m.of.en}, ${c.en} with ${lens?.en} lenses.`,
+      )
+    : T(
+        `${adjMe.charAt(0).toUpperCase() + adjMe.slice(1)} dioptrijski okvir ${m.of.me}, boja ${c.me}${r.clip ? ', sa magnetnim klipsom za sunce' : ''}.`,
+        `Kornizë optike ${s.adj.sq} ${m.of.sq}, ngjyrë ${c.sq}${r.clip ? ', me klips magnetik dielli' : ''}.`,
+        `${s.adj.en.charAt(0).toUpperCase() + s.adj.en.slice(1)} optical frame ${m.of.en}, ${c.en}${r.clip ? ', with a magnetic sun clip-on' : ''}.`,
+      );
+  const brandLine = r.brand
+    ? T(`${r.brand}${r.model ? `, model ${r.model}` : ''}. `, `${r.brand}${r.model ? `, modeli ${r.model}` : ''}. `, `${r.brand}${r.model ? `, model ${r.model}` : ''}. `)
+    : T('', '', '');
+  const lab = sun
+    ? T(
+        'Većinu modela za sunce izrađujemo i sa dioptrijskim sočivima — pitajte u optici.',
+        'Shumicën e modeleve të diellit i punojmë edhe me lente me dioptri — pyetni në optikë.',
+        'Most sun styles can also be made with prescription lenses — ask in store.',
+      )
+    : T(
+        'Dioptrijska sočiva — jednožižna, za ekran ili progresivna — izrađujemo u našoj laboratoriji.',
+        'Lentet me dioptri — njëvizore, për ekran ose progresive — i punojmë në laboratorin tonë.',
+        'We make the prescription lenses — single vision, screen or progressive — in our own lab.',
+      );
+  const kids = r.audience === 'kids' ? T(' Veličina za decu.', ' Masë për fëmijë.', ' A kids’ size.') : T('', '', '');
+  const description = T(
+    `${brandLine.me}${short.me} ${lab.me}${kids.me} Okvir je fotografisan u našoj optici; veličinu i prilagođavanje potvrđujemo na licu mesta.`,
+    `${brandLine.sq}${short.sq} ${lab.sq}${kids.sq} Korniza është fotografuar në optikën tonë; masën dhe përshtatjen jua konfirmojmë në dyqan.`,
+    `${brandLine.en}${short.en} ${lab.en}${kids.en} Photographed in our store; we confirm the size and fit in person.`,
+  );
+  const specs = [
+    ...(r.brand ? [spec(F.brand, r.brand)] : []),
+    ...(r.model ? [spec(F.model, r.model)] : []),
+    spec(L.material, m.spec),
+    spec(L.shape, s.spec),
+    spec(F.frameColour, r.colour),
+    ...(tint ? [spec(L.lensType, tint)] : []),
+    ...(r.clip ? [spec(F.clip, F.clipValue)] : []),
+    spec(L.rx, sun ? F.sunRx : yes),
+    spec(F.forWhom, AUDIENCE[r.audience].spec),
+    spec(L.warranty, years(2)),
+  ];
+  const age = Math.max(1, Math.round((now - Date.parse(r.shot)) / DAY));
+  return {
+    id: `p-${r.slug}`,
+    slug: r.slug,
+    sku: r.sku,
+    categoryId: sun ? 'cat-dielli' : 'cat-optike',
+    name,
+    short,
+    description,
+    price: r.price,
+    stock: 6,
+    images: Array.from({ length: r.images }, (_, i) => `/images/p/${r.slug}-${i + 1}.webp`),
+    options: [{ id: 'color', name: L.color, type: 'swatch', values: [sw('c1', r.colour, r.hex)] }, sun ? optSunLenses : optRxLenses],
+    specs,
+    featured: FEATURED_FRAMES.has(r.slug),
+    installation: carePlus(r.price < 100 ? 15 : 25),
+    badges: age <= 45 ? ['new'] : [],
+    leadDays: sun ? 1 : 3,
+    warrantyYears: 2,
+    vendor: r.brand ?? undefined,
+    tags: [
+      sun ? 'dielli' : 'optike',
+      m.tag,
+      ...AUDIENCE[r.audience].tags,
+      ...(r.clip ? ['klips'] : []),
+      ...(r.polarised ? ['polarizuar'] : []),
+      ...(r.titanium ? ['titan'] : []),
+      ...(r.priceFromTag ? [] : ['cmimi-provizor']),
+    ],
+    age,
+  };
+}
+
+function frameDrafts(now: number): Draft[] {
+  const names = frameNames(FRAMES);
+  return FRAMES.map((r, i) => frameDraft(r, names[i], now));
+}
+
 export function buildProducts(now = new Date()): Product[] {
-  return DRAFTS.map(({ age, ...d }) => {
+  return [...DRAFTS, ...frameDrafts(now.getTime())].map(({ age, ...d }) => {
     const created = new Date(now.getTime() - age * 86400000);
     return {
-      status: 'active',
+      status: CONCEPT_FRAMES.has(d.id) ? 'archived' : 'active',
       featured: false,
       badges: [],
       sold: 0,

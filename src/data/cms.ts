@@ -17,8 +17,8 @@ const E = (): L10n => ({ me: '', sq: '', en: '' });
 const DAY = 86400000;
 const iso = (now: Date, days: number, hours = 0) => new Date(now.getTime() + days * DAY + hours * 3600000).toISOString();
 
-/** Catalogue groups used across rules, offers and purchase orders. */
-const OPTICAL = ['p-prism-m2', 'p-nova-n04', 'p-origin-o06'];
+/** Optical frames shown on the offer pages; the discounts themselves cover every optical frame (col-korniza-optike). */
+const OFFER_FRAMES = ['p-guess-gu50332-o218', 'p-timberland-tb50052-o212', 'p-adidas-rectangle-o220', 'p-max-co-square-o225'];
 
 /* ================================================================== */
 /* Products — tags, vendors, costs, barcodes, incoming, unavailable    */
@@ -78,8 +78,8 @@ export function enrichProducts(products: Product[]): Product[] {
     return {
       ...p,
       cost: round2(p.price * (COST_FACTOR[p.categoryId] ?? 0.45)),
-      vendor: x?.vendor,
-      tags: x?.tags ?? [],
+      vendor: x?.vendor ?? p.vendor,
+      tags: x?.tags ?? p.tags ?? [],
       barcode: ean13(i + 1),
       incoming: x?.incoming ?? 0,
       unavailable: x?.unavailable ?? 0,
@@ -90,8 +90,8 @@ export function enrichProducts(products: Product[]): Product[] {
 }
 
 /**
- * Discontinued line archived after it had sales. The current collection has none — every model in the
- * catalogue is live — so this id matches no product and the seed archives nothing.
+ * Discontinued line archived after it had sales. None at the moment (the concept frames of the first demo are archived
+ * in catalog.ts), so this id matches no product and the seed archives nothing more.
  */
 export const ARCHIVED_PRODUCT: string = '';
 
@@ -128,9 +128,9 @@ export function buildCollections(now: Date): Collection[] {
         'Korniza të lehta dhe lente me filtër drite blu — për zyrë, studim dhe ditë të gjata para monitorit.',
         'Light frames and blue-light filter lenses — for the office, studying and long days at the monitor.',
       ),
-      image: '/images/p/prism-m2-2.webp',
+      image: '/images/p/guess-gu50332-o218-1.webp',
       kind: 'manual',
-      productIds: ['p-lens-screen', 'p-prism-m2', 'p-nova-n04', 'p-origin-o06'],
+      productIds: ['p-lens-screen', 'p-guess-gu50332-o218', 'p-adidas-rectangle-o220', 'p-max-co-square-o225'],
       match: 'all',
       rules: [],
       sort: 'manual',
@@ -187,7 +187,7 @@ export function buildCollections(now: Date): Collection[] {
       ),
       image: '/images/lookbook/riviera.webp',
       kind: 'manual',
-      productIds: ['p-solstice-s7', 'p-riviera-r8', 'p-vortex-x1', 'p-lumen-l11', 'p-eclipse-e05', 'p-nera-n10'],
+      productIds: ['p-ray-ban-rb4147-d009', 'p-ray-ban-rb2299-d002', 'p-ray-ban-rb3016-d100', 'p-armani-exchange-aviator-d017', 'p-vogue-eyewear-geometric-d035', 'p-ray-ban-wings-ii-d101'],
       match: 'all',
       rules: [],
       sort: 'manual',
@@ -199,9 +199,9 @@ export function buildCollections(now: Date): Collection[] {
       slug: 'me-te-shiturat',
       title: T('Najprodavanije', 'Më të shiturat', 'Bestsellers'),
       description: T('Okviri i sočiva koje naši klijenti najčešće biraju.', 'Kornizat dhe lentet që klientët tanë zgjedhin më shpesh.', 'The frames and lenses our customers choose most often.'),
-      image: '/images/p/origin-o06-2.webp',
+      image: '/images/p/guess-gu50192-o215-1.webp',
       kind: 'manual',
-      productIds: ['p-origin-o06', 'p-vortex-x1', 'p-meridian-m9', 'p-prism-m2', 'p-lens-single', 'p-lens-screen', 'p-eclipse-e05', 'p-nova-n04'],
+      productIds: ['p-guess-gu50192-o215', 'p-ray-ban-rb4147-d008', 'p-harley-davidson-hd50134-o232', 'p-max-co-mo5176-o227', 'p-lens-single', 'p-lens-screen', 'p-timberland-tb50125-o214', 'p-ray-ban-mega-clubmaster-d061'],
       match: 'all',
       rules: [],
       sort: 'bestselling',
@@ -220,6 +220,24 @@ export function buildCollections(now: Date): Collection[] {
       rules: [{ field: 'tag', op: 'eq', value: 'femra' }],
       sort: 'bestselling',
       published: true,
+      createdAt: iso(now, -60),
+    },
+    {
+      id: 'col-korniza-optike',
+      slug: 'korniza-optike',
+      title: T('Svi optički okviri', 'Të gjitha kornizat optike', 'All optical frames'),
+      description: T(
+        'Svaki optički okvir iz ponude — grupa za popuste na okvire i sočiva.',
+        'Çdo kornizë optike në ofertë — grupi për zbritjet e kornizave dhe lenteve.',
+        'Every optical frame on offer — the group behind the frame and lens discounts.',
+      ),
+      image: '/images/cat/optike.webp',
+      kind: 'smart',
+      productIds: [],
+      match: 'all',
+      rules: [{ field: 'category', op: 'eq', value: 'cat-optike' }],
+      sort: 'bestselling',
+      published: false,
       createdAt: iso(now, -60),
     },
     {
@@ -265,7 +283,7 @@ export function buildCollections(now: Date): Collection[] {
       ),
       image: '/images/lookbook/still-life.webp',
       kind: 'manual',
-      productIds: ['p-vortex-x1', 'p-solstice-s7', 'p-eclipse-e05', 'p-nova-n04', 'p-meridian-m9'],
+      productIds: ['p-ray-ban-rb4147-d009', 'p-max-co-cat-eye-o224', 'p-guess-cat-eye-o230', 'p-vogue-eyewear-vo5313-o050', 'p-ray-ban-aviator-d034'],
       match: 'all',
       rules: [],
       sort: 'manual',
@@ -340,7 +358,7 @@ export function buildDiscounts(now: Date): Discount[] {
       value: 50,
       appliesTo: ALL_LINES,
       minimum: NO_MIN,
-      bxgy: { buyIds: OPTICAL, buyScope: 'products', buyQty: 1, getIds: ['p-lens-single'], getScope: 'products', getQty: 1, getType: 'percent', getValue: 50, maxUses: 2 },
+      bxgy: { buyIds: ['col-korniza-optike'], buyScope: 'collections', buyQty: 1, getIds: ['p-lens-single'], getScope: 'products', getQty: 1, getType: 'percent', getValue: 50, maxUses: 2 },
       audience: EVERYONE,
       combines: { products: true, order: true, shipping: true },
       startsAt: iso(now, -30),
@@ -415,7 +433,7 @@ export function buildDiscounts(now: Date): Discount[] {
       method: 'auto',
       valueType: 'percent',
       value: 25,
-      appliesTo: { scope: 'products', ids: OPTICAL },
+      appliesTo: { scope: 'collections', ids: ['col-korniza-optike'] },
       minimum: NO_MIN,
       audience: EVERYONE,
       combines: { products: true, order: true, shipping: true },
@@ -573,7 +591,7 @@ export function buildOffers(now: Date, discounts: Discount[], orders: Order[]): 
       status: 'active',
       startsAt: d('d-korniza-lente').startsAt,
       discountId: 'd-korniza-lente',
-      productIds: [...OPTICAL, 'p-lens-single'],
+      productIds: [...OFFER_FRAMES, 'p-lens-single'],
       badge: T('Sočiva −50%', 'Lentet −50%', 'Lenses −50%'),
       image: '/images/lookbook/atelier-optical.webp',
       landing: {
@@ -602,7 +620,7 @@ export function buildOffers(now: Date, discounts: Discount[], orders: Order[]): 
       status: 'draft',
       startsAt: iso(now, 22),
       endsAt: iso(now, 52),
-      productIds: OPTICAL, // the exam is free with any optical frame
+      productIds: OFFER_FRAMES, // the exam is free with any optical frame
       badge: T('Pregled vida', 'Kontroll i syve', 'Eye exam'),
       image: '/images/s/kontrolli.webp',
       landing: {
@@ -632,7 +650,7 @@ export function buildOffers(now: Date, discounts: Discount[], orders: Order[]): 
       startsAt: d('d-bf-optike').startsAt,
       endsAt: d('d-bf-optike').endsAt,
       discountId: 'd-bf-optike',
-      productIds: OPTICAL,
+      productIds: OFFER_FRAMES,
       badge: T('Black Friday −25%', 'Black Friday −25%', 'Black Friday −25%'),
       image: '/images/lookbook/optical-portrait.webp',
       landing: {

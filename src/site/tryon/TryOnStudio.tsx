@@ -147,7 +147,11 @@ export function TryOnStudio() {
   const setCartOpen = useUi((s) => s.setCartOpen);
   const all = useActiveProducts();
   const categories = useCategories();
-  const frames = useMemo(() => all.filter((p) => resolveTryOnFrame(p)), [all]);
+  // same order as the shop's default ("most popular"), so the studio opens on a frame people actually pick
+  const frames = useMemo(
+    () => all.filter((p) => resolveTryOnFrame(p)).sort((a, b) => b.sold - a.sold || Number(b.featured) - Number(a.featured)),
+    [all],
+  );
   const desktop = useMediaQuery(DESKTOP_QUERY);
   // Phones / tablets: CPU tracking, lighter capture, 20 fps detection. Fixed for the life of the page.
   const [lite] = useState(isHandheld);

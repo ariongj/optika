@@ -5,8 +5,9 @@
 A complete, clickable web shop and back office for **Miftari Vision** (formerly Optika Miftari; Mitrovicë, Kosovo), rebuilt on the design and
 architecture of the [Selca](https://ariongj.github.io/Selca/) build: warm paper palette, serif headings with an italic accent,
 pill buttons, a full-bleed hero slider and a client-side CMS. The 2026 Miftari Vision identity (mark, Montserrat wordmark,
-black / cream / gold) lives in `src/components/brand/Logo.tsx` and the brand colour setting. The shop's own brand photography, frames and copy are carried over,
-together with the **virtual try-on** (live camera, photo and 3D, processed on the device).
+black / cream / gold) lives in `src/components/brand/Logo.tsx` and the brand colour setting. The frames in the shop are the store's
+real stock — 339 frames from its 2026 product shoots (`src/data/frames.ts`, photos in `public/images/p`) — together with the
+**virtual try-on** (live camera, photo and 3D, processed on the device).
 
 - **Storefront** — home page (hero slider, categories, bestsellers, end-of-season offer with countdown, process, services,
   lookbook, FAQ, advice), catalogue with filters, product pages with lens choices (frame only / single vision / screen /
@@ -79,7 +80,12 @@ unchanged on the [`hostinger-php`](https://github.com/ariongj/optika/tree/hostin
 
 ## What is placeholder
 
-- Prices, stock, lens packages and most product copy — based on the previous Optika catalogue; edit them in the CMS.
+- Frame prices: 184 come from the price written on the demo lens in the shoot photos; the other 155 (all 102 sunglasses
+  and 53 untagged optical frames) are provisional — the median tag of the same brand, else a brand tier, else a flat price
+  for unbranded frames — and carry the tag `cmimi-provizor` in the CMS. Brand and
+  model are as printed on each frame (null when not legible). Stock levels are placeholders.
+- Lens packages and their prices — based on the previous Optika catalogue; edit them in the CMS. The concept frames of the
+  first demo (Prism M2, Vortex X1 …) are archived; old demo orders still refer to them.
 - Orders, customers, bookings, quotes and staff — generated demo data (fictional names, `@example.com` addresses).
 - E-mail address, NUI / TVSH numbers and bank account in *Konfigurimet* — samples to be replaced.
 - Card payment is simulated; no card data is collected. The second store's address is not listed.

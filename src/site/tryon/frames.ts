@@ -67,6 +67,11 @@ const LENS = {
   goldMirror: { color: '#a37c32', opacity: 0.9, mirror: true },
   silverMirror: { color: '#8a949a', opacity: 0.9, mirror: true },
   blueMirror: { color: '#2b5a8a', opacity: 0.9, mirror: true },
+  purple: { color: '#33203a', opacity: 0.8 },
+  purpleGradient: { color: '#3a2340', opacity: 0.85, gradientTo: 0.3 },
+  blueGradient: { color: '#1d2b45', opacity: 0.85, gradientTo: 0.3 },
+  redGradient: { color: '#4a1a1a', opacity: 0.82, gradientTo: 0.3 },
+  pinkLight: { color: '#b0606e', opacity: 0.42 },
 } satisfies Record<string, LensTint>;
 
 const GOLD = '#c2a15a';
@@ -208,7 +213,7 @@ const SHAPE_WORDS: [RegExp, FrameShape][] = [
   [/aviat|avijat/i, 'aviator'],
   [/cat|mace/i, 'cat-eye'],
   [/panto/i, 'panto'],
-  [/round|rrumb|okrug/i, 'round'],
+  [/round|rrumb|okrug|oval/i, 'round'],
   [/wrap|sport|štit/i, 'wrap'],
   [/geom/i, 'geometric'],
   [/square|katror|kvadrat/i, 'square'],
@@ -233,10 +238,11 @@ export function resolveTryOnFrame(p: Product | undefined): TryOnFrame | null {
   const lensWidth = size ? Number(size[1]) : 51;
   const bridgeWidth = size ? Number(size[2]) : 19;
   const kind = p.categoryId === 'cat-dielli' ? 'sun' : 'optical';
-  const metal = /titan|metal|steel|çelik/i.test(specText(p, /material/i));
+  const material = specText(p, /material/i);
+  const metal = /titan|metal|steel|çelik/i.test(material);
   return {
     shape,
-    build: metal ? 'metal' : 'acetate',
+    build: metal ? (/acetat/i.test(material) ? 'mixed' : 'metal') : 'acetate',
     kind,
     frameWidth: width >= 110 && width <= 170 ? width : lensWidth * 2 + bridgeWidth + 16,
     lensWidth,
@@ -258,6 +264,26 @@ export function lookFor(p: Product, frame: TryOnFrame, colorId: string | undefin
   const first = Object.values(frame.colors)[0];
   const swatch = colorOption(p)?.values.find((v) => v.id === colorId)?.swatch;
   if (!swatch && first) return first;
-  const lens = frame.kind === 'sun' ? LENS.smoke : LENS.clear;
+  const lens = frame.kind === 'sun' ? sunLens(p) : LENS.clear;
   return look(swatch || '#2a2725', frame.build === 'metal' ? 'metal' : 'gloss', lens);
+}
+
+/** Sun lens tint from the product's "Lenses" spec ("Brown gradient", "Blue mirror", "Green G-15" …); smoke otherwise. */
+function sunLens(p: Product): LensTint {
+  const s = specText(p, /^lenses$|^lentet$/i).toLowerCase();
+  if (/mirror|pasqyr/.test(s)) return /blu/.test(s) ? LENS.blueMirror : /gold|ari/.test(s) ? LENS.goldMirror : LENS.silverMirror;
+  if (/g-15/.test(s)) return LENS.mineralGreen;
+  if (/gradient/.test(s)) {
+    if (/brown|kafe/.test(s)) return LENS.brownGradient;
+    if (/purple|vjollc/.test(s)) return LENS.purpleGradient;
+    if (/blue|blu/.test(s)) return LENS.blueGradient;
+    if (/red|kuqe/.test(s)) return LENS.redGradient;
+    return LENS.smokeGradient;
+  }
+  if (/pink/.test(s)) return LENS.pinkLight;
+  if (/purple/.test(s)) return LENS.purple;
+  if (/green/.test(s)) return LENS.green;
+  if (/brown/.test(s)) return LENS.brown;
+  if (/dark grey/.test(s)) return LENS.deepGrey;
+  return LENS.smoke;
 }

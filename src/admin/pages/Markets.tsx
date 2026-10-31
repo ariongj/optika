@@ -317,7 +317,7 @@ export default function Markets() {
   const freeRule = useMemo(() => discounts.find((d) => d.kind === 'shipping' && d.method === 'auto' && d.status === 'active' && d.minimum.type === 'amount'), [discounts]);
   const samples = useMemo(() => {
     const pick = (id: string) => products.find((p) => p.id === id && p.status === 'active');
-    const list = [pick('p-prism-m2'), pick('p-vortex-x1'), pick('p-lens-progressive')].filter((p): p is NonNullable<typeof p> => !!p);
+    const list = [pick('p-guess-gu50192-o215'), pick('p-ray-ban-rb4147-d009'), pick('p-lens-progressive')].filter((p): p is NonNullable<typeof p> => !!p);
     return list.length ? list : products.filter((p) => p.status === 'active').slice(0, 3);
   }, [products]);
 

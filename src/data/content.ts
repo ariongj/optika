@@ -202,9 +202,18 @@ export function buildHome(now = new Date()): HomeSection[] {
       enabled: true,
       data: {
         eyebrow: T('Izdvajamo', 'Të veçuara', 'Featured'),
-        title: T('Najprodavanije ove *sezone*', 'Më të shiturat e *sezonit*', 'This season’s *bestsellers*'),
-        mode: 'bestsellers',
-        productIds: [],
+        title: T('Iz naše *vitrine*', 'Nga vitrina *jonë*', 'From our *display*'),
+        mode: 'manual',
+        productIds: [
+          'p-guess-gu50192-o215',
+          'p-ray-ban-rb4147-d009',
+          'p-max-co-mo5176-o227',
+          'p-harley-davidson-hd50134-o232',
+          'p-ray-ban-rb3016-d100',
+          'p-timberland-tb50125-o214',
+          'p-vogue-eyewear-vo5313-o050',
+          'p-armani-exchange-aviator-d017',
+        ],
       },
     },
     {

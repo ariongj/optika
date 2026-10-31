@@ -72,7 +72,7 @@ export const BADGES: BadgeKey[] = ['new', 'bestseller', 'premium'];
 /* ------------------------------------------------------------------ */
 /* Frame shape — read from the "Shape / Forma" spec                    */
 /* ------------------------------------------------------------------ */
-export const SHAPE_ORDER = ['rectangle', 'square', 'round', 'panto', 'aviator', 'cat-eye', 'geometric', 'sport'];
+export const SHAPE_ORDER = ['rectangle', 'square', 'round', 'oval', 'panto', 'browline', 'aviator', 'cat-eye', 'geometric', 'sport'];
 
 export function shapeOf(p: Product): { key: string; label: L10n } | null {
   const spec = p.specs.find((s) => /^(shape|forma|oblik)$/i.test(s.label.en.trim()) || /^(forma|oblik)$/i.test(s.label.sq.trim()));
