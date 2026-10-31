@@ -3,30 +3,36 @@ import type { Lang, Unit } from './types';
 const LOCALE: Record<Lang, string> = { me: 'de-DE', sq: 'de-DE', en: 'en-IE' };
 const DATE_LOCALE: Record<Lang, string> = { me: 'sr-Latn', sq: 'sq-AL', en: 'en-GB' };
 
+// Building an Intl formatter costs far more than using one (a shop grid formats hundreds of prices per render),
+// so each locale + options combination is built once and reused.
+const FORMATTERS = new Map<string, Intl.NumberFormat | Intl.DateTimeFormat>();
+function numberFormat(locale: string, opts: Intl.NumberFormatOptions) {
+  const key = `n|${locale}|${JSON.stringify(opts)}`;
+  let f = FORMATTERS.get(key) as Intl.NumberFormat | undefined;
+  if (!f) FORMATTERS.set(key, (f = new Intl.NumberFormat(locale, opts)));
+  return f;
+}
+function dateFormat(locale: string, opts: Intl.DateTimeFormatOptions) {
+  const key = `d|${locale}|${JSON.stringify(opts)}`;
+  let f = FORMATTERS.get(key) as Intl.DateTimeFormat | undefined;
+  if (!f) FORMATTERS.set(key, (f = new Intl.DateTimeFormat(locale, opts)));
+  return f;
+}
+
 /** 1.249,00 € (ME/SQ) — €1,249.00 (EN) */
 export function money(value: number, lang: Lang = 'sq', opts: { decimals?: boolean } = {}) {
-  const decimals = opts.decimals ?? true;
-  return new Intl.NumberFormat(LOCALE[lang], {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: decimals ? 2 : 0,
-    maximumFractionDigits: decimals ? 2 : 0,
-  }).format(value);
+  const d = (opts.decimals ?? true) ? 2 : 0;
+  return numberFormat(LOCALE[lang], { style: 'currency', currency: 'EUR', minimumFractionDigits: d, maximumFractionDigits: d }).format(value);
 }
 
 /** Compact money for charts/KPIs: 12,4k € */
 export function moneyCompact(value: number, lang: Lang = 'sq') {
   if (Math.abs(value) < 10000) return money(value, lang, { decimals: false });
-  return new Intl.NumberFormat(LOCALE[lang], {
-    style: 'currency',
-    currency: 'EUR',
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  }).format(value);
+  return numberFormat(LOCALE[lang], { style: 'currency', currency: 'EUR', notation: 'compact', maximumFractionDigits: 1 }).format(value);
 }
 
 export function num(value: number, lang: Lang = 'sq', maxDecimals = 2) {
-  return new Intl.NumberFormat(LOCALE[lang], { maximumFractionDigits: maxDecimals }).format(value);
+  return numberFormat(LOCALE[lang], { maximumFractionDigits: maxDecimals }).format(value);
 }
 
 /* Chrome ships without Albanian Intl data: `Intl.DateTimeFormat('sq-AL')` silently falls back to English
@@ -49,7 +55,7 @@ const SQ_DAYS = ['e diel', 'e hënë', 'e martë', 'e mërkurë', 'e enjte', 'e 
 const SQ_DAYS_SHORT = ['Die', 'Hën', 'Mar', 'Mër', 'Enj', 'Pre', 'Sht'];
 
 function sqParts(d: Date, opts: Intl.DateTimeFormatOptions) {
-  return new Intl.DateTimeFormat('en-GB', opts)
+  return dateFormat('en-GB', opts)
     .formatToParts(d)
     .map((p) => {
       if (p.type === 'month') {
@@ -73,9 +79,9 @@ export function date(iso: string | Date, lang: Lang = 'sq', opts: Intl.DateTimeF
   const d = typeof iso === 'string' ? new Date(iso) : iso;
   try {
     if (lang === 'sq' && !SQ_NATIVE) return sqParts(d, opts);
-    return new Intl.DateTimeFormat(DATE_LOCALE[lang], opts).format(d);
+    return dateFormat(DATE_LOCALE[lang], opts).format(d);
   } catch {
-    return new Intl.DateTimeFormat('en-GB', opts).format(d);
+    return dateFormat('en-GB', opts).format(d);
   }
 }
 

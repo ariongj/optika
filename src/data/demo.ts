@@ -3,7 +3,7 @@
 import type { CartItem, Collection, Customer, Discount, Inquiry, Lang, Order, OrderEvent, OrderStatus, PaymentMethod, Product, Settings } from '@/lib/types';
 import { priceCart, defaultOptions } from '@/lib/pricing';
 import { lt } from '@/i18n';
-import { pick, rng, slugify, weighted } from '@/lib/utils';
+import { cmpIso, pick, rng, slugify, weighted } from '@/lib/utils';
 
 /* ------------------------------------------------------------------ */
 /* Customers — Mitrovicë and the rest of Kosovo                        */
@@ -266,7 +266,7 @@ export function generateOrders(products: Product[], settings: Settings, discount
     }
   }
   // number in date order (today's orders are back-dated above, so generation order ≠ time order)
-  orders.sort((a, b) => a.createdAt.localeCompare(b.createdAt)).forEach((o, i) => {
+  orders.sort((a, b) => cmpIso(a.createdAt, b.createdAt)).forEach((o, i) => {
     o.id = `o_${1001 + i}`;
     o.number = `${prefix}${1001 + i}`;
   });
@@ -359,5 +359,5 @@ export function generateInquiries(now = new Date(), seed = 7): Inquiry[] {
       seen: status !== 'new',
       scheduledAt,
     } satisfies Inquiry;
-  }).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }).sort((a, b) => cmpIso(b.createdAt, a.createdAt));
 }

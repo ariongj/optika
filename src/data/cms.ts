@@ -9,7 +9,7 @@ import type {
 } from '@/lib/types';
 import { defaultOptions } from '@/lib/pricing';
 import { refundForLines } from '@/lib/orders';
-import { round2 } from '@/lib/utils';
+import { cmpIso, round2 } from '@/lib/utils';
 
 // L10n order is (me, sq, en): `me` holds the Serbian (Latin) copy — switched off on the storefront by default.
 const T = (me: string, sq: string, en: string): L10n => ({ me, sq, en });
@@ -1046,7 +1046,7 @@ export function buildBookings(now: Date, inquiries: Inquiry[]): { bookings: Book
     if (/fëmij|djali|vajza|child/i.test(text) && free('sv-femije').length) return 'sv-femije';
     return SERVICE_FOR_INQUIRY.find(([re]) => re.test(q.service ?? ''))?.[1] ?? 'sv-kontrolli';
   };
-  for (const q of out.sort((a, b) => a.createdAt.localeCompare(b.createdAt))) {
+  for (const q of out.sort((a, b) => cmpIso(a.createdAt, b.createdAt))) {
     if (q.status !== 'scheduled') continue;
     const svc = serviceFor(q);
     const slot = svc ? (free(svc)[0] ?? (q.type === 'measurement' ? free('sv-kontrolli')[0] : undefined)) : undefined;
@@ -1064,7 +1064,7 @@ export function buildBookings(now: Date, inquiries: Inquiry[]): { bookings: Book
     slot.note = q.message.length > 90 ? `${q.message.slice(0, 88).trimEnd()}…` : q.message;
     q.scheduledAt = slot.start;
   }
-  return { bookings, inquiries: out.sort((a, b) => b.createdAt.localeCompare(a.createdAt)) };
+  return { bookings, inquiries: out.sort((a, b) => cmpIso(b.createdAt, a.createdAt)) };
 }
 
 /* ================================================================== */
@@ -1156,7 +1156,7 @@ export function enrichInquiries(now: Date, inquiries: Inquiry[]): Inquiry[] {
       followUpAt: iso(now, 1),
     },
   );
-  return out.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return out.sort((a, b) => cmpIso(b.createdAt, a.createdAt));
 }
 
 /* ================================================================== */
@@ -1303,7 +1303,7 @@ export function buildMovements(now: Date, orders: Order[], returns: ReturnReques
       list.push({ id: `mv-${n++}`, productId: l.productId, delta: -l.qty, reason: 'sale', at: iso(now, days), by: 'web', ref: o.number });
     }
   }
-  return list.sort((a, b) => b.at.localeCompare(a.at));
+  return list.sort((a, b) => cmpIso(b.at, a.at));
 }
 
 /* ================================================================== */

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type DragEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type DragEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { toast } from 'sonner';
 import { ArrowUpRight, Box, CalendarCheck, Camera, CameraOff, CircleAlert, ImagePlus, Loader2, LockKeyhole, RefreshCw, Ruler, ScanFace, ShoppingBag, SlidersHorizontal, SwitchCamera, Trash2, Video } from 'lucide-react';
@@ -177,6 +177,10 @@ export function TryOnStudio() {
       setParams(next, { replace: true, preventScrollReset: true });
     }
   };
+  // stable handler for the memoised pickers (choose itself closes over the current URL params)
+  const chooseRef = useRef(choose);
+  chooseRef.current = choose;
+  const pick = useCallback((p: Product) => chooseRef.current(p), []);
   // ?produkt= changed from outside (e.g. "Try on" from a product page while already here).
   useEffect(() => {
     const p = findWanted(wanted);
@@ -1470,7 +1474,7 @@ export function TryOnStudio() {
       </p>
 
       <div className="mt-4">
-        <FrameStrip products={frames} categories={categories} filter={filter} onFilter={setFilter} value={product.id} onChange={(p) => choose(p)} />
+        <FrameStrip products={frames} categories={categories} filter={filter} onFilter={setFilter} value={product.id} onChange={pick} />
       </div>
 
       <div className="mt-3.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
@@ -1556,7 +1560,7 @@ export function TryOnStudio() {
         <>
           {/* ------------------------------------------------------------ frame picker */}
           <div className="min-w-0 lg:col-start-1 lg:row-start-2">
-            <FramePicker products={frames} categories={categories} filter={filter} onFilter={setFilter} value={product.id} onChange={(p) => choose(p)} />
+            <FramePicker products={frames} categories={categories} filter={filter} onFilter={setFilter} value={product.id} onChange={pick} />
           </div>
 
           {/* ------------------------------------------------------------ panel */}

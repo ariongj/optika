@@ -34,6 +34,11 @@ export function round2(n: number) {
   return Math.round(n * 100) / 100;
 }
 
+/** Sort comparator for ISO timestamps — plain string order, far cheaper than localeCompare (ICU collation). */
+export function cmpIso(a: string, b: string) {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
 /** Deterministic PRNG (mulberry32) — demo data is stable for a given seed. */
 export function rng(seed: number) {
   let a = seed >>> 0;

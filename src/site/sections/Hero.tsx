@@ -22,7 +22,11 @@ export function HeroSection({ slides, autoplay }: { slides: HeroSlide[]; autopla
   const t = useDict(site);
   const tc = useDict(common);
   const [i, setI] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [hover, setHover] = useState(false);
+  // scrolled past the hero: stop the slideshow (and its animations) instead of running it unseen
+  const [offscreen, setOffscreen] = useState(false);
+  const paused = hover || offscreen;
+  const ref = useRef<HTMLElement>(null);
   const count = slides.length;
   const go = useCallback((n: number) => setI(((n % count) + count) % count), [count]);
   // Only slides that are showing (or next up) get an image, so a phone downloads one photo first, not all of them.
@@ -34,6 +38,14 @@ export function HeroSection({ slides, autoplay }: { slides: HeroSlide[]; autopla
   }, [count, i]);
 
   useEffect(() => {
+    const el = ref.current;
+    if (!el || !('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver(([e]) => setOffscreen(!e.isIntersecting));
+    io.observe(el);
+    return () => io.disconnect();
+  }, [count]);
+
+  useEffect(() => {
     setSeen((prev) => (prev.has(i) && prev.has((i + 1) % count) ? prev : new Set([...prev, i, (i + 1) % count])));
   }, [i, count]);
 
@@ -42,9 +54,10 @@ export function HeroSection({ slides, autoplay }: { slides: HeroSlide[]; autopla
 
   return (
     <section
+      ref={ref}
       className="relative isolate h-[calc(100svh-36px)] min-h-[600px] max-h-[1000px] overflow-hidden bg-ink sm:min-h-[640px]"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
       onTouchStart={(e) => {
         touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       }}
@@ -71,6 +84,7 @@ export function HeroSection({ slides, autoplay }: { slides: HeroSlide[]; autopla
                   fetchPriority={k === 0 ? 'high' : 'low'}
                   decoding={k === 0 ? 'sync' : 'async'}
                   className={cn('h-full w-full object-cover will-change-transform', k === i ? 'animate-[kenburns_9s_ease-out_both]' : '')}
+                  style={offscreen ? { animationPlayState: 'paused' } : undefined}
                 />
               </picture>
             )}
@@ -134,8 +148,12 @@ export function HeroSection({ slides, autoplay }: { slides: HeroSlide[]; autopla
                 <button key={sl.id} onClick={() => go(k)} className="group grid h-10 w-12 place-items-center sm:w-14" aria-label={tc('slideN', { n: k + 1 })} aria-current={k === i}>
                   <span className="relative h-[3px] w-full overflow-hidden rounded-full bg-white/25">
                     <span
-                      className={cn('absolute inset-y-0 left-0 rounded-full bg-white', k < i || (k === i && !autoplay) ? 'w-full' : 'w-0')}
-                      style={k === i && autoplay ? { animation: `heroprogress ${DURATION}ms linear forwards`, animationPlayState: paused ? 'paused' : 'running' } : undefined}
+                      className="absolute inset-0 origin-left rounded-full bg-white"
+                      style={
+                        k === i && autoplay
+                          ? { animation: `heroprogress ${DURATION}ms linear forwards`, animationPlayState: paused ? 'paused' : 'running' }
+                          : { transform: `scaleX(${k <= i ? 1 : 0})` }
+                      }
                       onAnimationEnd={k === i && autoplay ? () => go(i + 1) : undefined}
                     />
                   </span>

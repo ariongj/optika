@@ -165,9 +165,10 @@
   from { transform: scale(1.12); }
   to { transform: scale(1); }
 }
+/* transform, not width: a width animation re-lays-out the whole page on every frame */
 @keyframes heroprogress {
-  from { width: 0%; }
-  to { width: 100%; }
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
 }
 
 /* ------------------------------------------------------------------ */

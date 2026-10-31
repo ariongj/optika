@@ -1361,8 +1361,10 @@ function frameNames(rows: FrameRow[]): L10n[] {
     const name: L10n = r.brand ? { me: label('me'), sq: label('sq'), en: label('en') } : generic;
     return r.clip ? T(`${name.me} + klips za sunce`, `${name.sq} + klips dielli`, `${name.en} + sun clip`) : name;
   });
+  const uses = new Map<string, number>();
+  for (const n of base) uses.set(n.en, (uses.get(n.en) ?? 0) + 1);
   const out = base.map((n, i) => {
-    const clash = base.some((m, j) => j !== i && m.en === n.en);
+    const clash = uses.get(n.en)! > 1;
     return clash ? T(`${n.me} · ${lowL(rows[i].colour).me}`, `${n.sq} · ${lowL(rows[i].colour).sq}`, `${n.en} · ${lowL(rows[i].colour).en}`) : n;
   });
   const seen = new Map<string, number>();

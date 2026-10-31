@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { memo, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Check, ChevronDown, Columns2, Copy, Download, Glasses, Info, Ruler, ScanFace, RotateCcw, Trash2, X } from 'lucide-react';
 import type { Category, Product, ProductOption } from '@/lib/types';
 import { Img } from '@/components/ui/misc';
@@ -187,12 +187,28 @@ interface PickerProps {
   onChange: (p: Product) => void;
 }
 
-export function FramePicker({ products, categories, filter, onFilter, value, onChange }: PickerProps) {
+/** The frames of the active filter, a page at a time (the shop has hundreds). A selected frame that is not on the
+ *  shown pages yet (e.g. opened from its product page) leads the list. */
+function usePaged(products: Product[], filter: string, value: string | undefined, page: number) {
+  const all = filter === 'all' ? products : products.filter((p) => p.categoryId === filter);
+  const [paging, setPaging] = useState({ filter, n: page });
+  const n = paging.filter === filter ? paging.n : page;
+  const shown = all.slice(0, n);
+  const lead = shown.some((p) => p.id === value) ? undefined : all.find((p) => p.id === value);
+  return {
+    shown: lead ? [lead, ...shown] : shown,
+    rest: Math.max(0, all.length - n - (lead ? 1 : 0)),
+    more: () => setPaging({ filter, n: n + page }),
+  };
+}
+
+// memo: the studio re-renders on every tracking status / loading tick; the picker only changes with its props
+export const FramePicker = memo(function FramePicker({ products, categories, filter, onFilter, value, onChange }: PickerProps) {
   const t = useDict(TRY);
   const l = useL();
   const lang = useLang();
   const cats = categories.filter((c) => products.some((p) => p.categoryId === c.id));
-  const shown = filter === 'all' ? products : products.filter((p) => p.categoryId === filter);
+  const { shown, rest, more } = usePaged(products, filter, value, 24);
   const pill = (on: boolean) =>
     cn('inline-flex h-10 shrink-0 items-center rounded-full px-4 text-[13px] font-semibold transition', on ? 'bg-ink text-paper' : 'border border-line bg-white text-ink-soft hover:border-ink/30 hover:text-ink');
   return (
@@ -240,19 +256,26 @@ export function FramePicker({ products, categories, filter, onFilter, value, onC
           );
         })}
       </div>
+      {rest > 0 && (
+        <div className="mt-6 flex justify-center">
+          <button type="button" onClick={more} className="inline-flex h-11 items-center rounded-full border border-line bg-white px-5 text-[14px] font-semibold text-ink transition hover:border-ink/30">
+            {t('moreFrames', { n: Math.min(24, rest) })}
+          </button>
+        </div>
+      )}
     </section>
   );
-}
+});
 
 /* ------------------------------------------------------------------ */
 /* Frame strip (phones / tablets): filter chips + 64 px snap thumbnails  */
 /* ------------------------------------------------------------------ */
-export function FrameStrip({ products, categories, filter, onFilter, value, onChange }: PickerProps) {
+export const FrameStrip = memo(function FrameStrip({ products, categories, filter, onFilter, value, onChange }: PickerProps) {
   const t = useDict(TRY);
   const l = useL();
   const stripRef = useRef<HTMLDivElement>(null);
   const cats = categories.filter((c) => products.some((p) => p.categoryId === c.id));
-  const shown = filter === 'all' ? products : products.filter((p) => p.categoryId === filter);
+  const { shown, rest, more } = usePaged(products, filter, value, 30);
 
   // Keep the selected frame in view — scroll the strip only, never the page.
   useEffect(() => {
@@ -297,10 +320,15 @@ export function FrameStrip({ products, categories, filter, onFilter, value, onCh
             </button>
           );
         })}
+        {rest > 0 && (
+          <button type="button" onClick={more} aria-label={t('moreFrames', { n: Math.min(30, rest) })} className="w-[68px] shrink-0 snap-start text-center">
+            <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-white text-[13px] font-bold tabular-nums text-ink ring-1 ring-line">+{rest}</span>
+          </button>
+        )}
       </div>
     </section>
   );
-}
+});
 
 /* ------------------------------------------------------------------ */
 /* Compare tray (last two captures)                                     */
