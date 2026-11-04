@@ -106,6 +106,15 @@
   .container-x {
     @apply mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-8;
   }
+  /* A long page's off-screen sections: no layout or paint until they come near. The size is a guess at the typical
+     height without padding, close enough that the page doesn't jump as they render. Jumps: scrollToSection. */
+  .below-fold {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 820px;
+    @media (min-width: 640px) {
+      contain-intrinsic-size: auto 650px;
+    }
+  }
   .eyebrow {
     @apply text-[0.7rem] font-bold uppercase tracking-[0.22em] text-brand-600;
   }

@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router';
+import { scrollToSection } from '@/lib/utils';
 import { LayoutDashboard } from 'lucide-react';
 import { Header } from './Header';
 import { Footer } from './Footer';
@@ -32,7 +33,7 @@ function useOpenedOnce(open: boolean) {
  */
 function PageLoading() {
   return (
-    <div className="grid min-h-[100svh] place-items-center" aria-busy="true">
+    <div data-page-loading className="grid min-h-[100svh] place-items-center" aria-busy="true">
       <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink/15 border-t-brand-600" />
     </div>
   );
@@ -85,19 +86,33 @@ export function SiteLayout() {
     document.documentElement.lang = LANGS.find((l) => l.code === lang)?.htmlLang ?? 'sq';
   }, [lang]);
 
-  // In-page anchors after navigation (/#rezervo, /sherbimet#lab…): smooth-scroll to the target. The booking
-  // anchor opens the booking modal when the page has no inline booking form (e.g. the homepage CTA block is off).
+  // In-page anchors after navigation (/#rezervo, /sherbimet#lab…): smooth-scroll to the target. Pages are lazy, so on a
+  // first visit the target only exists once the page's code has arrived: keep looking until then, plus a moment for a
+  // page that streams its sections in. The booking anchor opens the booking modal when the page has no inline booking
+  // form (e.g. the homepage CTA block is off).
   useEffect(() => {
     if (!location.hash) return;
     const id = decodeURIComponent(location.hash.slice(1));
-    const t = setTimeout(() => {
+    let t = 0;
+    let waited = 0;
+    let grace = 6;
+    const look = () => {
       const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      else if (id === BOOK_ID) {
+      if (el) {
+        scrollToSection(el);
+        return;
+      }
+      const pageLoading = document.querySelector('[data-page-loading]') !== null;
+      if (pageLoading ? waited++ < 150 : grace-- > 0) {
+        t = window.setTimeout(look, 100);
+        return;
+      }
+      if (id === BOOK_ID) {
         openBooking();
         navigate({ pathname: location.pathname, search: location.search }, { replace: true, preventScrollReset: true });
       }
-    }, 80);
+    };
+    t = window.setTimeout(look, 80);
     return () => clearTimeout(t);
   }, [location.pathname, location.search, location.hash, location.key, navigate]);
 

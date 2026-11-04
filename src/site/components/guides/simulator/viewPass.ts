@@ -175,6 +175,12 @@ function halfTexture(format: THREE.PixelFormat, channels: number) {
   return t;
 }
 
+/** Compiles a scene's shaders, off the main thread on browsers that can. (`compileAsync` logs a warning on the others.) */
+export async function compileShaders(renderer: THREE.WebGLRenderer, scene: THREE.Object3D, camera: THREE.Camera) {
+  if (renderer.extensions.has('KHR_parallel_shader_compile')) await renderer.compileAsync(scene, camera);
+  else renderer.compile(scene, camera);
+}
+
 export function createViewPass(renderer: THREE.WebGLRenderer) {
   const bend = halfTexture(THREE.RGFormat, 2);
   const power = halfTexture(THREE.RGBAFormat, 4);
@@ -252,6 +258,8 @@ export function createViewPass(renderer: THREE.WebGLRenderer) {
       bend.needsUpdate = true;
       power.needsUpdate = true;
     },
+    /** Compile the shader ahead of the first draw. */
+    prepare: () => compileShaders(renderer, quadScene, quadCamera),
     /** Draw the view through the lens. */
     render(p: ViewParams) {
       uniforms.uLens.value = p.reveal > 0 ? 1 : 0;

@@ -8,7 +8,7 @@ import { createGlass, createStagePass } from './glass';
 import { lensStats, materialOf, sag, solveLens, type SolvedLens } from './lensMath';
 import { buildLensMap, FIT_Y, INSET, solveAddition, type Addition, type AdditionDesign, type LensMap } from './lensOptics';
 import { loadPlate, type Plate, type SceneId } from './plates';
-import { createViewPass, type ViewParams } from './viewPass';
+import { compileShaders, createViewPass, type ViewParams } from './viewPass';
 
 export type LensKind = 'single' | 'progressive' | 'screen' | 'photo' | 'sun';
 export type ProgressiveLevel = 'standard' | 'premium' | 'individual';
@@ -185,11 +185,6 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
   const hdr = renderer.extensions.has('EXT_color_buffer_float') || renderer.extensions.has('EXT_color_buffer_half_float');
   const cube = new THREE.WebGLCubeRenderTarget(256, { type: hdr ? THREE.HalfFloatType : THREE.UnsignedByteType, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter, magFilter: THREE.LinearFilter });
   const cubeCamera = new THREE.CubeCamera(0.1, 60, cube);
-  /** Render targets don't survive a lost context, so this can run again. */
-  function captureEnvironment() {
-    cubeCamera.update(renderer, envScene);
-  }
-  captureEnvironment();
   const kit = createGlass(cube.texture);
   stage.add(kit.wall);
   const pass = createStagePass(renderer);
@@ -291,8 +286,43 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
     }
   }
 
+  /**
+   * The 3D view is prepared the first time it is opened: most visits start on the view through the lens. The picture on
+   * the canvas stays until it is ready, so the click answers at once. Render targets don't survive a lost context, so this can run again.
+   */
+  let stageReady = false;
+  let stagePreparing = false;
+  function prepareStage() {
+    stagePreparing = true;
+    if (labels.busy) labels.busy.style.opacity = '1';
+    cubeCamera.update(renderer, envScene);
+    renderer.setRenderTarget(pass.main);
+    const compiled = compileShaders(renderer, stage, camera);
+    renderer.setRenderTarget(null);
+    compiled
+      .catch(() => {
+        // a shader that failed here reports itself on first use
+      })
+      .finally(() => {
+        stageReady = true;
+        stagePreparing = false;
+        if (labels.busy && !loading.size) labels.busy.style.opacity = '0';
+        invalidate();
+      });
+  }
+
   // ---------------------------------------------------------------- view through the lens
   const view = createViewPass(renderer);
+  let viewReady = false;
+  view
+    .prepare()
+    .catch(() => {
+      // a shader that failed here reports itself on first use
+    })
+    .finally(() => {
+      viewReady = true;
+      invalidate();
+    });
   const plates = new Map<SceneId, Plate>();
   const additions = new Map<string, Addition>();
   let lensMap: LensMap | undefined;
@@ -381,6 +411,8 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
       near.inner.localToWorld(tmp.set(x, y, z));
       tmp.project(camera);
       placeLabel(id, (tmp.x * 0.5 + 0.5) * cssW, (-tmp.y * 0.5 + 0.5) * cssH);
+      const el = labels[id];
+      if (el) el.style.visibility = 'visible';
     };
     const edgeZ = (x: number) => {
       const r = Math.abs(x - solved!.ox);
@@ -463,6 +495,10 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
     let moving = false;
 
     if (s.mode === 'lens') {
+      if (!stageReady) {
+        if (!stagePreparing) prepareStage();
+        return false;
+      }
       // morph to the new prescription / material
       const speed = reduceMotion ? 1 : 1 - Math.exp(-dt * 11);
       const ds = s.sph - curSph;
@@ -521,6 +557,7 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
         if (!loading.has(s.scene) && (failures.get(s.scene) ?? 0) < MAX_TRIES && now >= retryAt) fetchPlate(s.scene);
         return false;
       }
+      if (!viewReady) return false;
       if (plate !== shownPlate) {
         view.setPlate(plate);
         shownPlate = plate;
@@ -599,7 +636,7 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
   const onRestored = () => {
     lensMapKey = '';
     lensReady = false;
-    captureEnvironment();
+    stageReady = false;
     invalidate();
   };
   canvas.addEventListener('webglcontextlost', onLost);

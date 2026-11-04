@@ -89,7 +89,7 @@ export default function LensGuide() {
       </section>
 
       {/* 03 — lens types */}
-      <section className="py-20 sm:py-28">
+      <section className="below-fold py-20 sm:py-28">
         <div className="container-x">
           <Reveal>
             <SectionHeading
@@ -110,7 +110,7 @@ export default function LensGuide() {
       </section>
 
       {/* 04 — coatings */}
-      <section className="border-y border-line bg-white/50 py-20 sm:py-28">
+      <section className="below-fold border-y border-line bg-white/50 py-20 sm:py-28">
         <div className="container-x">
           <Reveal>
             <SectionHeading eyebrow={t('coatEyebrow')} title={t('coatTitle')} subtitle={t('coatText')} />
@@ -122,7 +122,7 @@ export default function LensGuide() {
       </section>
 
       {/* 05 — index table */}
-      <section className="py-20 sm:py-28">
+      <section className="below-fold py-20 sm:py-28">
         <div className="container-x">
           <Reveal>
             <SectionHeading eyebrow={t('indexEyebrow')} title={t('indexTitle')} subtitle={t('indexText')} />
@@ -135,7 +135,7 @@ export default function LensGuide() {
       </section>
 
       {/* 06 — prescription */}
-      <section id="receta" className="scroll-mt-24 border-y border-line bg-sand/40 py-20 sm:py-28">
+      <section id="receta" className="below-fold scroll-mt-24 border-y border-line bg-sand/40 py-20 sm:py-28">
         <div className="container-x">
           <Reveal>
             <SectionHeading eyebrow={t('rxEyebrow')} title={t('rxTitle')} subtitle={t('rxText')} />
@@ -147,7 +147,7 @@ export default function LensGuide() {
       </section>
 
       {/* Optical Lab */}
-      <section className="pt-20 sm:pt-28">
+      <section className="below-fold pt-20 sm:pt-28">
         <div className="container-x">
           <Reveal>
             <LabBlock />
@@ -157,7 +157,7 @@ export default function LensGuide() {
 
       {/* Advice */}
       {advice.length > 0 && (
-        <section className="pt-20 sm:pt-28">
+        <section className="below-fold pt-20 sm:pt-28">
           <div className="container-x">
             <Reveal>
               <SectionHeading
@@ -182,7 +182,7 @@ export default function LensGuide() {
       )}
 
       {/* FAQ */}
-      <section className="py-20 sm:py-28">
+      <section className="below-fold py-20 sm:py-28">
         <div className="container-x grid gap-12 lg:grid-cols-[1fr_1.4fr] lg:gap-20">
           <Reveal>
             <SectionHeading eyebrow={t('faqEyebrow')} title={t('faqTitle')} />

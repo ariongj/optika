@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type { HomeSection, HomeSectionType } from '@/lib/types';
+import { scrollToSection } from '@/lib/utils';
 import { useDb } from '@/store/db';
 
 export type SectionData<T extends HomeSectionType> = Extract<HomeSection, { type: T }>['data'];
@@ -19,7 +20,7 @@ export function useHomeData<T extends HomeSectionType>(type: T): SectionData<T> 
 /** Smooth-scroll to a section; waits a few frames for one that is still being rendered (pages that stream in). */
 export function scrollToId(id: string, tries = 30) {
   const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (el) scrollToSection(el);
   else if (tries > 0) requestAnimationFrame(() => scrollToId(id, tries - 1));
 }
 

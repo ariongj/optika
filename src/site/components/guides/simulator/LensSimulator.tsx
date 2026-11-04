@@ -695,7 +695,7 @@ function Toggle({ on, onClick, icon, children }: { on: boolean; onClick: () => v
 /** A point on the 3D lens; the engine moves it, this only draws the dot and the reading. */
 function Marker({ bind, label, value, className }: { bind: (el: HTMLElement | null) => void; label: string; value: string; className: string }) {
   return (
-    <div ref={bind} className="pointer-events-none absolute left-0 top-0 h-0 w-0 will-change-transform" aria-hidden>
+    <div ref={bind} style={{ visibility: 'hidden' }} className="pointer-events-none absolute left-0 top-0 h-0 w-0 will-change-transform" aria-hidden>
       <span className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-white shadow-[0_0_0_3px_rgba(255,255,255,0.22)]" />
       <span className={cn('absolute whitespace-nowrap rounded-lg bg-black/60 px-2 py-1 text-[11px] leading-tight text-paper/75 backdrop-blur-md', className)}>
         {label} <b className="block text-[13.5px] font-bold tabular-nums text-white">{value}</b>

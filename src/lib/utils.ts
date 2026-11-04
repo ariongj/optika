@@ -4,6 +4,18 @@ export function cn(...inputs: ClassValue[]) {
   return clsx(inputs);
 }
 
+/**
+ * Smooth-scroll to a section. Long pages leave off-screen sections unrendered (`.below-fold`) with estimated heights,
+ * which would land the jump in the wrong place, so the ones on the way are rendered first.
+ */
+export function scrollToSection(el: Element) {
+  for (const s of document.querySelectorAll<HTMLElement>('.below-fold')) {
+    if (s !== el && !(s.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING)) break;
+    s.style.contentVisibility = 'visible';
+  }
+  el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+}
+
 export function uid(prefix = 'id') {
   return `${prefix}_${Math.random().toString(36).slice(2, 8)}${Date.now().toString(36).slice(-4)}`;
 }
