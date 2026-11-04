@@ -105,13 +105,13 @@ function ProjectTile({ project: p, size, onOpen }: { project: Project; size: Siz
     <button
       type="button"
       onClick={onOpen}
-      aria-label={`${t('view')}: ${l(p.title)}`}
       className={cn('group relative block w-full overflow-hidden rounded-3xl bg-ink text-left lg:aspect-auto lg:h-full', ASPECT[size])}
     >
+      <span className="sr-only">{t('view')}: </span>
       <Img
         src={p.image}
         small={!big}
-        alt={l(p.title)}
+        alt=""
         className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1.4s] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-[1.06]"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/15 to-transparent" />

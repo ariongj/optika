@@ -68,7 +68,7 @@ export function MapCard({ className }: { className?: string }) {
         href={settings.mapUrl}
         target="_blank"
         rel="noreferrer"
-        aria-label={c('map_open')}
+        aria-hidden
         tabIndex={-1}
         className="group relative block min-h-[340px] flex-1 overflow-hidden bg-[#ece4d7] sm:min-h-[400px]"
       >

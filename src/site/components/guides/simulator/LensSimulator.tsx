@@ -416,8 +416,8 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
                       onChange={(v) => setWithLens(v === 'with')}
                       className="flex gap-1"
                       options={[
-                        { id: 'without' as const, label: t('withoutLens'), className: 'min-h-12! text-[14.5px]! sm:px-5! sm:text-[15px]!', visual: <EyeOff className="h-4 w-4" aria-hidden /> },
-                        { id: 'with' as const, label: t('withLens'), className: 'min-h-12! text-[14.5px]! sm:px-5! sm:text-[15px]!', visual: <Glasses className="h-4 w-4" aria-hidden /> },
+                        { id: 'without' as const, label: t('withoutLens'), className: 'min-h-12! whitespace-nowrap text-[14.5px]! max-sm:px-3! sm:px-5! sm:text-[15px]!', visual: <EyeOff className="h-4 w-4" aria-hidden /> },
+                        { id: 'with' as const, label: t('withLens'), className: 'min-h-12! whitespace-nowrap text-[14.5px]! max-sm:px-3! sm:px-5! sm:text-[15px]!', visual: <Glasses className="h-4 w-4" aria-hidden /> },
                       ]}
                     />
                   </div>
