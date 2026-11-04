@@ -1,10 +1,8 @@
 // Lens simulator stage: one WebGL canvas with two views: the real thick lenses in 3D, and the world seen through them.
 // Drawn on demand: a control change, a drag or a short morph asks for frames, and at rest nothing runs at all.
 import * as THREE from 'three';
-import { toCreasedNormals } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import type { FrameLook, FrameShape } from '@/site/tryon/frames';
+import type { FrameShape } from '@/site/tryon/frames';
 import { NOMINAL_WIDTH } from '@/site/tryon/pose';
-import { createGlassesModel } from '@/site/tryon/renderer';
 import { clamp } from '@/lib/utils';
 import { createGlass, createStagePass } from './glass';
 import { lensStats, materialOf, sag, solveLens, type SolvedLens } from './lensMath';
@@ -24,7 +22,6 @@ export interface SimState {
   lensHeight: number;
   bridge: number;
   pd: number;
-  showFrame: boolean;
   heat: boolean;
   scene: SceneId;
   kind: LensKind;
@@ -46,6 +43,8 @@ export interface Simulator {
   update(state: SimState): void;
   nudge(dx: number, dy: number): void;
   dispose(): void;
+  /** Start over after `onSceneFailed`. */
+  retryScenes(): void;
 }
 
 const SEG = 96;
@@ -62,7 +61,6 @@ const LEVELS: Record<ProgressiveLevel, Omit<AdditionDesign, 'add'>> = {
 /** How dark a photochromic gets per scene (behind a windscreen it barely reacts: the catalogue says so too). */
 const PHOTO_DARK: Record<SceneId, number> = { street: 0.72, drive: 0.14, desk: 0 };
 
-const FRAME_LOOK: FrameLook = { frame: '#17171a', finish: 'gloss', hardware: '#b9a982', lens: { color: '#ffffff', opacity: 0 } };
 
 function halton(index: number, base: number) {
   let f = 1;
@@ -154,13 +152,14 @@ function studioEnvironment() {
   panel(13, 3, '#ffffff', 4.5, 1.5, 7.5, 6); // overhead softbox, in front of the lens
   panel(0.9, 12, '#ffffff', 9, -8.5, 1, 6); // long strip on the left
   panel(3.5, 12, '#f2ece2', 1.15, 9, 0, 1.5); // broad soft fill on the right: a sheen, not a stripe
-  panel(9, 0.8, '#bcd2ff', 3, 0, -7.5, 5); // cool low strip
-  panel(26, 26, '#26272a', 1, 0, 0, -13); // dim wall behind, for the sides of the frame
+  panel(9, 2.4, '#bcd2ff', 1.1, 0, -7.5, 5, 0.1); // cool low fill, too soft to read as a shape in the lens
+  panel(26, 26, '#26272a', 1, 0, 0, -13); // dim wall behind, for the sides of the lens
   panel(26, 26, '#1c1c1e', 1, 0, 13, -2);
   return env;
 }
 
-export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotion: boolean): Simulator {
+/** `onPainted` fires once, when the first real picture is on the canvas; `onSceneFailed` when a scene has stopped retrying. */
+export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotion: boolean, events: { onPainted?: () => void; onSceneFailed?: () => void } = {}): Simulator {
   const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: false });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -174,7 +173,7 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
   let disposed = false;
   let raf = 0;
   let state: SimState | null = null;
-  let frameKey = '';
+  let fitKey = '';
   let curSph = 0;
   let curN = 1.5;
   let solved: SolvedLens | null = null;
@@ -182,35 +181,23 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
 
   // ---------------------------------------------------------------- 3D lens stage
   const stage = new THREE.Scene();
-  const pmrem = new THREE.PMREMGenerator(renderer);
   const envScene = studioEnvironment();
   const hdr = renderer.extensions.has('EXT_color_buffer_float') || renderer.extensions.has('EXT_color_buffer_half_float');
   const cube = new THREE.WebGLCubeRenderTarget(256, { type: hdr ? THREE.HalfFloatType : THREE.UnsignedByteType, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter, magFilter: THREE.LinearFilter });
   const cubeCamera = new THREE.CubeCamera(0.1, 60, cube);
-  let envRt: THREE.WebGLRenderTarget | null = null;
-  /** Blurred for the frame's materials, sharp for the glass. Render targets don't survive a lost context, so this can run again. */
+  /** Render targets don't survive a lost context, so this can run again. */
   function captureEnvironment() {
-    envRt?.dispose();
-    envRt = pmrem.fromScene(envScene, 0.038);
-    stage.environment = envRt.texture;
     cubeCamera.update(renderer, envScene);
   }
   captureEnvironment();
   const kit = createGlass(cube.texture);
   stage.add(kit.wall);
   const pass = createStagePass(renderer);
-  const key = new THREE.DirectionalLight(0xffffff, 2.2);
-  key.position.set(3, 4, 5);
-  const rim = new THREE.DirectionalLight(0xffe6bd, 3);
-  rim.position.set(-4, 1.5, -3);
-  stage.add(key, rim);
 
   const camera = new THREE.PerspectiveCamera(24, 1.5, 0.1, 80);
   const pair = new THREE.Group();
   pair.rotation.order = 'YXZ';
   stage.add(pair);
-  const frameSlot = new THREE.Group();
-  pair.add(frameSlot);
 
   const frontGeo = surfaceGeometry(false);
   const backGeo = surfaceGeometry(true);
@@ -287,45 +274,15 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
     backGeo.attributes.position.needsUpdate = true;
     edgeGeo.attributes.position.needsUpdate = true;
     edgeGeo.attributes.normal.needsUpdate = true;
-    // the bevel sits a third of the way back from the front of the edge, in the middle of the frame's rim
+    // the bevel sits a third of the way back from the front of the edge
     const seat = -(frontSum / SEG - thickSum / SEG / 3);
     for (const r of lensRoots) r.inner.position.z = seat * (NOMINAL_WIDTH / frameWidth(state!));
   }
 
   const frameWidth = (s: SimState) => 2 * s.lensWidth + s.bridge + 14;
 
-  function rebuildFrame(s: SimState) {
-    frameSlot.traverse((o) => {
-      const mesh = o as THREE.Mesh;
-      mesh.geometry?.dispose();
-      const mats = Array.isArray(mesh.material) ? mesh.material : mesh.material ? [mesh.material] : [];
-      for (const m of mats) {
-        (m as THREE.MeshStandardMaterial).map?.dispose();
-        m.dispose();
-      }
-    });
-    frameSlot.clear();
-    const width = frameWidth(s);
-    const model = createGlassesModel({
-      shape: s.shape,
-      build: 'acetate',
-      look: FRAME_LOOK,
-      dims: { frameWidth: width, lensWidth: s.lensWidth, lensHeight: s.lensHeight, bridgeWidth: s.bridge, templeLength: 140 },
-    });
-    model.traverse((o) => {
-      if (o.userData.flatLens) o.visible = false;
-      // this close, the extruded rim's flat facets would show in the softbox reflections; only those: bevels keep their edges
-      const mesh = o as THREE.Mesh;
-      if (mesh.isMesh && !o.userData.flatLens) {
-        const smooth = toCreasedNormals(mesh.geometry, 0.22);
-        mesh.geometry.dispose();
-        mesh.geometry = smooth;
-      }
-    });
-    (model.userData.occluder as THREE.Object3D).visible = false;
-    frameSlot.add(model);
-
-    const unit = NOMINAL_WIDTH / width;
+  function placeLenses(s: SimState) {
+    const unit = NOMINAL_WIDTH / frameWidth(s);
     const centre = ((s.lensWidth + s.bridge) * unit) / 2;
     for (const r of lensRoots) {
       r.root.position.set(r.side * centre, 0, 0);
@@ -388,6 +345,15 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
   let cssW = 4;
   let cssH = 4;
   let last = 0;
+  const REVEAL_SECONDS = 1.05;
+  /** How far the lens has opened, 0 to 1: it grows out of the blurred world when it first appears and on the with / without switch. */
+  let reveal = reduceMotion ? 1 : 0;
+  let painted = false;
+  function markPainted() {
+    if (painted) return;
+    painted = true;
+    events.onPainted?.();
+  }
 
   function fit() {
     cssW = Math.max(4, host.clientWidth);
@@ -434,13 +400,21 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
     placeLabel('far', ...px(0, 15));
     placeLabel('mid', ...px(INSET * 0.5, FIT_Y - len / 2));
     placeLabel('near', ...px(-10, FIT_Y - len - 2));
+    // they point at places on the lens: not before it has opened
+    for (const id of ['far', 'mid', 'near'] as const) {
+      const el = labels[id];
+      if (el) el.style.opacity = reveal > 0.85 ? '1' : '0';
+    }
   }
 
   /** Each scene is two images, fetched the first time it is opened. The old picture stays up until they arrive. */
-  let loading: SceneId | null = null;
+  const MAX_TRIES = 3;
+  const loading = new Set<SceneId>();
+  const failures = new Map<SceneId, number>();
+  let retryAt = 0;
   let shownPlate: Plate | null = null;
   function fetchPlate(id: SceneId) {
-    loading = id;
+    loading.add(id);
     if (labels.busy) labels.busy.style.opacity = '1';
     const wide = canvas.width > 1100;
     loadPlate(id, wide, renderer.capabilities.getMaxAnisotropy())
@@ -452,11 +426,19 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
         plates.set(id, plate);
       })
       .catch(() => {
-        // a failed fetch must not leave the note up: the next visit to this scene tries again
+        // tried again shortly, a few times; opening the scene again starts over
+        const count = (failures.get(id) ?? 0) + 1;
+        failures.set(id, count);
+        if (count >= MAX_TRIES) {
+          events.onSceneFailed?.();
+          return;
+        }
+        retryAt = performance.now() + 2500;
+        window.setTimeout(invalidate, 2600);
       })
       .finally(() => {
-        loading = null;
-        if (labels.busy) labels.busy.style.opacity = '0';
+        loading.delete(id);
+        if (labels.busy && !loading.size) labels.busy.style.opacity = '0';
         invalidate();
       });
   }
@@ -469,16 +451,6 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
     kit.setLook(s.heat, stageTint(s));
     kit.setChannel(channel, curN, materialOf(s.n).abbe);
     camera.updateMatrixWorld();
-    if (s.showFrame) {
-      // the frame alone first: the glass looks up what is behind it here, and can't read the picture it is drawing into
-      for (const r of lensRoots) r.root.visible = false;
-      kit.wall.visible = false;
-      renderer.setRenderTarget(pass.frameOnly);
-      renderer.render(stage, camera);
-      for (const r of lensRoots) r.root.visible = true;
-      kit.wall.visible = true;
-    }
-    kit.setFrame(s.showFrame ? pass.frameOnly.texture : null, camera);
     renderer.setRenderTarget(pass.main);
     renderer.render(stage, camera);
   }
@@ -513,10 +485,9 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
       const ease = 1 - Math.pow(1 - intro, 3);
       pair.rotation.y = yaw - (1 - ease) * 0.75;
       pair.rotation.x = pitch;
-      frameSlot.visible = s.showFrame;
       const fov = THREE.MathUtils.degToRad(camera.fov);
-      const halfW = s.showFrame ? 1.2 : 1.04;
-      const distance = Math.max(halfW / (Math.tan(fov / 2) * camera.aspect), (s.showFrame ? 0.9 : 0.78) / Math.tan(fov / 2));
+      const halfW = 1.04;
+      const distance = Math.max(halfW / (Math.tan(fov / 2) * camera.aspect), 0.78 / Math.tan(fov / 2));
       camera.position.set(0, 0, distance);
       camera.lookAt(0, 0, 0);
       camera.updateMatrixWorld();
@@ -536,6 +507,7 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
       if (sample === 0) {
         pass.present(false);
         placeLensLabels();
+        markPainted();
         if (!moving) sample = 1;
         return true;
       }
@@ -546,7 +518,7 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
     } else {
       const plate = plates.get(s.scene);
       if (!plate) {
-        if (loading !== s.scene) fetchPlate(s.scene);
+        if (!loading.has(s.scene) && (failures.get(s.scene) ?? 0) < MAX_TRIES && now >= retryAt) fetchPlate(s.scene);
         return false;
       }
       if (plate !== shownPlate) {
@@ -554,19 +526,25 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
         shownPlate = plate;
       }
       refreshLensMap(s);
+      const target = s.withLens ? 1 : 0;
+      if (reveal !== target) {
+        reveal = reduceMotion ? target : target > reveal ? Math.min(target, reveal + dt / REVEAL_SECONDS) : Math.max(target, reveal - dt / REVEAL_SECONDS);
+        moving = true;
+      }
       const params: ViewParams = {
-        withLens: s.withLens,
+        reveal: reveal * reveal * (3 - 2 * reveal),
         sph: s.sph,
         acc: s.acc,
         abbe: materialOf(s.n).abbe,
         filter: lensFilter(s),
-        polar: s.withLens && s.kind === 'sun' && s.polar ? 1 : 0,
-        zones: s.zones && s.withLens && s.kind === 'progressive',
+        polar: reveal > 0 && s.kind === 'sun' && s.polar ? 1 : 0,
+        zones: s.zones && reveal > 0 && s.kind === 'progressive',
         yaw: panYaw,
         pitch: panPitch,
       };
       view.render(params);
       placeZoneLabels(s);
+      markPainted();
     }
     return moving;
   }
@@ -643,9 +621,9 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
       const prev = state;
       state = next;
       const key2 = `${next.shape}:${next.lensWidth}:${next.lensHeight}:${next.bridge}`;
-      if (key2 !== frameKey) {
-        frameKey = key2;
-        rebuildFrame(next);
+      if (key2 !== fitKey) {
+        fitKey = key2;
+        placeLenses(next);
         lensReady = false;
       }
       if (!prev) {
@@ -655,10 +633,16 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
       } else if (prev.pd !== next.pd || prev.heat !== next.heat) {
         lensReady = false;
       }
+      if (prev && prev.scene !== next.scene) failures.delete(next.scene);
       invalidate();
     },
     nudge(dx, dy) {
       rotate(dx, dy);
+    },
+    retryScenes() {
+      failures.clear();
+      retryAt = 0;
+      invalidate();
     },
     dispose() {
       disposed = true;
@@ -675,15 +659,6 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
       view.dispose();
       kit.dispose();
       pass.dispose();
-      frameSlot.traverse((o) => {
-        const mesh = o as THREE.Mesh;
-        mesh.geometry?.dispose();
-        const mats = Array.isArray(mesh.material) ? mesh.material : mesh.material ? [mesh.material] : [];
-        for (const m of mats) {
-          (m as THREE.MeshStandardMaterial).map?.dispose();
-          m.dispose();
-        }
-      });
       frontGeo.dispose();
       backGeo.dispose();
       edgeGeo.dispose();
@@ -693,8 +668,6 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
         (mesh.material as THREE.Material | undefined)?.dispose();
       });
       cube.dispose();
-      envRt?.dispose();
-      pmrem.dispose();
       renderer.dispose();
       canvas.remove();
     },

@@ -36,9 +36,6 @@ precision highp float;
 uniform mat4 modelMatrix;
 uniform samplerCube tEnv;
 uniform sampler2D tRim;
-uniform sampler2D tFrame;
-uniform float uFrameOn;
-uniform mat4 uViewProj;
 uniform float uN;
 uniform float uCf;
 uniform float uCb;
@@ -118,14 +115,7 @@ vec3 world(vec3 p, vec3 d) {
 }
 
 vec3 throughLens(vec3 p, vec3 d) {
-  vec3 c = world(p, d);
-  if (uFrameOn > 0.5 && d.z < 0.0) {
-    // the frame's own rim and temples, seen through the glass
-    vec4 q = uViewProj * vec4(p + d * 0.22, 1.0);
-    vec4 f = texture2D(tFrame, q.xy / q.w * 0.5 + 0.5);
-    if (f.a > 0.004) c = mix(c, f.rgb / f.a, min(f.a, 1.0));
-  }
-  return c * uTint;
+  return world(p, d) * uTint;
 }
 
 vec3 heatOf(vec2 q) {
@@ -143,7 +133,7 @@ vec3 inside(vec3 p, vec3 d) {
     float len = min(min(tf, tb), 400.0);
     vec3 q = p + d * len;
     if (beyondRim(q)) {
-      // the cut edge: a ground surface scatters what reaches it, and the frame's groove hides most of it
+      // the cut edge: a ground surface scatters what reaches it
       float a = 0.0;
       float b = len;
       for (int k = 0; k < 6; k++) {
@@ -153,7 +143,7 @@ vec3 inside(vec3 p, vec3 d) {
       }
       q = p + d * b;
       vec3 outward = toWorld(normalize(vec3(q.xy, 0.0)));
-      sum += t * exp(-uAbsorb * b) * env(outward, 5.0) * mix(0.42, 0.075, uFrameOn);
+      sum += t * exp(-uAbsorb * b) * env(outward, 5.0) * 0.7;
       return sum;
     }
     t *= exp(-uAbsorb * len);
@@ -250,9 +240,6 @@ export function createGlass(envCube: THREE.Texture) {
   const uniforms = {
     tEnv: { value: envCube },
     tRim: { value: rimTex },
-    tFrame: { value: null as THREE.Texture | null },
-    uFrameOn: { value: 0 },
-    uViewProj: { value: new THREE.Matrix4() },
     uN: { value: 1.5 },
     uCf: { value: 0 },
     uCb: { value: 0 },
@@ -334,11 +321,6 @@ export function createGlass(envCube: THREE.Texture) {
       if (channel < 0) uniforms.uMask.value.set(1, 1, 1);
       else uniforms.uMask.value.set(channel === 0 ? 3 : 0, channel === 1 ? 3 : 0, channel === 2 ? 3 : 0);
     },
-    setFrame(texture: THREE.Texture | null, camera: THREE.Camera) {
-      uniforms.tFrame.value = texture;
-      uniforms.uFrameOn.value = texture ? 1 : 0;
-      uniforms.uViewProj.value.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
-    },
     dispose() {
       rimTex.dispose();
       front.dispose();
@@ -360,7 +342,6 @@ export function createStagePass(renderer: THREE.WebGLRenderer) {
   const options = { type, depthBuffer: true, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter, magFilter: THREE.LinearFilter };
   const main = new THREE.WebGLRenderTarget(4, 4, { ...options, samples: 4 });
   const still = new THREE.WebGLRenderTarget(4, 4, { ...options, depthBuffer: false });
-  const frameOnly = new THREE.WebGLRenderTarget(4, 4, { type, depthBuffer: true, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
 
   const VERT = `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
   const blend = new THREE.ShaderMaterial({
@@ -402,11 +383,9 @@ void main() {
 
   return {
     main,
-    frameOnly,
     setSize(w: number, h: number) {
       main.setSize(w, h);
       still.setSize(w, h);
-      frameOnly.setSize(w, h);
     },
     /** Add what `main` holds to the running average. `k` counts from 1. */
     accumulate(k: number) {
@@ -427,7 +406,6 @@ void main() {
     dispose() {
       main.dispose();
       still.dispose();
-      frameOnly.dispose();
       blend.dispose();
       show.dispose();
       quad.geometry.dispose();

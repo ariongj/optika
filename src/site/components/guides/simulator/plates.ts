@@ -28,7 +28,15 @@ async function bitmap(url: string) {
 
 export async function loadPlate(id: SceneId, wide: boolean, anisotropy: number): Promise<Plate> {
   const width = wide ? WIDTH.wide : WIDTH.small;
-  const [colorImage, dataImage] = await Promise.all([bitmap(asset(`/images/sim/${id}${wide ? '' : '-sm'}.webp`)), bitmap(asset(`/images/sim/${id}-d.webp`))]);
+  const [colorLoad, dataLoad] = await Promise.allSettled([bitmap(asset(`/images/sim/${id}${wide ? '' : '-sm'}.webp`)), bitmap(asset(`/images/sim/${id}-d.webp`))]);
+  if (colorLoad.status === 'rejected' || dataLoad.status === 'rejected') {
+    // the one that did arrive is a large decoded image: free it now, this can be retried
+    if (colorLoad.status === 'fulfilled') colorLoad.value.close();
+    if (dataLoad.status === 'fulfilled') dataLoad.value.close();
+    throw new Error(`scene ${id} did not load`);
+  }
+  const colorImage = colorLoad.value;
+  const dataImage = dataLoad.value;
 
   const color = new THREE.Texture(colorImage as unknown as HTMLImageElement);
   color.flipY = false;

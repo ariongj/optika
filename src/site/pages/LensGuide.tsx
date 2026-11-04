@@ -1,16 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { ArrowDown, ArrowRight, Box, CalendarCheck, FlaskConical, Phone, Ruler, ShieldCheck } from 'lucide-react';
+import { ArrowDown, ArrowRight, FlaskConical, Phone, Ruler, ShieldCheck } from 'lucide-react';
 import type { Post } from '@/lib/types';
-import { Accordion, Reveal } from '@/components/ui/misc';
+import { Accent, Accordion, Reveal } from '@/components/ui/misc';
 import { Button, ButtonLink } from '@/components/ui/Button';
-import { PageHero, SectionHeading } from '@/site/components/SectionHeading';
+import { Breadcrumbs, SectionHeading } from '@/site/components/SectionHeading';
 import { PostCard } from '@/site/components/content/PostCard';
 import { usePublishedPosts } from '@/site/components/content/posts';
 import { CtaBand } from '@/site/components/company/Blocks';
 import { scrollToId, telHref } from '@/site/components/company/data';
 import { isLensPackage } from '@/site/components/product/optical';
-import { openBooking } from '@/site/components/utility/Booking';
 import { usePageTitle } from '@/site/layout/SiteLayout';
 import { LensChooser } from '@/site/components/guides/LensChooser';
 import { LensSimulator } from '@/site/components/guides/simulator/LensSimulator';
@@ -30,7 +29,7 @@ const FACTS = [
   { icon: Ruler, key: 'fact3' },
 ] as const;
 
-/** /lentet — lens guide: chooser, 3D simulator, lens types, coatings, index table, prescription explainer. */
+/** /lentet — lens guide: 3D simulator first, then chooser, lens types, coatings, index table, prescription explainer. */
 export default function LensGuide() {
   const t = useDict(LG);
   const ts = useDict(SIM);
@@ -45,31 +44,39 @@ export default function LensGuide() {
   const [use, setUse] = useState<LensUse | undefined>(() => asUse(params.get('per')));
   const [strength, setStrength] = useState<Strength | undefined>(() => asStrength(params.get('fuqia')));
   usePageTitle(t('title'));
+  // the chooser sits below the simulator: a link that pre-answers it should land on it
+  const toChooser = !!(params.get('per') || params.get('fuqia'));
+  useEffect(() => {
+    if (toChooser) scrollToId('zgjedhesi');
+  }, [toChooser]);
 
   return (
     <>
-      <PageHero image="/images/misc/lens.webp" crumbs={[{ label: t('title') }]} eyebrow={t('heroEyebrow')} title={t('heroTitle')} subtitle={t('heroText')}>
-        <div className="mt-9 flex flex-wrap items-center gap-3">
-          <Button size="lg" onClick={() => scrollToId('zgjedhesi')} iconRight={<ArrowDown className="h-4 w-4" />}>
-            {t('heroCta')}
-          </Button>
-          <Button size="lg" variant="outlineLight" onClick={() => scrollToId('simulatori')} icon={<Box className="h-4 w-4" />}>
-            {ts('heroCta')}
-          </Button>
-          <Button size="lg" variant="outlineLight" onClick={() => openBooking('exam')} icon={<CalendarCheck className="h-4 w-4" />}>
-            {t('bookExam')}
-          </Button>
+      {/* 01 — the simulator opens the page: it is what people came to see, so the engine starts right away */}
+      <section id="simulatori" className="scroll-mt-24 bg-ink pb-16 pt-6 text-paper sm:pb-20 sm:pt-8">
+        <div className="container-x">
+          <Breadcrumbs items={[{ label: t('title') }]} tone="light" />
+          <h1 className="display mt-3 max-w-4xl text-[32px] leading-[1.06] text-white sm:text-[44px]">
+            <Accent text={ts('title')} accentClassName="text-brand-200!" />
+          </h1>
+          <p className="mt-2.5 max-w-3xl text-[15px] leading-relaxed text-paper/75 sm:text-base">{ts('text')}</p>
+          <LensSimulator strength={strength} onStrength={setStrength} lenses={lenses} />
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-x-8 gap-y-5 border-t border-white/10 pt-7">
+            <ul className="flex flex-wrap gap-x-7 gap-y-3 text-[13.5px] font-medium text-paper/75">
+              {FACTS.map(({ icon: Icon, key }) => (
+                <li key={key} className="inline-flex items-center gap-2">
+                  <Icon className="h-4 w-4 text-brand-200" /> {t(key)}
+                </li>
+              ))}
+            </ul>
+            <Button size="lg" variant="outlineLight" onClick={() => scrollToId('zgjedhesi')} iconRight={<ArrowDown className="h-4 w-4" />}>
+              {t('heroCta')}
+            </Button>
+          </div>
         </div>
-        <ul className="mt-10 flex flex-wrap gap-x-7 gap-y-3 text-[13.5px] font-medium text-paper/75">
-          {FACTS.map(({ icon: Icon, key }) => (
-            <li key={key} className="inline-flex items-center gap-2">
-              <Icon className="h-4 w-4 text-brand-200" /> {t(key)}
-            </li>
-          ))}
-        </ul>
-      </PageHero>
+      </section>
 
-      {/* 01 — chooser */}
+      {/* 02 — chooser */}
       <section id="zgjedhesi" className="scroll-mt-24 pb-20 pt-16 sm:pb-28 sm:pt-24">
         <div className="container-x">
           <Reveal>
@@ -78,16 +85,6 @@ export default function LensGuide() {
           <div className="mt-10 sm:mt-12">
             <LensChooser use={use} strength={strength} onUse={setUse} onStrength={setStrength} lenses={lenses} />
           </div>
-        </div>
-      </section>
-
-      {/* 02 — simulator (three.js loads only when this comes near the viewport) */}
-      <section id="simulatori" className="scroll-mt-24 bg-ink py-20 text-paper sm:py-28">
-        <div className="container-x">
-          <Reveal>
-            <SectionHeading tone="light" eyebrow={ts('eyebrow')} title={ts('title')} subtitle={ts('text')} />
-          </Reveal>
-          <LensSimulator strength={strength} onStrength={setStrength} lenses={lenses} />
         </div>
       </section>
 

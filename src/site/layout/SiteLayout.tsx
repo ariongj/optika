@@ -45,18 +45,20 @@ function DemoBadge() {
   // cards to the bottom-left — keep the badge out of their way on phones.
   const { pathname } = useLocation();
   const tryOn = pathname.startsWith('/provo-virtualisht') || pathname.startsWith('/syze-inteligjente');
+  // The lens simulator opens on its stage and scene photos: only the icon there, where it clears them, and the words on hover or focus.
+  const compact = pathname.startsWith('/lentet');
   if (!settings.demoBanner) return null;
   return (
     <Link
       to="/admin"
       aria-label={`${t('demoBanner')} ${t('demoBannerCta')}`}
-      className={`group fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-3 z-30 ${tryOn ? 'hidden lg:flex' : 'flex'} items-center gap-2.5 rounded-full bg-ink/90 p-1.5 text-[12px] font-semibold text-paper shadow-xl ring-1 ring-white/10 backdrop-blur transition-all hover:bg-ink sm:left-4 sm:pr-4`}
+      className={`group fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-3 z-30 ${compact ? 'hidden min-[1400px]:flex' : tryOn ? 'hidden lg:flex' : 'flex'} items-center gap-2.5 rounded-full bg-ink/90 p-1.5 text-[12px] font-semibold text-paper shadow-xl ring-1 ring-white/10 backdrop-blur transition-all hover:bg-ink sm:left-4 sm:pr-4`}
     >
       <span className="grid h-8 w-8 place-items-center rounded-full bg-brand-600 sm:h-7 sm:w-7">
         <LayoutDashboard className="h-3.5 w-3.5" />
       </span>
-      <span className="hidden sm:inline">{t('demoBanner')}</span>
-      <span className="hidden text-brand-200 group-hover:text-white sm:inline">{t('demoBannerCta')} →</span>
+      <span className={compact ? 'hidden group-hover:inline group-focus-visible:inline' : 'hidden sm:inline'}>{t('demoBanner')}</span>
+      <span className={`hidden text-brand-200 group-hover:text-white ${compact ? 'group-hover:inline group-focus-visible:inline' : 'sm:inline'}`}>{t('demoBannerCta')} →</span>
     </Link>
   );
 }

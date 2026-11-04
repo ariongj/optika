@@ -28,6 +28,7 @@ uniform vec2 uRes;
 uniform float uMmPerPx;
 uniform vec2 uHalf;
 uniform float uLens;
+uniform float uReveal;
 uniform float uTanPerPx;
 uniform float uK;
 uniform float uSph;
@@ -66,9 +67,9 @@ void main() {
   vec2 rel = vUv - 0.5;
   vec2 px = rel * uRes;
   vec2 mm = px * uMmPerPx;
-  vec2 q = abs(mm) / uHalf;
+  vec2 q = abs(mm) / (uHalf * uReveal);
   float k = pow(pow(q.x, 2.9) + pow(q.y, 2.9), 1.0 / 2.9);
-  float aa = uMmPerPx * 1.5 / uHalf.y;
+  float aa = uMmPerPx * 1.5 / (uHalf.y * uReveal);
   float inside = uLens * (1.0 - smoothstep(1.0 - aa, 1.0 + aa, k));
 
   vec2 mapUv = (mm + uMapHalf + 0.5) / uMapN;
@@ -138,12 +139,10 @@ void main() {
   }
 
   if (uLens > 0.5) {
-    // the frame, out of focus this close to the eye, and the world beyond it a touch dimmer
-    float rim = smoothstep(1.0 - aa, 1.012, k) * (1.0 - smoothstep(1.075, 1.135, k));
-    col = mix(col * 0.72, col, inside);
-    col = mix(col, vec3(0.012, 0.011, 0.01), rim * 0.97);
-    float gleam = smoothstep(1.02, 1.04, k) * (1.0 - smoothstep(1.05, 1.075, k)) * smoothstep(0.1, 0.9, mm.y / uHalf.y);
-    col += vec3(0.1, 0.09, 0.075) * gleam;
+    // no frame: only the cut edge of the glass catches a little light, and the world beyond it is a touch dimmer
+    col = mix(col * mix(1.0, 0.8, uReveal), col, inside);
+    float edge = smoothstep(0.982, 0.998, k) * (1.0 - smoothstep(1.0, 1.008, k));
+    col += vec3(0.15, 0.16, 0.17) * edge;
   }
   float vig = 1.0 - smoothstep(0.45, 1.25, length(rel * vec2(1.25, 1.1)) * 1.45);
   col *= mix(0.74, 1.0, vig);
@@ -153,7 +152,8 @@ void main() {
 }`;
 
 export interface ViewParams {
-  withLens: boolean;
+  /** how far the lens has opened: 0 is no lens at all, 1 its full size */
+  reveal: number;
   sph: number;
   acc: number;
   abbe: number;
@@ -187,6 +187,7 @@ export function createViewPass(renderer: THREE.WebGLRenderer) {
     uMmPerPx: { value: 0.1 },
     uHalf: { value: new THREE.Vector2(LENS_HALF.x, LENS_HALF.y) },
     uLens: { value: 1 },
+    uReveal: { value: 1 },
     uTanPerPx: { value: 0.001 },
     uK: { value: 0.4 },
     uSph: { value: 0 },
@@ -253,7 +254,8 @@ export function createViewPass(renderer: THREE.WebGLRenderer) {
     },
     /** Draw the view through the lens. */
     render(p: ViewParams) {
-      uniforms.uLens.value = p.withLens ? 1 : 0;
+      uniforms.uLens.value = p.reveal > 0 ? 1 : 0;
+      uniforms.uReveal.value = Math.max(p.reveal, 0.001);
       uniforms.uSph.value = p.sph;
       uniforms.uAcc.value = p.acc;
       uniforms.uAbbe.value = p.abbe;

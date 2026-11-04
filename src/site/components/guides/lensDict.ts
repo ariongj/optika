@@ -4,15 +4,12 @@ import { defineDict } from '@/i18n';
 export const LG = defineDict({
   me: {
     title: 'Vodič kroz sočiva',
-    heroEyebrow: 'Optical Lab · Vodič',
-    heroTitle: 'Vaš svet, *u fokusu*.',
-    heroText: 'Prava sočiva počinju od toga kako živite. Odgovorite na dva pitanja, uporedite debljinu i slojeve — a izradu prepustite našoj laboratoriji.',
     heroCta: 'Pronađite svoja sočiva',
     fact1: 'Sočiva iz naše laboratorije za 2–7 dana',
     fact2: 'Provera na fokometru pre predaje',
     fact3: 'Merenje PD-a besplatno',
 
-    chooserEyebrow: '01 · Birač sočiva',
+    chooserEyebrow: '02 · Birač sočiva',
     chooserTitle: 'Dva pitanja do *pravih* sočiva',
     chooserText: 'Izaberite za šta vam trebaju i koliko je jak vaš recept — preporuka se ažurira odmah.',
     q1: 'Za šta vam trebaju?',
@@ -105,15 +102,12 @@ export const LG = defineDict({
   },
   sq: {
     title: 'Udhëzuesi i lenteve',
-    heroEyebrow: 'Optical Lab · Udhëzues',
-    heroTitle: 'Bota juaj, *në fokus*.',
-    heroText: 'Lentet e duhura nisin nga mënyra si jetoni. Përgjigjuni dy pyetjeve, krahasoni trashësinë dhe shtresat — punimin lëreni te laboratori ynë.',
     heroCta: 'Gjeni lentet tuaja',
     fact1: 'Lente nga laboratori ynë për 2–7 ditë',
     fact2: 'Kontroll në fokometër para dorëzimit',
     fact3: 'Matja e PD-së falas',
 
-    chooserEyebrow: '01 · Zgjedhësi i lenteve',
+    chooserEyebrow: '02 · Zgjedhësi i lenteve',
     chooserTitle: 'Dy pyetje deri te lentet *e duhura*',
     chooserText: 'Zgjidhni për çfarë ju duhen dhe sa e fortë është receta juaj — rekomandimi përditësohet menjëherë.',
     q1: 'Për çfarë ju duhen?',
@@ -206,15 +200,12 @@ export const LG = defineDict({
   },
   en: {
     title: 'Lens guide',
-    heroEyebrow: 'Optical Lab · Guide',
-    heroTitle: 'Your world, *in focus*.',
-    heroText: 'The right lenses start with how you live. Answer two questions, compare thickness and coatings — and leave the making to our lab.',
     heroCta: 'Find your lenses',
     fact1: 'Lenses from our own lab in 2–7 days',
     fact2: 'Lensmeter-checked before handover',
     fact3: 'Free PD measurement',
 
-    chooserEyebrow: '01 · Lens chooser',
+    chooserEyebrow: '02 · Lens chooser',
     chooserTitle: 'Two questions to the *right* lenses',
     chooserText: 'Tell us what you need them for and how strong your prescription is — the recommendation updates instantly.',
     q1: 'What do you need them for?',
