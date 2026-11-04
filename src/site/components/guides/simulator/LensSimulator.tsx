@@ -1,0 +1,646 @@
+import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useReducedMotion } from 'motion/react';
+import { CalendarCheck, Glasses, Minus, Move3d, Plus, ShoppingBag, SlidersHorizontal, Waypoints } from 'lucide-react';
+import { toast } from 'sonner';
+import type { Product } from '@/lib/types';
+import { Button } from '@/components/ui/Button';
+import { Reveal } from '@/components/ui/misc';
+import { openBooking } from '@/site/components/utility/Booking';
+import { useDict, useL, useLang } from '@/i18n';
+import { money } from '@/lib/format';
+import { optionsLabel, unitPrice } from '@/lib/pricing';
+import { clamp, cn } from '@/lib/utils';
+import { useUi } from '@/store/ui';
+import type { FrameShape } from '@/site/tryon/frames';
+import { ChoiceGroup } from '../ChoiceGroup';
+import { IDEAL_INDEX, indexOf, SHORT, specIndex, STRENGTH_POWER, THIN_ID, TYPES, type KnownStrength, type Strength } from '../lensData';
+import { LG } from '../lensDict';
+import { ThicknessCompare } from '../ThicknessCompare';
+import { SIM } from './dict';
+import type { LabelId, LabelMap, LensKind, ProgressiveLevel, Simulator, SimState } from './engine';
+import { bandOf, crossSection, lensStats, MATERIALS, materialOf, solveLens, type LensFit } from './lensMath';
+import type { SceneId } from './plates';
+
+const KINDS: { id: string; kind: LensKind }[] = [
+  { id: 'p-lens-single', kind: 'single' },
+  { id: 'p-lens-progressive', kind: 'progressive' },
+  { id: 'p-lens-screen', kind: 'screen' },
+  { id: 'p-lens-photochromic', kind: 'photo' },
+  { id: 'p-lens-sun-rx', kind: 'sun' },
+];
+
+const SHAPES: { id: FrameShape; key: 'rectangle' | 'square' | 'round' | 'panto' | 'aviator' | 'catEye'; height: number }[] = [
+  { id: 'rectangle', key: 'rectangle', height: 0.7 },
+  { id: 'square', key: 'square', height: 0.82 },
+  { id: 'round', key: 'round', height: 0.95 },
+  { id: 'panto', key: 'panto', height: 0.9 },
+  { id: 'aviator', key: 'aviator', height: 0.88 },
+  { id: 'cat-eye', key: 'catEye', height: 0.74 },
+];
+
+const SIZES: Record<string, { width: number; bridge: number }> = {
+  '48': { width: 48, bridge: 18 },
+  '52': { width: 52, bridge: 18 },
+  '55': { width: 55, bridge: 17 },
+};
+
+/** Typical near addition and accommodation left per age group (D). */
+const AGES = {
+  young: { add: 0.75, acc: 3.5 },
+  mid: { add: 1.5, acc: 1.25 },
+  old: { add: 2.25, acc: 0.5 },
+} as const;
+type Age = keyof typeof AGES;
+
+const SPH_MIN = -10;
+const SPH_MAX = 6;
+
+function hasWebGL2() {
+  try {
+    const c = document.createElement('canvas');
+    const gl = c.getContext('webgl2');
+    gl?.getExtension('WEBGL_lose_context')?.loseContext();
+    return !!gl;
+  } catch {
+    return false;
+  }
+}
+
+const known = (s: Strength | undefined): KnownStrength => (s && s !== 'unknown' ? s : 'mid');
+
+export function LensSimulator({ strength, onStrength, lenses }: { strength: Strength | undefined; onStrength: (s: KnownStrength) => void; lenses: Product[] }) {
+  const t = useDict(SIM);
+  const tl = useDict(LG);
+  const l = useL();
+  const lang = useLang();
+  const reduce = useReducedMotion();
+  const addToCart = useUi((s) => s.addToCart);
+  const setCartOpen = useUi((s) => s.setCartOpen);
+
+  const [mode, setMode] = useState<'lens' | 'view'>('lens');
+  const [sph, setSph] = useState(() => -STRENGTH_POWER[known(strength)]);
+  const [picked, setPicked] = useState<number | null>(null);
+  const [packageId, setPackageId] = useState('p-lens-single');
+  const [choices, setChoices] = useState<Record<string, string>>({});
+  const [shape, setShape] = useState<FrameShape>('rectangle');
+  const [size, setSize] = useState('52');
+  const [pd, setPd] = useState(63);
+  const [showFrame, setShowFrame] = useState(true);
+  const [heat, setHeat] = useState(false);
+  const [scene, setScene] = useState<SceneId>('street');
+  const [age, setAge] = useState<Age>('mid');
+  const [withLens, setWithLens] = useState(true);
+  const [zones, setZones] = useState(true);
+  const [status, setStatus] = useState<'idle' | 'ready' | 'fallback'>('idle');
+
+  // the chooser above and this slider speak about the same prescription
+  useEffect(() => {
+    if (!strength || strength === 'unknown') return;
+    setSph((cur) => (bandOf(cur) === strength ? cur : (cur > 0 ? 1 : -1) * STRENGTH_POWER[strength]));
+  }, [strength]);
+  const changeSph = (v: number) => {
+    const next = clamp(Math.round(v * 4) / 4, SPH_MIN, SPH_MAX);
+    setSph(next);
+    if (bandOf(next) !== strength) onStrength(bandOf(next));
+  };
+
+  const packages = useMemo(() => KINDS.flatMap((k) => lenses.filter((p) => p.id === k.id).map((product) => ({ ...k, product }))), [lenses]);
+  const pack = packages.find((p) => p.id === packageId) ?? packages[0];
+  const product = pack?.product;
+  const kind: LensKind = pack?.kind ?? 'single';
+  const thin = useMemo(() => lenses.find((p) => p.id === THIN_ID), [lenses]);
+
+  const extras = useMemo(() => (product ? product.options.filter((o) => o.id !== 'index') : []), [product]);
+  const baseOptions = useMemo(() => {
+    const out: Record<string, string> = {};
+    for (const o of extras) out[o.id] = choices[`${product!.id}:${o.id}`] ?? o.values[0]?.id;
+    return out;
+  }, [extras, choices, product]);
+
+  const indexOption = product?.options.find((o) => o.id === 'index');
+  /** The product and options that buy a material in this package; null if it doesn't offer it. */
+  const offerFor = (n: number) => {
+    if (!product || !indexOption) return null;
+    const value = indexOption.values.find((v) => indexOf(v.label) === n);
+    if (value) return { product, options: { ...baseOptions, index: value.id } };
+    if (product.id === 'p-lens-single' && thin && specIndex(thin) === n) return { product: thin, options: {} as Record<string, string> };
+    return null;
+  };
+
+  const recommended = IDEAL_INDEX[bandOf(sph)];
+  const wanted = picked ?? recommended;
+  const offered = MATERIALS.filter((m) => offerFor(m.n));
+  const selectedN = !indexOption || offerFor(wanted) ? wanted : (offered.filter((m) => m.n <= wanted).pop() ?? offered[0] ?? MATERIALS[0]).n;
+  const offer = indexOption ? offerFor(selectedN) : product ? { product, options: baseOptions } : null;
+
+  const sizeSpec = SIZES[size];
+  const fit: LensFit = useMemo(() => {
+    const height = SHAPES.find((s) => s.id === shape)?.height ?? 0.72;
+    return { shape, lensWidth: sizeSpec.width, lensHeight: Math.round(sizeSpec.width * height), bridge: sizeSpec.bridge, pd };
+  }, [shape, sizeSpec, pd]);
+
+  const rows = useMemo(() => MATERIALS.map((m) => ({ m, stats: lensStats(solveLens(sph, m.n, m.centre, fit), m.density) })), [sph, fit]);
+  const selected = rows.find((r) => Math.abs(r.m.n - selectedN) < 1e-6) ?? rows[0];
+  const stats = selected.stats;
+  const baseMax = rows[0].stats.max;
+
+  const num = (v: number, digits = 1) => (lang === 'en' ? v.toFixed(digits) : v.toFixed(digits).replace('.', ','));
+  const fmt = (n: number) => money(n, lang, { decimals: n % 1 !== 0 });
+  const powerLabel = `${sph < 0 ? '−' : sph > 0 ? '+' : ''}${num(Math.abs(sph), 2)} D`;
+
+  // ---------------------------------------------------------------- the engine loads only when the stage is near
+  const hostRef = useRef<HTMLDivElement>(null);
+  const engineRef = useRef<Simulator | null>(null);
+  const labelsRef = useRef<LabelMap>({});
+  const tintValue = extras.find((o) => o.id === 'tint')?.values.find((v) => v.id === baseOptions.tint);
+  const simState: SimState = useMemo(
+    () => ({
+      mode,
+      sph,
+      n: selectedN,
+      shape,
+      lensWidth: fit.lensWidth,
+      lensHeight: fit.lensHeight,
+      bridge: fit.bridge,
+      pd,
+      showFrame,
+      heat,
+      scene,
+      kind,
+      level: (baseOptions.level as ProgressiveLevel) ?? 'standard',
+      add: AGES[age].add,
+      acc: AGES[age].acc,
+      tint: tintValue?.swatch ?? null,
+      polar: baseOptions.polar === 'yes',
+      withLens,
+      zones,
+    }),
+    [mode, sph, selectedN, shape, fit, pd, showFrame, heat, scene, kind, baseOptions, age, tintValue, withLens, zones],
+  );
+  const stateRef = useRef(simState);
+  stateRef.current = simState;
+  const reduceRef = useRef(!!reduce);
+  reduceRef.current = !!reduce;
+
+  useEffect(() => {
+    const el = hostRef.current;
+    if (!el) return;
+    let cancelled = false;
+    let sim: Simulator | null = null;
+    const start = () => {
+      if (!hasWebGL2()) {
+        setStatus('fallback');
+        return;
+      }
+      import('./engine')
+        .then(({ createSimulator }) => {
+          if (cancelled) return;
+          sim = createSimulator(el, labelsRef.current, reduceRef.current);
+          engineRef.current = sim;
+          sim.update(stateRef.current);
+          setStatus('ready');
+        })
+        .catch(() => setStatus('fallback'));
+    };
+    const io = 'IntersectionObserver' in window
+      ? new IntersectionObserver(
+          ([e]) => {
+            if (!e.isIntersecting) return;
+            io?.disconnect();
+            start();
+          },
+          { rootMargin: '500px' },
+        )
+      : null;
+    if (io) io.observe(el);
+    else start();
+    return () => {
+      cancelled = true;
+      io?.disconnect();
+      sim?.dispose();
+      engineRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    engineRef.current?.update(simState);
+  }, [simState]);
+
+  const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
+    const step = { ArrowLeft: [-26, 0], ArrowRight: [26, 0], ArrowUp: [0, -20], ArrowDown: [0, 20] }[e.key];
+    if (!step) return;
+    e.preventDefault();
+    engineRef.current?.nudge(step[0], step[1]);
+  };
+
+  const setLabel = (id: LabelId) => (el: HTMLElement | null) => {
+    labelsRef.current[id] = el;
+  };
+
+  const add = () => {
+    if (!offer) return;
+    addToCart({ productId: offer.product.id, qty: 1, options: offer.options, installation: false });
+    const opts = optionsLabel(offer.product, offer.options, lang);
+    toast.success(tl('added'), {
+      description: `${l(offer.product.name)}${opts ? ` · ${opts}` : ''} · ${fmt(unitPrice(offer.product, offer.options))}`,
+      action: { label: tl('viewCart'), onClick: () => setCartOpen(true) },
+    });
+  };
+
+  if (status === 'fallback') {
+    return (
+      <Reveal className="mt-10 sm:mt-12">
+        <ThicknessCompare strength={strength} onStrength={onStrength} />
+      </Reveal>
+    );
+  }
+
+  const know = TYPES.find((x) => x.id === product?.id)?.know;
+  const showZones = mode === 'view' && withLens && kind === 'progressive' && zones;
+  const ariaStage = mode === 'lens' ? t('aria3d', { power: powerLabel, index: selected.m.label, mm: num(stats.max) }) : t('ariaView', { power: powerLabel, scene: t(scene) });
+
+  return (
+    <div className="mt-10 sm:mt-12">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_372px] lg:gap-6">
+        {/* Stage */}
+        <div className="flex min-w-0 flex-col">
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            <ChoiceGroup
+              ariaLabel={t('modesLabel')}
+              variant="pill"
+              tone="dark"
+              value={mode}
+              onChange={setMode}
+              className="flex flex-wrap gap-2"
+              options={[
+                { id: 'lens' as const, label: t('modeLens') },
+                { id: 'view' as const, label: t('modeView') },
+              ]}
+            />
+            <div className="flex flex-wrap gap-2">
+              {mode === 'lens' ? (
+                <>
+                  <Toggle on={showFrame} onClick={() => setShowFrame((v) => !v)} icon={<Glasses className="h-4 w-4" />}>
+                    {t('frameOn')}
+                  </Toggle>
+                  <Toggle on={heat} onClick={() => setHeat((v) => !v)} icon={<SlidersHorizontal className="h-4 w-4" />}>
+                    {t('heat')}
+                  </Toggle>
+                </>
+              ) : (
+                <>
+                  <Toggle on={withLens} onClick={() => setWithLens((v) => !v)} icon={<Glasses className="h-4 w-4" />}>
+                    {withLens ? t('withLens') : t('withoutLens')}
+                  </Toggle>
+                  {kind === 'progressive' && (
+                    <Toggle on={zones} onClick={() => setZones((v) => !v)} icon={<Waypoints className="h-4 w-4" />}>
+                      {t('zones')}
+                    </Toggle>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="relative mt-3 aspect-[1/1] overflow-hidden rounded-[28px] bg-[#0a0a0b] ring-1 ring-white/10 sm:aspect-[3/2] lg:aspect-auto lg:min-h-[500px] lg:flex-1">
+            <div ref={hostRef} role="img" aria-label={ariaStage} tabIndex={0} onKeyDown={onKey} className="absolute inset-0 rounded-[28px] outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-200" />
+            {status === 'idle' && <div className="absolute inset-0 grid place-items-center text-[13px] font-medium text-paper/55">{t('loading')}</div>}
+            <div ref={setLabel('busy')} style={{ opacity: 0 }} className="pointer-events-none absolute left-1/2 top-4 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/60 px-3 py-1 text-[12px] font-medium text-paper/85 backdrop-blur-md" aria-hidden>
+              {t('loading')}
+            </div>
+
+            {status === 'ready' && mode === 'lens' && (
+              <>
+                <Marker bind={setLabel('centre')} label={t('centre')} value={`${num(stats.centre)} mm`} className="left-3 top-3" />
+                <Marker bind={setLabel('temporal')} label={t('temporal')} value={`${num(stats.temporal)} mm`} className="left-3 -top-12" />
+                <Marker bind={setLabel('nasal')} label={t('nasal')} value={`${num(stats.nasal)} mm`} className="-top-12 left-3 max-sm:hidden" />
+              </>
+            )}
+            {status === 'ready' && showZones && (
+              <>
+                <ZoneTag bind={setLabel('far')} label={t('zoneFar')} />
+                <ZoneTag bind={setLabel('mid')} label={t('zoneMid')} />
+                <ZoneTag bind={setLabel('near')} label={t('zoneNear')} />
+              </>
+            )}
+
+            <div className="pointer-events-none absolute inset-x-3 bottom-3 flex items-end justify-between gap-3 sm:inset-x-4 sm:bottom-4">
+              <div className="min-w-0 space-y-2 sm:max-w-[58%]">
+                {mode === 'lens' && heat && (
+                  <div className="rounded-xl bg-black/55 px-3 py-2 backdrop-blur-md">
+                    <div className="text-[11px] font-semibold text-paper/75">{t('legend')}</div>
+                    <div className="mt-1.5 h-1.5 w-36 rounded-full bg-gradient-to-r from-[#3b2d16] via-[#ad9466] to-[#fff1cf]" />
+                    <div className="mt-1 flex w-36 justify-between text-[11px] font-semibold tabular-nums text-paper">
+                      <span>{num(stats.min)}</span>
+                      <span>{num(stats.max)} mm</span>
+                    </div>
+                  </div>
+                )}
+                {showZones && <div className="hidden rounded-xl bg-black/55 px-3 py-2 text-[11.5px] font-medium leading-snug text-paper/85 backdrop-blur-md sm:block">{t('zoneLegend')}</div>}
+                <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-black/45 px-2.5 py-1 text-[11.5px] font-medium text-paper/75 backdrop-blur-md">
+                  <Move3d className="h-3.5 w-3.5" aria-hidden /> {mode === 'lens' ? t('drag') : t('dragView')}
+                </div>
+              </div>
+              {mode === 'lens' && <Profile fit={fit} sph={sph} n={selectedN} label={t('profile')} nose={t('nose')} temple={t('temple')} />}
+            </div>
+          </div>
+
+          {showZones && <p className="mt-2.5 text-[12.5px] font-medium leading-snug text-paper/70 sm:hidden">{t('zoneLegend')}</p>}
+          {mode === 'view' && (
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-x-5 gap-y-2.5">
+              <ChoiceGroup
+                ariaLabel={t('scene')}
+                variant="pill"
+                tone="dark"
+                value={scene}
+                onChange={setScene}
+                className="flex flex-wrap gap-2"
+                options={(['street', 'drive', 'desk'] as const).map((id) => ({ id, label: t(id) }))}
+              />
+              <ChoiceGroup
+                ariaLabel={t('age')}
+                variant="pill"
+                tone="dark"
+                value={age}
+                onChange={setAge}
+                className="flex flex-wrap items-center gap-2"
+                options={[
+                  { id: 'young' as const, label: t('ageYoung') },
+                  { id: 'mid' as const, label: t('ageMid') },
+                  { id: 'old' as const, label: t('ageOld') },
+                ]}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Controls */}
+        <div className="space-y-5 rounded-[28px] bg-white/[0.045] p-5 ring-1 ring-white/10 sm:p-6">
+          <div>
+            <label htmlFor="sim-sph" className="block text-[12px] font-bold uppercase tracking-[0.16em] text-paper/60">
+              {t('rx')}
+            </label>
+            <div className="mt-2.5 flex items-center justify-between gap-3">
+              <StepButton label={t('less')} onClick={() => changeSph(sph - 0.25)} disabled={sph <= SPH_MIN}>
+                <Minus className="h-4 w-4" />
+              </StepButton>
+              <output htmlFor="sim-sph" className="display text-center text-[44px] leading-none tabular-nums text-white sm:text-[50px]">
+                {powerLabel}
+              </output>
+              <StepButton label={t('more')} onClick={() => changeSph(sph + 0.25)} disabled={sph >= SPH_MAX}>
+                <Plus className="h-4 w-4" />
+              </StepButton>
+            </div>
+            <input
+              id="sim-sph"
+              type="range"
+              min={SPH_MIN}
+              max={SPH_MAX}
+              step={0.25}
+              value={sph}
+              onChange={(e) => changeSph(Number(e.target.value))}
+              aria-valuetext={powerLabel}
+              className="mt-4 h-11 w-full cursor-pointer appearance-none bg-transparent [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-brand-200 [&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-white/15 [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-white/15 [&::-webkit-slider-thumb]:-mt-[9px] [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-brand-200 [&::-webkit-slider-thumb]:shadow-[0_0_0_5px_rgba(224,219,209,0.14)]"
+            />
+            <div className="flex justify-between text-[11.5px] font-semibold tabular-nums text-paper/45">
+              <span>−10</span>
+              <span>0</span>
+              <span>+6</span>
+            </div>
+            <p className="mt-1.5 text-center text-[12.5px] font-medium text-paper/65">{sph < 0 ? t('rxMinus') : sph > 0 ? t('rxPlus') : t('rxZero')}</p>
+          </div>
+
+          {packages.length > 0 && (
+            <Field label={t('packageLabel')}>
+              <ChoiceGroup
+                ariaLabel={t('packageLabel')}
+                variant="pill"
+                tone="dark"
+                value={pack?.id}
+                onChange={setPackageId}
+                className="flex flex-wrap gap-2"
+                options={packages.map((p) => ({ id: p.id, label: SHORT[p.id] ? l(SHORT[p.id]) : l(p.product.name) }))}
+              />
+            </Field>
+          )}
+
+          {extras.map((o) => (
+            <Field key={o.id} label={l(o.name)}>
+              <ChoiceGroup
+                ariaLabel={l(o.name)}
+                variant="pill"
+                tone="dark"
+                value={baseOptions[o.id]}
+                onChange={(id) => setChoices((c) => ({ ...c, [`${product!.id}:${o.id}`]: id }))}
+                className="flex flex-wrap gap-2"
+                options={o.values.map((v) => ({
+                  id: v.id,
+                  label: (
+                    <span className="inline-flex items-center gap-2">
+                      {v.swatch && <span className="h-3.5 w-3.5 rounded-full ring-1 ring-white/30" style={{ background: v.swatch }} aria-hidden />}
+                      {l(v.label)}
+                      {v.priceDelta ? <span className="font-medium opacity-70">+{fmt(v.priceDelta)}</span> : null}
+                    </span>
+                  ),
+                }))}
+              />
+            </Field>
+          ))}
+
+          {mode === 'lens' && (
+            <>
+              <Field label={t('shape')}>
+                <ChoiceGroup ariaLabel={t('shape')} variant="pill" tone="dark" value={shape} onChange={setShape} className="flex flex-wrap gap-2" options={SHAPES.map((s) => ({ id: s.id, label: t(s.key) }))} />
+              </Field>
+              <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-5">
+                <Field label={t('size')}>
+                  <ChoiceGroup ariaLabel={t('size')} variant="pill" tone="dark" value={size} onChange={setSize} className="flex gap-2" options={Object.keys(SIZES).map((id) => ({ id, label: <span className="tabular-nums">{id}</span> }))} />
+                </Field>
+                <Field label={t('pd')}>
+                  <div className="flex items-center gap-2">
+                    <StepButton label={t('pdLess')} onClick={() => setPd((v) => clamp(v - 1, 54, 74))} disabled={pd <= 54}>
+                      <Minus className="h-4 w-4" />
+                    </StepButton>
+                    <span className="w-16 text-center text-[16px] font-bold tabular-nums text-white">{pd} mm</span>
+                    <StepButton label={t('pdMore')} onClick={() => setPd((v) => clamp(v + 1, 54, 74))} disabled={pd >= 74}>
+                      <Plus className="h-4 w-4" />
+                    </StepButton>
+                  </div>
+                </Field>
+              </div>
+            </>
+          )}
+
+          {know && mode === 'view' && <p className="border-t border-white/10 pt-4 text-[13px] leading-relaxed text-paper/70">{l(know)}</p>}
+        </div>
+      </div>
+
+      {/* Materials */}
+      <div className="mt-5 lg:mt-6">
+        <div className="text-[12px] font-bold uppercase tracking-[0.16em] text-paper/60">{t('material')}</div>
+        <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {rows.map(({ m, stats: s }) => {
+            const on = m.n === selected.m.n;
+            const buy = offerFor(m.n);
+            const unavailable = !!indexOption && !buy;
+            const pct = Math.round((1 - s.max / baseMax) * 100);
+            return (
+              <button
+                key={m.label}
+                type="button"
+                aria-pressed={on}
+                disabled={unavailable}
+                onClick={() => setPicked(m.n)}
+                className={cn(
+                  'relative flex flex-col rounded-2xl p-4 text-left ring-1 transition-[background,box-shadow] duration-200 focus-visible:ring-2 focus-visible:ring-brand-200 motion-reduce:transition-none sm:p-5',
+                  on ? 'bg-white/[0.11] ring-2 ring-brand-300' : 'bg-white/[0.045] ring-white/10 enabled:hover:bg-white/[0.08]',
+                  unavailable && 'opacity-55',
+                )}
+              >
+                <span className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
+                  <span className="display text-[28px] leading-none tabular-nums text-white sm:text-[32px]">{m.label}</span>
+                  {m.n === recommended && <span className="whitespace-nowrap rounded-full bg-brand-300 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-ink">{tl('recommended')}</span>}
+                </span>
+                <span className="mt-1 text-[12.5px] font-semibold text-paper/65">{l(m.name)}</span>
+                <span className="mt-3.5 text-[11.5px] font-medium text-paper/55">{t('thickest')}</span>
+                <span className="text-[21px] font-bold tabular-nums text-white">
+                  {num(s.max)} <span className="text-[13px] font-semibold text-paper/60">mm</span>
+                </span>
+                <span className="mt-2 block h-1 w-full overflow-hidden rounded-full bg-white/10" aria-hidden>
+                  <span className="block h-full origin-left rounded-full bg-brand-300 transition-transform duration-300 motion-reduce:transition-none" style={{ transform: `scaleX(${clamp(s.max / baseMax, 0.04, 1)})` }} />
+                </span>
+                <span className="mt-2 text-[12px] font-medium text-paper/70">{pct > 0 ? t('thinner', { pct }) : t('reference')}</span>
+                <span className="mt-2.5 flex items-baseline justify-between gap-2 border-t border-white/10 pt-2.5">
+                  <span className="text-[12px] font-medium text-paper/60 tabular-nums">
+                    {num(s.pairWeight, 0)} g <span className="max-sm:hidden">· {t('weight').toLowerCase()}</span>
+                  </span>
+                  <span className="text-[14px] font-bold tabular-nums text-brand-200">{unavailable ? '' : buy ? fmt(unitPrice(buy.product, buy.options)) : ''}</span>
+                </span>
+                {unavailable && <span className="mt-1.5 text-[11.5px] font-semibold text-paper/70">{t('notOffered')}</span>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Order */}
+      {offer && (
+        <div className="mt-5 flex flex-col gap-4 rounded-[28px] bg-white/[0.045] p-5 ring-1 ring-white/10 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+          <div className="min-w-0">
+            <div className="text-[15px] font-bold text-white">
+              {l(offer.product.name)} <span className="font-medium text-paper/60">· {indexOption || specIndex(offer.product) ? materialOf(selectedN).label : t('askIndex')}</span>
+            </div>
+            <div className="mt-1 text-[13px] font-medium text-paper/65">
+              {powerLabel} · {num(stats.max)} mm · {num(stats.pairWeight, 0)} g
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+            <div>
+              <div className="text-[11.5px] font-medium text-paper/55">{t('pairPrice')}</div>
+              <div className="display text-[30px] leading-none tabular-nums text-white">{fmt(unitPrice(offer.product, offer.options))}</div>
+            </div>
+            <Button onClick={add} icon={<ShoppingBag className="h-4 w-4" />}>
+              {tl('addToCart')}
+            </Button>
+            <Button variant="outlineLight" onClick={() => openBooking('exam')} icon={<CalendarCheck className="h-4 w-4" />}>
+              {tl('bookExam')}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <div className="mt-5 max-w-4xl space-y-2 text-[13px] leading-relaxed text-paper/60">
+        {stats.max > 9.5 && <p className="font-semibold text-brand-200">{t('tooThick')}</p>}
+        <p>{mode === 'lens' ? t('noteLens') : t('noteView')}</p>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <div className="mb-2.5 text-[12px] font-bold uppercase tracking-[0.16em] text-paper/60">{label}</div>
+      {children}
+    </div>
+  );
+}
+
+function StepButton({ label, onClick, disabled, children }: { label: string; onClick: () => void; disabled?: boolean; children: ReactNode }) {
+  return (
+    <button type="button" aria-label={label} onClick={onClick} disabled={disabled} className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/[0.07] text-white ring-1 ring-white/15 transition enabled:hover:bg-white/15 disabled:opacity-35 motion-reduce:transition-none">
+      {children}
+    </button>
+  );
+}
+
+function Toggle({ on, onClick, icon, children }: { on: boolean; onClick: () => void; icon: ReactNode; children: ReactNode }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      onClick={onClick}
+      className={cn('inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-[13.5px] font-semibold ring-1 transition-colors motion-reduce:transition-none', on ? 'bg-brand-300 text-ink ring-brand-300' : 'bg-white/5 text-white/85 ring-white/20 hover:bg-white/10')}
+    >
+      {icon}
+      {children}
+    </button>
+  );
+}
+
+/** A point on the 3D lens; the engine moves it, this only draws the dot and the reading. */
+function Marker({ bind, label, value, className }: { bind: (el: HTMLElement | null) => void; label: string; value: string; className: string }) {
+  return (
+    <div ref={bind} className="pointer-events-none absolute left-0 top-0 h-0 w-0 will-change-transform" aria-hidden>
+      <span className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-white shadow-[0_0_0_3px_rgba(255,255,255,0.22)]" />
+      <span className={cn('absolute whitespace-nowrap rounded-lg bg-black/60 px-2 py-1 text-[11px] leading-tight text-paper/75 backdrop-blur-md', className)}>
+        {label} <b className="block text-[13.5px] font-bold tabular-nums text-white">{value}</b>
+      </span>
+    </div>
+  );
+}
+
+function ZoneTag({ bind, label }: { bind: (el: HTMLElement | null) => void; label: string }) {
+  return (
+    <div ref={bind} className="pointer-events-none absolute left-0 top-0 h-0 w-0" aria-hidden>
+      <span className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-black/55 px-2.5 py-0.5 text-[11.5px] font-bold text-paper backdrop-blur-md">{label}</span>
+    </div>
+  );
+}
+
+/** True-to-scale horizontal section through the optical centre. */
+function Profile({ fit, sph, n, label, nose, temple }: { fit: LensFit; sph: number; n: number; label: string; nose: string; temple: string }) {
+  const gid = useId().replace(/:/g, '');
+  const m = materialOf(n);
+  const points = crossSection(solveLens(sph, n, m.centre, fit));
+  const scale = 3.2;
+  const zTop = Math.max(...points.map((p) => p.front));
+  const zBottom = Math.min(...points.map((p) => p.back));
+  const x0 = points[0].x;
+  const X = (x: number) => (x - x0) * scale + 2;
+  const Y = (z: number) => (zTop - z) * scale + 2;
+  const width = X(points[points.length - 1].x) + 2;
+  const height = Y(zBottom) + 2;
+  const d = `M ${points.map((p) => `${X(p.x).toFixed(1)} ${Y(p.front).toFixed(1)}`).join(' L ')} L ${[...points]
+    .reverse()
+    .map((p) => `${X(p.x).toFixed(1)} ${Y(p.back).toFixed(1)}`)
+    .join(' L ')} Z`;
+  return (
+    <div className="hidden shrink-0 rounded-xl bg-black/55 px-3 py-2 backdrop-blur-md sm:block">
+      <div className="text-[11px] font-semibold text-paper/75">{label}</div>
+      <svg viewBox={`0 0 ${width.toFixed(1)} ${height.toFixed(1)}`} width={width} height={height} className="mt-1.5 block max-h-[92px] w-auto" aria-hidden>
+        <defs>
+          <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#fff1cf" stopOpacity="0.9" />
+            <stop offset="1" stopColor="#ad9466" stopOpacity="0.7" />
+          </linearGradient>
+        </defs>
+        <path d={d} fill={`url(#${gid})`} stroke="#fff1cf" strokeWidth="0.8" strokeLinejoin="round" />
+      </svg>
+      <div className="mt-1 flex justify-between gap-6 text-[10.5px] font-medium text-paper/60">
+        <span>{nose}</span>
+        <span>{temple}</span>
+      </div>
+    </div>
+  );
+}

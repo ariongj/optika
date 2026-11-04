@@ -1,0 +1,5 @@
+node_modules
+assets
+out
+bundle.js
+package-lock.json

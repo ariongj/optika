@@ -5,6 +5,7 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import type { FrameBuild, FrameDims, FrameLook, FrameShape, LensTint } from './frames';
+import { outlinePoints } from './outline';
 import { clamp, NOMINAL_WIDTH, safeDims, type FacePose } from './pose';
 
 export interface FrameModelSpec {
@@ -155,54 +156,7 @@ function gradientAlpha(from: number, to: number) {
 /* ------------------------------------------------------------------ */
 /** Lens outline (superellipse family) for a frame shape; `side` −1 = wearer's right lens (viewer's left). */
 function outline(shape: FrameShape, side: number) {
-  const points: THREE.Vector2[] = [];
-  const count = 96;
-  for (let i = 0; i < count; i += 1) {
-    const angle = Math.PI / 2 + (i / count) * TAU;
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
-    let exponent = 3.6;
-    let rx = 0.48;
-    let ry = 0.34;
-    if (shape === 'round') exponent = 2.15;
-    if (shape === 'panto') exponent = sin > 0 ? 2.9 : 2.0;
-    if (shape === 'square') exponent = 4.8;
-    if (shape === 'aviator') {
-      // Flat-ish brow, deep teardrop bowl that sweeps towards the nose.
-      exponent = sin > 0 ? 3.4 : 2.1;
-      rx = 0.5;
-      ry = 0.38;
-    }
-    if (shape === 'cat-eye') {
-      exponent = 2.8;
-      rx = 0.5;
-    }
-    if (shape === 'wrap') {
-      exponent = 4.2;
-      rx = 0.53;
-      ry = 0.29;
-    }
-    if (shape === 'geometric') exponent = 2.6;
-    const power = 2 / exponent;
-    let x = rx * Math.sign(cos) * Math.pow(Math.abs(cos), power);
-    let y = ry * Math.sign(sin) * Math.pow(Math.abs(sin), power);
-    const outer = Math.max(0, (side * x) / rx); // 0 at the nose, 1 at the temple side
-    if (shape === 'aviator') {
-      const low = Math.max(0, -sin);
-      x -= side * 0.075 * low * low; // bowl shifts towards the nose
-      y -= 0.08 * low * (1 - 0.55 * outer); // deepest on the nasal side
-      y += 0.03 * outer * low; // outer bottom tucks up
-    }
-    if (shape === 'cat-eye') y += 0.1 * outer * Math.max(0, sin + 0.15);
-    if (shape === 'wrap') y -= 0.05 * (1 - outer) * Math.max(0, -sin);
-    if (shape === 'geometric') {
-      const k = 1 + 0.05 * Math.cos(angle * 8);
-      x *= k;
-      y *= k;
-    }
-    points.push(new THREE.Vector2(x, y));
-  }
-  return points;
+  return outlinePoints(shape, side).map((p) => new THREE.Vector2(p.x, p.y));
 }
 
 function ringGeometry(points: THREE.Vector2[], halfW: number, halfH: number, rim: number, depth: number) {
@@ -370,6 +324,7 @@ export function createGlassesModel(spec: FrameModelSpec) {
     const sheen = new THREE.Mesh(lensGeo.clone(), lens.sheen);
     sheen.position.z = 0.012;
     sheen.renderOrder = 3;
+    tint.userData.flatLens = sheen.userData.flatLens = true; // the lens simulator swaps these for real thick lenses
     lensRoot.add(ring, tint, sheen);
     root.add(lensRoot);
 

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { ArrowDown, ArrowRight, CalendarCheck, FlaskConical, Phone, Ruler, ShieldCheck } from 'lucide-react';
+import { ArrowDown, ArrowRight, Box, CalendarCheck, FlaskConical, Phone, Ruler, ShieldCheck } from 'lucide-react';
 import type { Post } from '@/lib/types';
 import { Accordion, Reveal } from '@/components/ui/misc';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -13,7 +13,8 @@ import { isLensPackage } from '@/site/components/product/optical';
 import { openBooking } from '@/site/components/utility/Booking';
 import { usePageTitle } from '@/site/layout/SiteLayout';
 import { LensChooser } from '@/site/components/guides/LensChooser';
-import { ThicknessCompare } from '@/site/components/guides/ThicknessCompare';
+import { LensSimulator } from '@/site/components/guides/simulator/LensSimulator';
+import { SIM } from '@/site/components/guides/simulator/dict';
 import { Coatings, IndexTable, LabBlock, LensTypes, RxExplainer } from '@/site/components/guides/LensSections';
 import { LG } from '@/site/components/guides/lensDict';
 import { ADVICE_SLUGS, LENS_FAQ, STRENGTHS, USES, type LensUse, type Strength } from '@/site/components/guides/lensData';
@@ -29,9 +30,10 @@ const FACTS = [
   { icon: Ruler, key: 'fact3' },
 ] as const;
 
-/** /lentet — lens guide: chooser, thickness comparison, lens types, coatings, index table, prescription explainer. */
+/** /lentet — lens guide: chooser, 3D simulator, lens types, coatings, index table, prescription explainer. */
 export default function LensGuide() {
   const t = useDict(LG);
+  const ts = useDict(SIM);
   const l = useL();
   const settings = useSettings();
   const products = useActiveProducts();
@@ -50,6 +52,9 @@ export default function LensGuide() {
         <div className="mt-9 flex flex-wrap items-center gap-3">
           <Button size="lg" onClick={() => scrollToId('zgjedhesi')} iconRight={<ArrowDown className="h-4 w-4" />}>
             {t('heroCta')}
+          </Button>
+          <Button size="lg" variant="outlineLight" onClick={() => scrollToId('simulatori')} icon={<Box className="h-4 w-4" />}>
+            {ts('heroCta')}
           </Button>
           <Button size="lg" variant="outlineLight" onClick={() => openBooking('exam')} icon={<CalendarCheck className="h-4 w-4" />}>
             {t('bookExam')}
@@ -76,15 +81,13 @@ export default function LensGuide() {
         </div>
       </section>
 
-      {/* 02 — thickness */}
-      <section className="border-y border-line bg-white/50 py-20 sm:py-28">
+      {/* 02 — simulator (three.js loads only when this comes near the viewport) */}
+      <section id="simulatori" className="scroll-mt-24 bg-ink py-20 text-paper sm:py-28">
         <div className="container-x">
           <Reveal>
-            <SectionHeading eyebrow={t('thickEyebrow')} title={t('thickTitle')} subtitle={t('thickText')} />
+            <SectionHeading tone="light" eyebrow={ts('eyebrow')} title={ts('title')} subtitle={ts('text')} />
           </Reveal>
-          <Reveal className="mt-10 sm:mt-12">
-            <ThicknessCompare strength={strength} onStrength={setStrength} />
-          </Reveal>
+          <LensSimulator strength={strength} onStrength={setStrength} lenses={lenses} />
         </div>
       </section>
 

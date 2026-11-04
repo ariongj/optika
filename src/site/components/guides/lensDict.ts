@@ -44,9 +44,6 @@ export const LG = defineDict({
     viewCart: 'Pogledaj korpu',
     allLenses: 'Sva sočiva',
 
-    thickEyebrow: '02 · Debljina',
-    thickTitle: 'Koliko će sočivo biti *tanko*?',
-    thickText: 'Uporedite presek sočiva od 50 mm u četiri indeksa. Što je recept jači, to se razlika više vidi.',
     power: 'Jačina',
     minus: 'Minus · kratkovidost',
     plus: 'Plus · dalekovidost',
@@ -148,9 +145,6 @@ export const LG = defineDict({
     viewCart: 'Shiko shportën',
     allLenses: 'Të gjitha lentet',
 
-    thickEyebrow: '02 · Trashësia',
-    thickTitle: 'Sa e *hollë* do të jetë lentja?',
-    thickText: 'Krahasoni prerjen e një lenteje 50 mm në katër indekse. Sa më e fortë receta, aq më shumë duket dallimi.',
     power: 'Fuqia',
     minus: 'Minus · miopi',
     plus: 'Plus · hipermetropi',
@@ -252,9 +246,6 @@ export const LG = defineDict({
     viewCart: 'View cart',
     allLenses: 'All lenses',
 
-    thickEyebrow: '02 · Thickness',
-    thickTitle: 'How *thin* will the lens be?',
-    thickText: 'Compare the cross-section of a 50 mm lens in four indices. The stronger the prescription, the bigger the difference.',
     power: 'Power',
     minus: 'Minus · short-sight',
     plus: 'Plus · long-sight',

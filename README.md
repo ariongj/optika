@@ -19,7 +19,7 @@ real stock — 339 frames from its 2026 product shoots (`src/data/frames.ts`, ph
     calendar, with an `.ics` calendar file on confirmation;
   - **Gjurmo porosinë** (`/gjurmo-porosine`) — order tracking by order number + e-mail/phone;
   - **Klinika Miftari** (`/klinika`) and **Optical Lab** (`/optical-lab`, with a B2B partner application);
-  - **Udhëzuesi i lenteve** (`/lentet`) — interactive lens chooser, lens-thickness comparison, coatings and prescription
+  - **Udhëzuesi i lenteve** (`/lentet`) — interactive lens chooser, 3D lens simulator (thickness, weight and price per material; view through the lens at street, driving and desk scenes: CC0 Poly Haven panoramas with path-traced objects, baked with `scripts/sim-bake`, then a traced lens map per prescription; a solved, illustrative progressive surface; 2D comparison as the no-WebGL fallback), coatings and prescription
     explainer; **Gjeni kornizën tuaj** (`/gjej-kornizen`) — a five-step frame-finder quiz with shareable results.
 - **CMS** (`/admin`) — dashboard, orders, draft orders, returns, products, collections, inventory, purchasing, customers and
   segments, discounts and offer campaigns, homepage builder with live preview, slides and banners, pages, advice posts, lookbook,
