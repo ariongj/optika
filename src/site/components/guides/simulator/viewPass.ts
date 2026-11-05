@@ -59,6 +59,26 @@ float residual(float v, float naked, float err) {
   return d < 0.0 ? d : max(0.0, d - uAcc);
 }
 
+// the map has a 1 mm step: a contour drawn on it directly turns a corner at every cell, so it reads as a crack in the glass.
+// A cubic B-spline through four bilinear reads keeps the curve smooth.
+float astigmatism(vec2 uv) {
+  vec2 st = uv * uMapN - 0.5;
+  vec2 i = floor(st);
+  vec2 f = st - i;
+  vec2 f2 = f * f;
+  vec2 f3 = f2 * f;
+  vec2 w0 = (1.0 - 3.0 * f + 3.0 * f2 - f3) / 6.0;
+  vec2 w1 = (4.0 - 6.0 * f2 + 3.0 * f3) / 6.0;
+  vec2 w2 = (1.0 + 3.0 * f + 3.0 * f2 - 3.0 * f3) / 6.0;
+  vec2 w3 = f3 / 6.0;
+  vec2 g0 = w0 + w1;
+  vec2 g1 = w2 + w3;
+  vec2 p0 = (i - 0.5 + w1 / g0) / uMapN;
+  vec2 p1 = (i + 1.5 + w3 / g1) / uMapN;
+  return g0.y * (g0.x * texture2D(tPower, vec2(p0.x, p0.y)).a + g1.x * texture2D(tPower, vec2(p1.x, p0.y)).a)
+    + g1.y * (g0.x * texture2D(tPower, vec2(p0.x, p1.y)).a + g1.x * texture2D(tPower, vec2(p1.x, p1.y)).a);
+}
+
 vec3 shoulder(vec3 c) {
   return mix(c, 0.8 + 0.2 * (1.0 - exp(-(c - 0.8) / 0.2)), step(0.8, c));
 }
@@ -131,11 +151,14 @@ void main() {
   col *= mix(vec3(1.0), uFilter, inside);
 
   if (uZones > 0.5 && inside > 0.0) {
-    float cyl = 2.0 * J;
+    float cyl = astigmatism(mapUv);
     float z = smoothstep(0.5, 1.7, cyl);
     col = mix(col, vec3(0.55, 0.32, 0.09), z * 0.3 * inside);
-    float line = 1.0 - smoothstep(0.0, fwidth(cyl) * 1.3 + 1e-4, abs(cyl - 0.5));
-    col = mix(col, vec3(1.0, 0.86, 0.6), line * 0.8 * inside);
+    // distance to the line in pixels, the same width everywhere on it; a soft dark edge keeps it readable on a bright scene
+    float toLine = abs(cyl - 0.5) / max(length(vec2(dFdx(cyl), dFdy(cyl))), 1e-4);
+    float w = max(1.0, uRes.x / 900.0);
+    col *= 1.0 - 0.3 * inside * (1.0 - smoothstep(w, w * 4.0, toLine));
+    col = mix(col, vec3(1.0, 0.86, 0.6), inside * (1.0 - smoothstep(w * 0.55, w * 1.25, toLine)));
   }
 
   if (uLens > 0.5) {

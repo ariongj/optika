@@ -12,8 +12,8 @@ const WALL_Z = -3;
 const WALL_GLSL = /* glsl */ `
 vec3 wallAt(vec2 p) {
   float d = length((p - vec2(0.0, 0.1)) * vec2(0.42, 0.8));
-  float pool = exp(-d * d * 0.3);
-  vec3 base = vec3(0.0034, 0.0033, 0.0034) + vec3(0.056, 0.053, 0.049) * pool;
+  float pool = exp(-d * d * 1.25);
+  vec3 base = vec3(0.0034, 0.0033, 0.0034) + vec3(0.078, 0.074, 0.069) * pool;
   // a fine printed grid: quiet on its own, and it shows at a glance what the lens does to the world behind it
   vec2 g = (fract(p / 0.11) - 0.5) * 0.11;
   float dotMark = 1.0 - smoothstep(0.0028, 0.0068, length(g));
@@ -101,7 +101,7 @@ float sagAt(float c, vec2 q) {
 vec3 coat(float c) {
   float cf = sqrt(1.0 - (1.0 - c * c) / 2.1);
   vec3 phase = 6.2831853 * 1100.0 * cf / vec3(640.0, 535.0, 450.0);
-  vec3 r0 = 0.0065 + 0.0042 * (0.5 + 0.5 * cos(phase));
+  vec3 r0 = 0.0072 + 0.0028 * (0.5 + 0.5 * cos(phase));
   float g = pow(1.0 - c, 5.0);
   return r0 + (1.0 - r0) * g;
 }
@@ -119,7 +119,7 @@ vec3 throughLens(vec3 p, vec3 d) {
 }
 
 vec3 heatOf(vec2 q) {
-  float th = sagAt(uCb, q) * -1.0 + uZb * -1.0 - sagAt(uCf, q);
+  float th = sagAt(uCf, q) - uZb - sagAt(uCb, q);
   float h = clamp((th - uHeatMin) / uHeatRange, 0.0, 1.0);
   return mix(mix(uHeat0, uHeat1, h), mix(uHeat1, uHeat2, h), h);
 }
@@ -172,7 +172,7 @@ void main() {
 #if defined(WALL)
   vec3 n = normalize(vN);
   if (dot(n, d) > 0.0) n = -n;
-  float zf = -sagAt(uCf, vLocal.xy);
+  float zf = sagAt(uCf, vLocal.xy);
   float zb = uZb + sagAt(uCb, vLocal.xy);
   float v = clamp((vLocal.z - zb) / max(zf - zb, 0.01), 0.0, 1.0);
   vec3 body = mix(uEdgeBody, uEdgeRim, pow(abs(v - 0.5) * 2.0, 2.2));
@@ -180,7 +180,10 @@ void main() {
   float ci = clamp(-dot(d, n), 0.0, 1.0);
   vec3 p = (modelMatrix * vec4(vLocal, 1.0)).xyz;
   vec3 spec = (0.04 + 0.96 * pow(1.0 - ci, 5.0)) * world(p, toWorld(reflect(d, n))) * ENV_GAIN;
-  col = uHeat > 0.5 ? heatOf(vLocal.xy) + spec * 0.2 : body * (env(nw, 5.0) * 1.1 + 0.035) + spec;
+  col = uHeat > 0.5 ? heatOf(vLocal.xy) + spec * 0.2 : body * (env(nw, 5.0) * 1.25 + 0.055) + spec;
+  // Seen end on, each short piece of the edge flips between a hairline and hidden, which draws a dashed line along the rim.
+  // The edge fades out as it turns end on: it only needs to show where it has width.
+  if (uHeat < 0.5) col *= smoothstep(0.03, 0.2, abs(dot(d, normalize(vec3(n.xy, 0.0)))));
 #else
   #if defined(FRONT)
     float c = uCf;

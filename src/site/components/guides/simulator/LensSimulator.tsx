@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
 import { useReducedMotion } from 'motion/react';
 import { CalendarCheck, ChevronDown, EyeOff, Glasses, Minus, Move3d, Plus, ShoppingBag, SlidersHorizontal, Waypoints } from 'lucide-react';
 import { toast } from 'sonner';
@@ -60,6 +60,8 @@ const SCENES: SceneId[] = ['street', 'drive', 'desk'];
 
 const SPH_MIN = -10;
 const SPH_MAX = 6;
+/** Where a power sits along the slider: the thumb's centre stops half a thumb short of each end. */
+const sliderAt = (v: number) => `calc(12px + (100% - 24px) * ${(v - SPH_MIN) / (SPH_MAX - SPH_MIN)})`;
 
 function hasWebGL2() {
   try {
@@ -103,6 +105,14 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
   const [askToStart, setAskToStart] = useState(false);
   const [touched, setTouched] = useState(false);
   const [sceneFailed, setSceneFailed] = useState(false);
+
+  // the hint goes on the first drag or after a few seconds; each view has its own
+  useEffect(() => {
+    setTouched(false);
+    if (!painted) return;
+    const id = window.setTimeout(() => setTouched(true), 7000);
+    return () => clearTimeout(id);
+  }, [mode, painted]);
 
   // the chooser below and this slider speak about the same prescription
   useEffect(() => {
@@ -286,15 +296,15 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
   const ariaStage = mode === 'lens' ? t('aria3d', { power: powerLabel, index: selected.m.label, mm: num(stats.max) }) : t('ariaView', { power: powerLabel, scene: t(scene) });
 
   const orderBar = offer && (
-    <div className="flex min-w-0 flex-col gap-4 rounded-[28px] bg-white/[0.045] p-5 ring-1 ring-white/10 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between lg:px-6 lg:py-4">
-      <div className="min-w-0">
-        <div className="text-[15px] font-bold text-white">
-          {l(offer.product.name)} <span className="font-medium text-paper/60">· {indexOption || specIndex(offer.product) ? materialOf(selectedN).label : t('askIndex')}</span>
+    <div className="flex min-w-0 flex-col gap-x-5 gap-y-4 rounded-[28px] bg-white/[0.045] p-5 ring-1 ring-white/10 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between lg:px-6 lg:py-4">
+      <div className="min-w-0 sm:min-w-[240px] sm:flex-1">
+        <div className="text-[15px] font-bold leading-snug text-white">
+          {l(offer.product.name)}
+          {!l(offer.product.name).includes(materialOf(selectedN).label) && <span className="font-medium text-paper/60"> · {indexOption || specIndex(offer.product) ? materialOf(selectedN).label : t('askIndex')}</span>}
         </div>
         <div className="mt-1 text-[13px] font-medium text-paper/65">
           {powerLabel} · {num(stats.max)} mm · {num(stats.pairWeight, 0)} g
         </div>
-        {settings.demoBanner && <div className="mt-1 text-[12px] font-medium text-paper/65">{ts('demoBanner')}</div>}
       </div>
       <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
         <div>
@@ -308,6 +318,7 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
           {tl('bookExam')}
         </Button>
       </div>
+      {settings.demoBanner && <div className="basis-full text-[12px] font-medium text-paper/60">{ts('demoBanner')}</div>}
     </div>
   );
 
@@ -389,7 +400,7 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
                 <>
                   <Marker bind={setLabel('centre')} label={t('centre')} value={`${num(stats.centre)} mm`} className="left-3 top-3" />
                   <Marker bind={setLabel('temporal')} label={t('temporal')} value={`${num(stats.temporal)} mm`} className="left-3 -top-12" />
-                  <Marker bind={setLabel('nasal')} label={t('nasal')} value={`${num(stats.nasal)} mm`} className="-top-12 left-3 max-sm:hidden" />
+                  <Marker bind={setLabel('nasal')} label={t('nasal')} value={`${num(stats.nasal)} mm`} className="-top-12 left-3" rootClassName="max-sm:hidden" />
                 </>
               )}
               {status === 'ready' && showZones && (
@@ -402,11 +413,9 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
 
               {mode === 'view' ? (
                 <div className="pointer-events-none absolute inset-x-3 bottom-3 flex flex-col items-center gap-2 sm:bottom-4">
-                  {!touched && painted && (
-                    <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-black/45 px-2.5 py-1 text-[11.5px] font-medium text-paper/80 backdrop-blur-md">
-                      <Move3d className="h-3.5 w-3.5" aria-hidden /> {t('dragView')}
-                    </div>
-                  )}
+                  <div className={cn('inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-black/45 px-2.5 py-1 text-[11.5px] font-medium text-paper/80 backdrop-blur-md transition-opacity duration-500 motion-reduce:transition-none', touched || !painted ? 'opacity-0' : 'opacity-100')}>
+                    <Move3d className="h-3.5 w-3.5" aria-hidden /> {t('dragView')}
+                  </div>
                   <div className="pointer-events-auto inline-flex rounded-full bg-black/55 p-1 ring-1 ring-white/15 backdrop-blur-md">
                     <ChoiceGroup
                       ariaLabel={t('compare')}
@@ -416,8 +425,8 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
                       onChange={(v) => setWithLens(v === 'with')}
                       className="flex gap-1"
                       options={[
-                        { id: 'without' as const, label: t('withoutLens'), className: 'min-h-12! whitespace-nowrap text-[14.5px]! max-sm:px-3! sm:px-5! sm:text-[15px]!', visual: <EyeOff className="h-4 w-4" aria-hidden /> },
-                        { id: 'with' as const, label: t('withLens'), className: 'min-h-12! whitespace-nowrap text-[14.5px]! max-sm:px-3! sm:px-5! sm:text-[15px]!', visual: <Glasses className="h-4 w-4" aria-hidden /> },
+                        { id: 'without' as const, label: t('withoutLens'), className: 'min-h-12! whitespace-nowrap text-[14.5px]! max-sm:px-3! sm:px-5! sm:text-[15px]!', visual: <EyeOff className="h-4 w-4 max-[359px]:hidden" aria-hidden /> },
+                        { id: 'with' as const, label: t('withLens'), className: 'min-h-12! whitespace-nowrap text-[14.5px]! max-sm:px-3! sm:px-5! sm:text-[15px]!', visual: <Glasses className="h-4 w-4 max-[359px]:hidden" aria-hidden /> },
                       ]}
                     />
                   </div>
@@ -435,7 +444,7 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
                         </div>
                       </div>
                     )}
-                    <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-black/45 px-2.5 py-1 text-[11.5px] font-medium text-paper/75 backdrop-blur-md">
+                    <div className={cn('inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-black/45 px-2.5 py-1 text-[11.5px] font-medium text-paper/75 backdrop-blur-md transition-opacity duration-500 motion-reduce:transition-none', touched ? 'opacity-0' : 'opacity-100')}>
                       <Move3d className="h-3.5 w-3.5" aria-hidden /> {t('drag')}
                     </div>
                   </div>
@@ -491,12 +500,15 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
               value={sph}
               onChange={(e) => changeSph(Number(e.target.value))}
               aria-valuetext={powerLabel}
-              className="mt-3 h-11 w-full cursor-pointer appearance-none bg-transparent [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-brand-200 [&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-white/15 [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-white/15 [&::-webkit-slider-thumb]:-mt-[9px] [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-brand-200 [&::-webkit-slider-thumb]:shadow-[0_0_0_5px_rgba(224,219,209,0.14)]"
+              style={{ '--sim-track': `linear-gradient(to right, rgb(255 255 255 / 0.15) ${sliderAt(Math.min(sph, 0))}, var(--color-brand-200) ${sliderAt(Math.min(sph, 0))} ${sliderAt(Math.max(sph, 0))}, rgb(255 255 255 / 0.15) ${sliderAt(Math.max(sph, 0))})` } as CSSProperties}
+              className="mt-3 h-11 w-full cursor-pointer appearance-none bg-transparent [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-brand-200 [&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:[background:var(--sim-track)] [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:[background:var(--sim-track)] [&::-webkit-slider-thumb]:-mt-[9px] [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-brand-200 [&::-webkit-slider-thumb]:shadow-[0_0_0_5px_rgba(224,219,209,0.14)]"
             />
-            <div className="flex justify-between text-[11.5px] font-semibold tabular-nums text-paper/55">
-              <span>−10</span>
-              <span>0</span>
-              <span>+6</span>
+            <div className="relative h-4 text-[11.5px] font-semibold tabular-nums text-paper/55" aria-hidden>
+              <span className="absolute left-0">−10</span>
+              <span className="absolute -translate-x-1/2" style={{ left: sliderAt(0) }}>
+                0
+              </span>
+              <span className="absolute right-0">+6</span>
             </div>
             <p className="mt-1.5 text-center text-[12.5px] font-medium text-paper/70">{sph < 0 ? t('rxMinus') : sph > 0 ? t('rxPlus') : t('rxZero')}</p>
             <p className="mt-3 text-center text-[13px] font-medium text-paper/70">
@@ -566,10 +578,8 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
           )}
 
           <Step n={packages.length > 0 ? 3 : 2} title={t('material')}>
-            <p className="mb-2.5 text-[12px] font-medium text-paper/65">
-              mm: {t('thickest').toLowerCase()} · g: {t('weight').toLowerCase()}
-            </p>
-            <div className="grid grid-cols-2 gap-2.5">
+            <p className="mb-3.5 text-[12.5px] font-medium text-paper/65">{t('cardsNote')}</p>
+            <div className="grid grid-cols-2 gap-x-2.5 gap-y-3.5">
               {rows.map(({ m, stats: s }) => {
                 const on = m.n === selected.m.n;
                 const buy = offerFor(m.n);
@@ -588,10 +598,8 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
                       unavailable && 'opacity-55',
                     )}
                   >
-                    <span className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
-                      <span className="display text-[26px] leading-none tabular-nums text-white">{m.label}</span>
-                      {m.n === recommended && <span className="whitespace-nowrap rounded-full bg-brand-300 px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.08em] text-ink">{tl('recommended')}</span>}
-                    </span>
+                    <span className="display text-[26px] leading-none tabular-nums text-white">{m.label}</span>
+                    {m.n === recommended && <span className="absolute -top-2 right-2.5 whitespace-nowrap rounded-full bg-brand-300 px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.08em] text-ink">{tl('recommended')}</span>}
                     <span className="mt-1 text-[12px] font-semibold text-paper/70">{l(m.name)}</span>
                     <span className="mt-2.5 text-[19px] font-bold tabular-nums text-white">
                       {num(s.max)} <span className="text-[12.5px] font-semibold text-paper/65">mm</span>
@@ -599,7 +607,7 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
                     <span className="mt-1.5 block h-1 w-full overflow-hidden rounded-full bg-white/10" aria-hidden>
                       <span className="block h-full origin-left rounded-full bg-brand-300 transition-transform duration-300 motion-reduce:transition-none" style={{ transform: `scaleX(${clamp(s.max / baseMax, 0.04, 1)})` }} />
                     </span>
-                    <span className="mt-1.5 text-[11.5px] font-medium text-paper/70">{pct > 0 ? t('thinner', { pct }) : t('reference')}</span>
+                    <span className="mb-auto mt-1.5 text-[11.5px] font-medium text-paper/70">{pct > 0 ? t('thinner', { pct }) : t('reference')}</span>
                     <span className="mt-2 flex items-baseline justify-between gap-2 border-t border-white/10 pt-2">
                       <span className="text-[12px] font-medium tabular-nums text-paper/65">{num(s.pairWeight, 0)} g</span>
                       <span className="text-[14px] font-bold tabular-nums text-brand-200">{buy ? fmt(unitPrice(buy.product, buy.options)) : ''}</span>
@@ -693,10 +701,10 @@ function Toggle({ on, onClick, icon, children }: { on: boolean; onClick: () => v
 }
 
 /** A point on the 3D lens; the engine moves it, this only draws the dot and the reading. */
-function Marker({ bind, label, value, className }: { bind: (el: HTMLElement | null) => void; label: string; value: string; className: string }) {
+function Marker({ bind, label, value, className, rootClassName }: { bind: (el: HTMLElement | null) => void; label: string; value: string; className: string; rootClassName?: string }) {
   return (
-    <div ref={bind} style={{ visibility: 'hidden' }} className="pointer-events-none absolute left-0 top-0 h-0 w-0 will-change-transform" aria-hidden>
-      <span className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-white shadow-[0_0_0_3px_rgba(255,255,255,0.22)]" />
+    <div ref={bind} style={{ visibility: 'hidden' }} className={cn('pointer-events-none absolute left-0 top-0 h-0 w-0 will-change-transform', rootClassName)} aria-hidden>
+      <span className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-white shadow-[0_0_0_1.5px_rgba(20,18,15,0.55),0_0_0_4px_rgba(255,255,255,0.22)]" />
       <span className={cn('absolute whitespace-nowrap rounded-lg bg-black/60 px-2 py-1 text-[11px] leading-tight text-paper/75 backdrop-blur-md', className)}>
         {label} <b className="block text-[13.5px] font-bold tabular-nums text-white">{value}</b>
       </span>

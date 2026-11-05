@@ -88,8 +88,8 @@ export default function LensGuide() {
         </div>
       </section>
 
-      {/* 03 — lens types */}
-      <section className="below-fold py-20 sm:py-28">
+      {/* 03 — lens types: the chooser's own bottom padding is the gap, on the same background */}
+      <section className="below-fold pb-20 sm:pb-28">
         <div className="container-x">
           <Reveal>
             <SectionHeading

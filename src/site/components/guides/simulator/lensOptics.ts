@@ -200,6 +200,8 @@ export function buildLensMap(l: OpticLens, addition: Addition | null, offAxis = 
         power[pi] += addition.m[id];
         power[pi + 1] += addition.j0[id];
         power[pi + 2] += addition.j45[id];
+        // the cylinder here as one number, which the shader can smooth: it draws the line around the clear field from it
+        power[pi + 3] = 2 * Math.hypot(power[pi + 1], power[pi + 2]);
       }
     }
   }

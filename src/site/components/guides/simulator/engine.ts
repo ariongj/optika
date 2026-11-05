@@ -148,11 +148,11 @@ function studioEnvironment() {
       }),
     ),
   );
-  panel(7, 7, '#fffaf2', 4, 9.9, 0.4, 4.8, 0.15); // off to one side of what a lens at its resting angle mirrors: a soft sweep, not a shape
+  panel(7, 7, '#fffaf2', 2.2, 10.6, 0.4, 4.2, 0.05); // off to one side of what a lens at its resting angle mirrors: a soft sweep, not a shape
   panel(13, 3, '#ffffff', 4.5, 1.5, 7.5, 6); // overhead softbox, in front of the lens
   panel(0.9, 12, '#ffffff', 9, -8.5, 1, 6); // long strip on the left
   panel(3.5, 12, '#f2ece2', 1.15, 9, 0, 1.5); // broad soft fill on the right: a sheen, not a stripe
-  panel(9, 2.4, '#bcd2ff', 1.1, 0, -7.5, 5, 0.1); // cool low fill, too soft to read as a shape in the lens
+  panel(11, 2.4, '#d6e2ff', 3.4, 0, -7.5, 5, 0.1); // cool low light: it draws the lower edge of the lens, too soft to read as a shape in it
   panel(26, 26, '#26272a', 1, 0, 0, -13); // dim wall behind, for the sides of the lens
   panel(26, 26, '#1c1c1e', 1, 0, 13, -2);
   return env;
@@ -526,6 +526,9 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
       const distance = Math.max(halfW / (Math.tan(fov / 2) * camera.aspect), 0.78 / Math.tan(fov / 2));
       camera.position.set(0, 0, distance);
       camera.lookAt(0, 0, 0);
+      // turned, the nearer lens looks bigger and the pair drifts towards it: this keeps it in the middle of the stage
+      const reach = (s.lensWidth + s.bridge / 2) * (NOMINAL_WIDTH / frameWidth(s));
+      pair.position.x = (reach * reach * Math.sin(pair.rotation.y) * Math.cos(pair.rotation.y)) / distance;
       camera.updateMatrixWorld();
       pair.updateMatrixWorld(true);
       if (moving) sample = 0;

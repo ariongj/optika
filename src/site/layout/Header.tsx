@@ -438,7 +438,7 @@ export function Header({ transparentTop = false, dark = false }: { transparentTo
       <header
         className={cn(
           'sticky top-0 z-40 transition-[background,box-shadow,border-color] duration-300',
-          !solid ? 'border-b border-transparent bg-transparent' : dark ? 'border-b border-white/10 bg-[#07090a]/90 backdrop-blur-xl' : 'border-b border-line/80 bg-paper/90 backdrop-blur-xl',
+          !solid ? 'border-b border-transparent bg-transparent' : dark ? 'border-b border-white/10 bg-[#07090a]/90 backdrop-blur-xl' : 'border-b border-line/80 bg-paper/95 backdrop-blur-xl',
           transparentTop && '-mb-[76px]',
         )}
         onMouseLeave={() => setMega(null)}
