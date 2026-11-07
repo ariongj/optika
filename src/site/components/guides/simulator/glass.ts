@@ -4,7 +4,7 @@
 // reflections, the rings of a strong minus lens and the shrunken or magnified wall seen through it.
 // Each still picture adds several of these, one wavelength at a time, so the colour fringes are the material's real ones.
 import * as THREE from 'three';
-import type { SolvedLens } from './lensMath';
+import { rightEye, type SolvedLens } from './lensMath';
 
 /** The wall behind the glasses, in stage units: close enough for the lens to visibly change it. */
 const WALL_Z = -3;
@@ -39,6 +39,7 @@ uniform sampler2D tRim;
 uniform float uN;
 uniform float uCf;
 uniform float uCb;
+uniform vec3 uCbT;
 uniform float uZb;
 uniform float uOx;
 uniform float uAbsorb;
@@ -65,37 +66,45 @@ vec3 toWorld(vec3 v) { return normalize(mat3(modelMatrix) * v); }
 float rimAt(vec2 q) { return texture2D(tRim, vec2(atan(q.y, q.x) / 6.2831853 + 0.5, 0.5)).r; }
 bool beyondRim(vec3 q) { return length(q.xy) > rimAt(q.xy); }
 
-// nearest hit with a surface given by its curvature c and vertex height z0; works down to a flat one
-float sheet(vec3 o, vec3 d, float c, float z0) {
+// A surface through its vertex at height z0: x'Ax - 2z = 0, with A = [[cxx, cxy, 0], [cxy, cyy, 0], [0, 0, cz]]. With every
+// curvature equal it is a sphere; a cylinder makes the back surface toric, which this quadric follows closely across a lens.
+// The ray meets it where a quadratic in t is zero; the nearest hit on the sheet through the vertex wins. Works down to flat.
+float sheet(vec3 o, vec3 d, vec3 c, float cz, float z0) {
   vec3 p = o - vec3(uOx, 0.0, z0);
-  float b = c * dot(p, d) - d.z;
-  float k = c * dot(p, p) - 2.0 * p.z;
-  float disc = b * b - c * k;
+  float a = c.x * d.x * d.x + c.y * d.y * d.y + 2.0 * c.z * d.x * d.y + cz * d.z * d.z;
+  float b = c.x * p.x * d.x + c.y * p.y * d.y + c.z * (p.x * d.y + p.y * d.x) + cz * p.z * d.z - d.z;
+  float k = c.x * p.x * p.x + c.y * p.y * p.y + 2.0 * c.z * p.x * p.y + cz * p.z * p.z - 2.0 * p.z;
+  float disc = b * b - a * k;
   if (disc < 0.0) return NONE;
   float s = sqrt(disc);
   float best = NONE;
   float den = s - b;
   if (abs(den) > 1e-7) {
     float t = k / den;
-    if (t > 0.001 && 1.0 - c * (p.z + t * d.z) > 0.0) best = t;
+    if (t > 0.001 && 1.0 - cz * (p.z + t * d.z) > 0.0) best = t;
   }
   den = -s - b;
   if (abs(den) > 1e-7) {
     float t = k / den;
-    if (t > 0.001 && t < best && 1.0 - c * (p.z + t * d.z) > 0.0) best = t;
+    if (t > 0.001 && t < best && 1.0 - cz * (p.z + t * d.z) > 0.0) best = t;
   }
   return best;
 }
 
-vec3 gradient(vec3 q, float c, float z0) {
-  return normalize(vec3(c * (q.x - uOx), c * q.y, c * (q.z - z0) - 1.0));
+vec3 gradient(vec3 q, vec3 c, float cz, float z0) {
+  vec3 v = q - vec3(uOx, 0.0, z0);
+  return normalize(vec3(c.x * v.x + c.z * v.y, c.z * v.x + c.y * v.y, cz * v.z - 1.0));
 }
 
-float sagAt(float c, vec2 q) {
+// height above the vertex: a sphere of the curvature along this direction, as the thickness figures are worked out
+float sagAt(vec3 c, vec2 q) {
   vec2 v = q - vec2(uOx, 0.0);
   float rr = dot(v, v);
-  return c * rr / (1.0 + sqrt(max(1.0 - c * c * rr, 1e-4)));
+  float k = rr > 1e-8 ? (c.x * v.x * v.x + c.y * v.y * v.y + 2.0 * c.z * v.x * v.y) / rr : 0.5 * (c.x + c.y);
+  return k * rr / (1.0 + sqrt(max(1.0 - k * k * rr, 1e-4)));
 }
+
+vec3 front3() { return vec3(uCf, uCf, 0.0); }
 
 // a thin-film stack as a single interference term: residual green head-on, moving towards blue and violet as the angle grows
 vec3 coat(float c) {
@@ -119,7 +128,7 @@ vec3 throughLens(vec3 p, vec3 d) {
 }
 
 vec3 heatOf(vec2 q) {
-  float th = sagAt(uCf, q) - uZb - sagAt(uCb, q);
+  float th = sagAt(front3(), q) - uZb - sagAt(uCbT, q);
   float h = clamp((th - uHeatMin) / uHeatRange, 0.0, 1.0);
   return mix(mix(uHeat0, uHeat1, h), mix(uHeat1, uHeat2, h), h);
 }
@@ -128,8 +137,8 @@ vec3 inside(vec3 p, vec3 d) {
   vec3 sum = vec3(0.0);
   vec3 t = vec3(1.0);
   for (int i = 0; i < 6; i++) {
-    float tf = sheet(p, d, uCf, 0.0);
-    float tb = sheet(p, d, uCb, uZb);
+    float tf = sheet(p, d, front3(), uCf, 0.0);
+    float tb = sheet(p, d, uCbT, uCb, uZb);
     float len = min(min(tf, tb), 400.0);
     vec3 q = p + d * len;
     if (beyondRim(q)) {
@@ -148,7 +157,7 @@ vec3 inside(vec3 p, vec3 d) {
     }
     t *= exp(-uAbsorb * len);
     bool front = tf < tb;
-    vec3 n = front ? -gradient(q, uCf, 0.0) : gradient(q, uCb, uZb);
+    vec3 n = front ? -gradient(q, front3(), uCf, 0.0) : gradient(q, uCbT, uCb, uZb);
     float ci = dot(d, n);
     float s2 = uN * uN * (1.0 - ci * ci);
     vec3 r = vec3(1.0);
@@ -172,8 +181,8 @@ void main() {
 #if defined(WALL)
   vec3 n = normalize(vN);
   if (dot(n, d) > 0.0) n = -n;
-  float zf = sagAt(uCf, vLocal.xy);
-  float zb = uZb + sagAt(uCb, vLocal.xy);
+  float zf = sagAt(front3(), vLocal.xy);
+  float zb = uZb + sagAt(uCbT, vLocal.xy);
   float v = clamp((vLocal.z - zb) / max(zf - zb, 0.01), 0.0, 1.0);
   vec3 body = mix(uEdgeBody, uEdgeRim, pow(abs(v - 0.5) * 2.0, 2.2));
   vec3 nw = toWorld(n);
@@ -186,17 +195,19 @@ void main() {
   if (uHeat < 0.5) col *= smoothstep(0.03, 0.2, abs(dot(d, normalize(vec3(n.xy, 0.0)))));
 #else
   #if defined(FRONT)
-    float c = uCf;
+    vec3 c = front3();
+    float cz = uCf;
     float z0 = 0.0;
     float side = -1.0;
   #else
-    float c = uCb;
+    vec3 c = uCbT;
+    float cz = uCb;
     float z0 = uZb;
     float side = 1.0;
   #endif
-  float t = sheet(vCam, d, c, z0);
+  float t = sheet(vCam, d, c, cz, z0);
   vec3 p = t < NONE ? vCam + d * t : vLocal;
-  vec3 n = side * gradient(p, c, z0);
+  vec3 n = side * gradient(p, c, cz, z0);
   float ci = -dot(d, n);
   if (ci < 0.0) {
     n = -n;
@@ -246,6 +257,7 @@ export function createGlass(envCube: THREE.Texture) {
     uN: { value: 1.5 },
     uCf: { value: 0 },
     uCb: { value: 0 },
+    uCbT: { value: new THREE.Vector3() },
     uZb: { value: -2 },
     uOx: { value: 0 },
     uAbsorb: { value: 0.004 },
@@ -261,10 +273,12 @@ export function createGlass(envCube: THREE.Texture) {
     uEdgeBody: { value: linear('#62706d') },
     uEdgeRim: { value: linear('#e9f2ef') },
   };
-  const lensMaterial = (define: string) => new THREE.ShaderMaterial({ uniforms, vertexShader: LENS_VERT, fragmentShader: LENS_FRAG, defines: { [define]: 1 } });
-  const front = lensMaterial('FRONT');
-  const back = lensMaterial('BACK');
-  const edge = lensMaterial('WALL');
+  // The right eye's lens shares every value with the left one except its back surface, which a cylinder turns differently.
+  // Spreading keeps the other uniforms the same objects, so one update reaches both.
+  const right = { ...uniforms, uCbT: { value: new THREE.Vector3() } };
+  const lensMaterial = (define: string, u: typeof uniforms) => new THREE.ShaderMaterial({ uniforms: u, vertexShader: LENS_VERT, fragmentShader: LENS_FRAG, defines: { [define]: 1 } });
+  /** Materials per eye, right then left: the order the stage lays the lenses out, from the viewer's left. */
+  const eyes = [right, uniforms].map((u) => ({ front: lensMaterial('FRONT', u), back: lensMaterial('BACK', u), edge: lensMaterial('WALL', u) }));
 
   const wall = new THREE.Mesh(new THREE.PlaneGeometry(120, 120), new THREE.ShaderMaterial({ vertexShader: WALL_VERT, fragmentShader: WALL_FRAG, depthWrite: false }));
   wall.position.z = WALL_Z;
@@ -296,9 +310,7 @@ export function createGlass(envCube: THREE.Texture) {
   }
 
   return {
-    front,
-    back,
-    edge,
+    eyes,
     wall,
     setLens(l: SolvedLens, heatMin: number, heatRange: number) {
       if (l.rim !== rimSource) {
@@ -307,7 +319,17 @@ export function createGlass(envCube: THREE.Texture) {
       }
       const k = (l.n - 1) * 1000;
       uniforms.uCf.value = -l.f1 / k;
-      uniforms.uCb.value = l.f2 / k;
+      // the back surface: its curvature along the axis, and the cylinder's extra curvature across it
+      const ca = l.f2 / k;
+      const dc = l.cyl / k;
+      const tensor = (target: THREE.Vector3, ax: number) => {
+        const s = Math.sin(ax);
+        const c = Math.cos(ax);
+        target.set(ca + dc * s * s, ca + dc * c * c, -dc * s * c);
+      };
+      tensor(uniforms.uCbT.value, l.ax);
+      tensor(right.uCbT.value, rightEye(l).ax);
+      uniforms.uCb.value = ca + dc / 2;
       uniforms.uZb.value = -l.ct;
       uniforms.uOx.value = l.ox;
       uniforms.uHeatMin.value = heatMin;
@@ -326,9 +348,7 @@ export function createGlass(envCube: THREE.Texture) {
     },
     dispose() {
       rimTex.dispose();
-      front.dispose();
-      back.dispose();
-      edge.dispose();
+      for (const e of eyes) for (const m of [e.front, e.back, e.edge]) m.dispose();
       wall.geometry.dispose();
       wall.material.dispose();
     },

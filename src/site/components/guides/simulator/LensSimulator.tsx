@@ -22,7 +22,7 @@ import { LG } from '../lensDict';
 import { ThicknessCompare } from '../ThicknessCompare';
 import { SIM } from './dict';
 import type { LabelId, LabelMap, LensKind, ProgressiveLevel, Simulator, SimState } from './engine';
-import { bandOf, crossSection, lensStats, MATERIALS, materialOf, solveLens, type LensFit } from './lensMath';
+import { bandOf, crossSection, lensStats, MATERIALS, materialOf, rightEye, solveLens, strongestPower, type LensFit } from './lensMath';
 import type { SceneId } from './plates';
 
 const KINDS: { id: string; kind: LensKind }[] = [
@@ -60,8 +60,16 @@ const SCENES: SceneId[] = ['street', 'drive', 'desk'];
 
 const SPH_MIN = -10;
 const SPH_MAX = 6;
-/** Where a power sits along the slider: the thumb's centre stops half a thumb short of each end. */
-const sliderAt = (v: number) => `calc(12px + (100% - 24px) * ${(v - SPH_MIN) / (SPH_MAX - SPH_MIN)})`;
+/** Minus-cylinder form, as most prescriptions here are written. */
+const CYL_MIN = -4;
+/** A value along a slider: the thumb's centre stops half a thumb short of each end. */
+const trackAt = (v: number, min: number, max: number) => `calc(12px + (100% - 24px) * ${(v - min) / (max - min)})`;
+const sliderAt = (v: number) => trackAt(v, SPH_MIN, SPH_MAX);
+/** The slider track, lit between two points along it. */
+const trackFill = (from: string, to: string) =>
+  ({ '--sim-track': `linear-gradient(to right, rgb(255 255 255 / 0.15) ${from}, var(--color-brand-200) ${from} ${to}, rgb(255 255 255 / 0.15) ${to})` }) as CSSProperties;
+const RANGE =
+  'h-11 w-full cursor-pointer appearance-none bg-transparent [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-brand-200 [&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:[background:var(--sim-track)] [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:[background:var(--sim-track)] [&::-webkit-slider-thumb]:-mt-[9px] [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-brand-200 [&::-webkit-slider-thumb]:shadow-[0_0_0_5px_rgba(224,219,209,0.14)]';
 
 function hasWebGL2() {
   try {
@@ -89,6 +97,9 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
 
   const [mode, setMode] = useState<'lens' | 'view'>('view');
   const [sph, setSph] = useState(() => -STRENGTH_POWER[known(strength)]);
+  const [cylOpen, setCylOpen] = useState(false);
+  const [cyl, setCyl] = useState(0);
+  const [axis, setAxis] = useState(180);
   const [picked, setPicked] = useState<number | null>(null);
   const [packageId, setPackageId] = useState('p-lens-single');
   const [choices, setChoices] = useState<Record<string, string>>({});
@@ -114,16 +125,27 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
     return () => clearTimeout(id);
   }, [mode, painted]);
 
-  // the chooser below and this slider speak about the same prescription
+  // The chooser below and these sliders speak about the same prescription. Its strength is the stronger meridian's, the
+  // number that decides the index, so both recommend the same lens.
+  const cylRef = useRef(cyl);
+  cylRef.current = cyl;
   useEffect(() => {
     if (!strength || strength === 'unknown') return;
-    setSph((cur) => (bandOf(cur) === strength ? cur : (cur > 0 ? 1 : -1) * STRENGTH_POWER[strength]));
+    setSph((cur) => {
+      const c = cylRef.current;
+      if (bandOf(strongestPower(cur, c)) === strength) return cur;
+      const p = STRENGTH_POWER[strength];
+      // on the minus side a cylinder adds to the sphere, so the sphere takes what is left of the band's power
+      return cur > 0 ? p : clamp(-p - c, SPH_MIN, 0);
+    });
   }, [strength]);
-  const changeSph = (v: number) => {
-    const next = clamp(Math.round(v * 4) / 4, SPH_MIN, SPH_MAX);
-    setSph(next);
-    if (bandOf(next) !== strength) onStrength(bandOf(next));
+  const changeRx = (nextSph: number, nextCyl: number) => {
+    setSph(nextSph);
+    setCyl(nextCyl);
+    const band = bandOf(strongestPower(nextSph, nextCyl));
+    if (band !== strength) onStrength(band);
   };
+  const changeSph = (v: number) => changeRx(clamp(Math.round(v * 4) / 4, SPH_MIN, SPH_MAX), cyl);
 
   const packages = useMemo(() => KINDS.flatMap((k) => lenses.filter((p) => p.id === k.id).map((product) => ({ ...k, product }))), [lenses]);
   const pack = packages.find((p) => p.id === packageId) ?? packages[0];
@@ -148,7 +170,8 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
     return null;
   };
 
-  const recommended = IDEAL_INDEX[bandOf(sph)];
+  // the stronger meridian decides: -3.00 with a -2.00 cylinder is a -5.00 lens one way
+  const recommended = IDEAL_INDEX[bandOf(strongestPower(sph, cyl))];
   const wanted = picked ?? recommended;
   const offered = MATERIALS.filter((m) => offerFor(m.n));
   const selectedN = !indexOption || offerFor(wanted) ? wanted : (offered.filter((m) => m.n <= wanted).pop() ?? offered[0] ?? MATERIALS[0]).n;
@@ -160,14 +183,18 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
     return { shape, lensWidth: sizeSpec.width, lensHeight: Math.round(sizeSpec.width * height), bridge: sizeSpec.bridge, pd };
   }, [shape, sizeSpec, pd]);
 
-  const rows = useMemo(() => MATERIALS.map((m) => ({ m, stats: lensStats(solveLens(sph, m.n, m.centre, fit), m.density) })), [sph, fit]);
+  // the right eye's lens: the 3D view puts its readings on that one
+  const rows = useMemo(() => MATERIALS.map((m) => ({ m, stats: lensStats(rightEye(solveLens(sph, m.n, m.centre, fit, cyl, axis)), m.density) })), [sph, cyl, axis, fit]);
   const selected = rows.find((r) => Math.abs(r.m.n - selectedN) < 1e-6) ?? rows[0];
   const stats = selected.stats;
   const baseMax = rows[0].stats.max;
 
   const num = (v: number, digits = 1) => (lang === 'en' ? v.toFixed(digits) : v.toFixed(digits).replace('.', ','));
   const fmt = (n: number) => money(n, lang, { decimals: n % 1 !== 0 });
-  const powerLabel = `${sph < 0 ? '−' : sph > 0 ? '+' : ''}${num(Math.abs(sph), 2)} D`;
+  const signed = (v: number) => `${v < 0 ? '−' : v > 0 ? '+' : ''}${num(Math.abs(v), 2)}`;
+  const powerLabel = `${signed(sph)} D`;
+  /** The whole prescription, for the order line and screen readers. */
+  const rxLabel = cyl ? `${powerLabel} · CYL ${signed(cyl)} × ${axis}°` : powerLabel;
 
   // ---------------------------------------------------------------- the headline and a still come first, then the engine
   const hostRef = useRef<HTMLDivElement>(null);
@@ -179,6 +206,8 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
     () => ({
       mode,
       sph,
+      cyl,
+      axis,
       n: selectedN,
       shape,
       lensWidth: fit.lensWidth,
@@ -196,7 +225,7 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
       withLens,
       zones,
     }),
-    [mode, sph, selectedN, shape, fit, pd, heat, scene, kind, baseOptions, age, tintValue, withLens, zones],
+    [mode, sph, cyl, axis, selectedN, shape, fit, pd, heat, scene, kind, baseOptions, age, tintValue, withLens, zones],
   );
   const stateRef = useRef(simState);
   stateRef.current = simState;
@@ -293,7 +322,7 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
 
   const know = TYPES.find((x) => x.id === product?.id)?.know;
   const showZones = mode === 'view' && withLens && kind === 'progressive' && zones;
-  const ariaStage = mode === 'lens' ? t('aria3d', { power: powerLabel, index: selected.m.label, mm: num(stats.max) }) : t('ariaView', { power: powerLabel, scene: t(scene) });
+  const ariaStage = mode === 'lens' ? t('aria3d', { power: rxLabel, index: selected.m.label, mm: num(stats.max) }) : t('ariaView', { power: rxLabel, scene: t(scene) });
 
   const orderBar = offer && (
     <div className="flex min-w-0 flex-col gap-x-5 gap-y-4 rounded-[28px] bg-white/[0.045] p-5 ring-1 ring-white/10 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between lg:px-6 lg:py-4">
@@ -303,7 +332,7 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
           {!l(offer.product.name).includes(materialOf(selectedN).label) && <span className="font-medium text-paper/60"> · {indexOption || specIndex(offer.product) ? materialOf(selectedN).label : t('askIndex')}</span>}
         </div>
         <div className="mt-1 text-[13px] font-medium text-paper/65">
-          {powerLabel} · {num(stats.max)} mm · {num(stats.pairWeight, 0)} g
+          {rxLabel} · {num(stats.max)} mm · {num(stats.pairWeight, 0)} g
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
@@ -448,7 +477,7 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
                       <Move3d className="h-3.5 w-3.5" aria-hidden /> {t('drag')}
                     </div>
                   </div>
-                  <Profile fit={fit} sph={sph} n={selectedN} label={t('profile')} nose={t('nose')} temple={t('temple')} />
+                  <Profile fit={fit} sph={sph} cyl={cyl} axis={axis} n={selectedN} label={t('profile')} nose={t('nose')} temple={t('temple')} />
                 </div>
               )}
             </div>
@@ -484,7 +513,7 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
               <StepButton label={t('less')} onClick={() => changeSph(sph - 0.25)} disabled={sph <= SPH_MIN}>
                 <Minus className="h-4 w-4" />
               </StepButton>
-              <output htmlFor="sim-sph" className="display text-center text-[42px] leading-none tabular-nums text-white sm:text-[46px]">
+              <output htmlFor="sim-sph" className="display whitespace-nowrap text-center text-[34px] leading-none tabular-nums text-white min-[360px]:text-[42px] sm:text-[46px]">
                 {powerLabel}
               </output>
               <StepButton label={t('more')} onClick={() => changeSph(sph + 0.25)} disabled={sph >= SPH_MAX}>
@@ -500,8 +529,8 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
               value={sph}
               onChange={(e) => changeSph(Number(e.target.value))}
               aria-valuetext={powerLabel}
-              style={{ '--sim-track': `linear-gradient(to right, rgb(255 255 255 / 0.15) ${sliderAt(Math.min(sph, 0))}, var(--color-brand-200) ${sliderAt(Math.min(sph, 0))} ${sliderAt(Math.max(sph, 0))}, rgb(255 255 255 / 0.15) ${sliderAt(Math.max(sph, 0))})` } as CSSProperties}
-              className="mt-3 h-11 w-full cursor-pointer appearance-none bg-transparent [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-brand-200 [&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:[background:var(--sim-track)] [&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:[background:var(--sim-track)] [&::-webkit-slider-thumb]:-mt-[9px] [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-brand-200 [&::-webkit-slider-thumb]:shadow-[0_0_0_5px_rgba(224,219,209,0.14)]"
+              style={trackFill(sliderAt(Math.min(sph, 0)), sliderAt(Math.max(sph, 0)))}
+              className={cn('mt-3', RANGE)}
             />
             <div className="relative h-4 text-[11.5px] font-semibold tabular-nums text-paper/55" aria-hidden>
               <span className="absolute left-0">−10</span>
@@ -511,6 +540,82 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
               <span className="absolute right-0">+6</span>
             </div>
             <p className="mt-1.5 text-center text-[12.5px] font-medium text-paper/70">{sph < 0 ? t('rxMinus') : sph > 0 ? t('rxPlus') : t('rxZero')}</p>
+            {cylOpen ? (
+              <div className="mt-4 rounded-2xl bg-white/[0.035] p-4 ring-1 ring-white/10">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[13.5px] font-bold text-white">{t('astig')}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCylOpen(false);
+                      changeRx(sph, 0);
+                    }}
+                    className="-my-2 min-h-11 rounded px-1 text-[12.5px] font-semibold text-brand-200 underline underline-offset-2 outline-none hover:text-white focus-visible:ring-2 focus-visible:ring-brand-200"
+                  >
+                    {t('cylRemove')}
+                  </button>
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-3">
+                  <label htmlFor="sim-cyl" className="text-[12.5px] font-semibold text-paper/75">
+                    {t('cyl')}
+                  </label>
+                  <output htmlFor="sim-cyl" className="text-[17px] font-bold tabular-nums text-white">
+                    {signed(cyl)}
+                  </output>
+                </div>
+                <input
+                  id="sim-cyl"
+                  type="range"
+                  min={CYL_MIN}
+                  max={0}
+                  step={0.25}
+                  value={cyl}
+                  onChange={(e) => changeRx(sph, clamp(Math.round(Number(e.target.value) * 4) / 4, CYL_MIN, 0))}
+                  aria-valuetext={`${signed(cyl)} D`}
+                  style={trackFill(trackAt(cyl, CYL_MIN, 0), trackAt(0, CYL_MIN, 0))}
+                  className={RANGE}
+                />
+                <div className="mt-1 flex items-center justify-between gap-3">
+                  <label htmlFor="sim-axis" className="text-[12.5px] font-semibold text-paper/75">
+                    {t('axis')}
+                  </label>
+                  <span className="inline-flex items-center gap-2">
+                    <AxisDial axis={axis} />
+                    <output htmlFor="sim-axis" className="text-[17px] font-bold tabular-nums text-white">
+                      {axis}°
+                    </output>
+                  </span>
+                </div>
+                <input
+                  id="sim-axis"
+                  type="range"
+                  min={1}
+                  max={180}
+                  step={1}
+                  value={axis}
+                  onChange={(e) => setAxis(clamp(Math.round(Number(e.target.value)), 1, 180))}
+                  aria-valuetext={`${axis}°`}
+                  style={trackFill('0%', '0%')}
+                  className={RANGE}
+                />
+                <p className="mt-1 text-[12px] font-medium leading-snug text-paper/60">{t('cylHint')}</p>
+              </div>
+            ) : (
+              <div className="mt-3 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCylOpen(true);
+                    // a common cylinder to start from, so the change shows at once; the visitor then sets their own
+                    changeRx(sph, -0.75);
+                    setAxis(180);
+                  }}
+                  className="inline-flex min-h-11 max-w-full items-center gap-2 rounded-[22px] bg-white/5 px-4 py-2 text-left text-[13px] font-semibold leading-snug text-white/85 ring-1 ring-white/20 outline-none transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-brand-200 motion-reduce:transition-none"
+                >
+                  <Plus className="h-4 w-4 shrink-0" aria-hidden /> {t('cylAdd')}
+                </button>
+              </div>
+            )}
             <p className="mt-3 text-center text-[13px] font-medium text-paper/70">
               {t('noRx')}{' '}
               <button type="button" onClick={() => openBooking('exam')} className="rounded font-semibold text-brand-200 underline underline-offset-2 outline-none hover:text-white focus-visible:ring-2 focus-visible:ring-brand-200">
@@ -720,11 +825,24 @@ function ZoneTag({ bind, label }: { bind: (el: HTMLElement | null) => void; labe
   );
 }
 
+/** The axis as a prescription chart draws it, facing the wearer: 0° and 180° across, 90° upright. */
+function AxisDial({ axis }: { axis: number }) {
+  const a = (axis * Math.PI) / 180;
+  const x = 9 * Math.cos(a);
+  const y = 9 * Math.sin(a);
+  return (
+    <svg viewBox="-12 -12 24 24" className="h-6 w-6 text-brand-200" aria-hidden>
+      <circle r="11" fill="none" stroke="currentColor" strokeOpacity="0.35" strokeWidth="1.2" />
+      <line x1={-x} y1={y} x2={x} y2={-y} stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 /** True-to-scale horizontal section through the optical centre. */
-function Profile({ fit, sph, n, label, nose, temple }: { fit: LensFit; sph: number; n: number; label: string; nose: string; temple: string }) {
+function Profile({ fit, sph, cyl, axis, n, label, nose, temple }: { fit: LensFit; sph: number; cyl: number; axis: number; n: number; label: string; nose: string; temple: string }) {
   const gid = useId().replace(/:/g, '');
   const m = materialOf(n);
-  const points = crossSection(solveLens(sph, n, m.centre, fit));
+  const points = crossSection(solveLens(sph, n, m.centre, fit, cyl, axis));
   const scale = 3.2;
   const zTop = Math.max(...points.map((p) => p.front));
   const zBottom = Math.min(...points.map((p) => p.back));

@@ -5,7 +5,7 @@ import type { FrameShape } from '@/site/tryon/frames';
 import { NOMINAL_WIDTH } from '@/site/tryon/pose';
 import { clamp } from '@/lib/utils';
 import { createGlass, createStagePass } from './glass';
-import { lensStats, materialOf, sag, solveLens, type SolvedLens } from './lensMath';
+import { backSag, lensStats, materialOf, rightEye, sag, solveLens, type SolvedLens } from './lensMath';
 import { buildLensMap, FIT_Y, INSET, solveAddition, type Addition, type AdditionDesign, type LensMap } from './lensOptics';
 import { loadPlate, type Plate, type SceneId } from './plates';
 import { compileShaders, createViewPass, type ViewParams } from './viewPass';
@@ -16,6 +16,9 @@ export type ProgressiveLevel = 'standard' | 'premium' | 'individual';
 export interface SimState {
   mode: 'lens' | 'view';
   sph: number;
+  /** cylinder (D, zero or minus) and its axis (degrees, as written on the prescription), the same for both eyes */
+  cyl: number;
+  axis: number;
   n: number;
   shape: FrameShape;
   lensWidth: number;
@@ -175,6 +178,8 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
   let state: SimState | null = null;
   let fitKey = '';
   let curSph = 0;
+  let curCyl = 0;
+  let curAxis = 180;
   let curN = 1.5;
   let solved: SolvedLens | null = null;
   let lensReady = false;
@@ -194,17 +199,18 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
   pair.rotation.order = 'YXZ';
   stage.add(pair);
 
+  // the front surface is the same on both lenses; a cylinder turns the back of each eye's lens its own way
   const frontGeo = surfaceGeometry(false);
-  const backGeo = surfaceGeometry(true);
-  const edgeGeo = edgeGeometry();
+  const eyeGeos = [0, 1].map(() => ({ back: surfaceGeometry(true), edge: edgeGeometry() }));
 
-  const lensRoots = [-1, 1].map((side) => {
+  // right eye first (the viewer's left), then the left eye
+  const lensRoots = [-1, 1].map((side, i) => {
     const root = new THREE.Group();
     const inner = new THREE.Group();
-    inner.scale.x = side; // both lenses share one geometry, computed for the +x side
-    const front = new THREE.Mesh(frontGeo, kit.front);
-    const back = new THREE.Mesh(backGeo, kit.back);
-    const edge = new THREE.Mesh(edgeGeo, kit.edge);
+    inner.scale.x = side; // each lens is built with its temple at +x; the right one is mirrored into place
+    const front = new THREE.Mesh(frontGeo, kit.eyes[i].front);
+    const back = new THREE.Mesh(eyeGeos[i].back, kit.eyes[i].back);
+    const edge = new THREE.Mesh(eyeGeos[i].edge, kit.eyes[i].edge);
     for (const m of [front, back, edge]) m.frustumCulled = false;
     inner.add(edge, front, back);
     root.add(inner);
@@ -212,9 +218,17 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
     return { root, inner, side };
   });
 
-  function writeLens(l: SolvedLens) {
-    const stats = lensStats(l, 1);
-    kit.setLens(l, stats.min, Math.max(0.05, stats.max - stats.min));
+  function writeLens(left: SolvedLens) {
+    const lenses = [rightEye(left), left];
+    const both = lenses.map((l) => lensStats(l, 1));
+    const lo = Math.min(both[0].min, both[1].min);
+    const hi = Math.max(both[0].max, both[1].max);
+    kit.setLens(left, lo, Math.max(0.05, hi - lo));
+    lenses.forEach((l, i) => writeEye(l, i));
+  }
+
+  function writeEye(l: SolvedLens, eye: number) {
+    const { back: backGeo, edge: edgeGeo } = eyeGeos[eye];
     const fp = frontGeo.attributes.position.array as Float32Array;
     const bp = backGeo.attributes.position.array as Float32Array;
     const n = new THREE.Vector3();
@@ -226,7 +240,7 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
       fp[j + 2] = -sag(l.f1, l.n, r);
       bp[j] = x;
       bp[j + 1] = y;
-      bp[j + 2] = -l.ct + sag(l.f2, l.n, r);
+      bp[j + 2] = -l.ct + backSag(l, x, y);
       j += 3;
     };
     put(0, 0);
@@ -248,7 +262,7 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
         const b = l.rim[(i + 1) % SEG];
         const r = Math.hypot(p.x - l.ox, p.y);
         const zf = -sag(l.f1, l.n, r);
-        const zb = -l.ct + sag(l.f2, l.n, r);
+        const zb = -l.ct + backSag(l, p.x, p.y);
         ep[e] = p.x;
         ep[e + 1] = p.y;
         ep[e + 2] = zf + (zb - zf) * v;
@@ -271,7 +285,7 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
     edgeGeo.attributes.normal.needsUpdate = true;
     // the bevel sits a third of the way back from the front of the edge
     const seat = -(frontSum / SEG - thickSum / SEG / 3);
-    for (const r of lensRoots) r.inner.position.z = seat * (NOMINAL_WIDTH / frameWidth(state!));
+    lensRoots[eye].inner.position.z = seat * (NOMINAL_WIDTH / frameWidth(state!));
   }
 
   const frameWidth = (s: SimState) => 2 * s.lensWidth + s.bridge + 14;
@@ -330,11 +344,14 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
 
   /** The traced map for this prescription, material and design; the same key means the same map. */
   function refreshLensMap(s: SimState) {
-    const key = `${s.sph}:${s.n}:${s.kind === 'progressive' ? `${s.level}:${s.add}` : ''}`;
+    // a toric lens is traced as its spherical equivalent, which carries its distortion and off-axis error; what the
+    // cylinder adds on top (its own prism and the error it corrects) is worked out in the shader
+    const se = s.sph + s.cyl / 2;
+    const key = `${se}:${s.n}:${s.kind === 'progressive' ? `${s.level}:${s.add}` : ''}`;
     if (key === lensMapKey) return;
     lensMapKey = key;
     const m = materialOf(s.n);
-    const l = solveLens(s.sph, s.n, m.centre, s);
+    const l = solveLens(se, s.n, m.centre, s);
     let addition: Addition | null = null;
     if (s.kind === 'progressive') {
       const addKey = `${s.level}:${s.add}`;
@@ -405,7 +422,9 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
 
   function placeLensLabels() {
     if (!solved) return;
+    // the readings sit on the right eye's lens, the one nearer the viewer
     const near = lensRoots[0];
+    const lens = rightEye(solved);
     const xs = solved.rim.map((p) => p.x);
     const anchor = (id: LabelId, x: number, y: number, z: number) => {
       near.inner.localToWorld(tmp.set(x, y, z));
@@ -414,10 +433,7 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
       const el = labels[id];
       if (el) el.style.visibility = 'visible';
     };
-    const edgeZ = (x: number) => {
-      const r = Math.abs(x - solved!.ox);
-      return (-sag(solved!.f1, solved!.n, r) + (-solved!.ct + sag(solved!.f2, solved!.n, r))) / 2;
-    };
+    const edgeZ = (x: number) => (-sag(lens.f1, lens.n, Math.abs(x - lens.ox)) - lens.ct + backSag(lens, x, 0)) / 2;
     const xT = Math.max(...xs);
     const xN = Math.min(...xs);
     anchor('centre', solved.ox, 0, 0);
@@ -502,17 +518,24 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
       // morph to the new prescription / material
       const speed = reduceMotion ? 1 : 1 - Math.exp(-dt * 11);
       const ds = s.sph - curSph;
+      const dc = s.cyl - curCyl;
+      // the axis turns the short way round: 175° to 5° is ten degrees, not 170
+      const da = ((((s.axis - curAxis) % 180) + 270) % 180) - 90;
       const dn = s.n - curN;
-      if (Math.abs(ds) > 0.004 || Math.abs(dn) > 0.0006 || !lensReady) {
+      if (Math.abs(ds) > 0.004 || Math.abs(dc) > 0.004 || Math.abs(da) > 0.2 || Math.abs(dn) > 0.0006 || !lensReady) {
         curSph += ds * speed;
+        curCyl += dc * speed;
+        curAxis += da * speed;
         curN += dn * speed;
         if (Math.abs(s.sph - curSph) <= 0.004) curSph = s.sph;
+        if (Math.abs(s.cyl - curCyl) <= 0.004) curCyl = s.cyl;
+        if (Math.abs(da * (1 - speed)) <= 0.2) curAxis = s.axis;
         if (Math.abs(s.n - curN) <= 0.0006) curN = s.n;
         const centre = materialOf(s.n).centre;
-        solved = solveLens(curSph, curN, centre, s);
+        solved = solveLens(curSph, curN, centre, s, curCyl, curAxis);
         writeLens(solved);
         lensReady = true;
-        moving = curSph !== s.sph || curN !== s.n;
+        moving = curSph !== s.sph || curCyl !== s.cyl || curAxis !== s.axis || curN !== s.n;
       }
       if (intro < 1) {
         intro = Math.min(1, intro + dt / 1.1);
@@ -574,6 +597,8 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
       const params: ViewParams = {
         reveal: reveal * reveal * (3 - 2 * reveal),
         sph: s.sph,
+        cyl: s.cyl,
+        axis: s.axis,
         acc: s.acc,
         abbe: materialOf(s.n).abbe,
         filter: lensFilter(s),
@@ -668,6 +693,8 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
       }
       if (!prev) {
         curSph = next.sph;
+        curCyl = next.cyl;
+        curAxis = next.axis;
         curN = next.n;
         lensReady = false;
       } else if (prev.pd !== next.pd || prev.heat !== next.heat) {
@@ -700,8 +727,10 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
       kit.dispose();
       pass.dispose();
       frontGeo.dispose();
-      backGeo.dispose();
-      edgeGeo.dispose();
+      for (const g of eyeGeos) {
+        g.back.dispose();
+        g.edge.dispose();
+      }
       envScene.traverse((o) => {
         const mesh = o as THREE.Mesh;
         mesh.geometry?.dispose();

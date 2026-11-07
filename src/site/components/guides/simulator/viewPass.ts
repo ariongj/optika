@@ -32,6 +32,7 @@ uniform float uReveal;
 uniform float uTanPerPx;
 uniform float uK;
 uniform float uSph;
+uniform vec2 uCylJ;
 uniform float uAcc;
 uniform float uAbbe;
 uniform float uBlurPerD;
@@ -94,16 +95,22 @@ void main() {
 
   vec2 mapUv = (mm + uMapHalf + 0.5) / uMapN;
   vec2 bend = texture2D(tBend, mapUv).rg * inside;
+  // a toric lens is traced as its spherical equivalent: the cylinder's own prism comes on top (Prentice), so a strong one
+  // squeezes the world a little more along one direction than the other
+  bend -= inside * vec2(uCylJ.x * mm.x + uCylJ.y * mm.y, uCylJ.y * mm.x - uCylJ.x * mm.y) / 1000.0;
   vec3 pv = texture2D(tPower, mapUv).rgb * inside;
+  // uSph is the spherical equivalent. Through the lens the cylinder is corrected; past it, or without glasses, the eye's
+  // own astigmatism is left, which blurs more along one direction
   float naked = inside > 0.5 ? 0.0 : uSph;
+  vec2 jv = inside > 0.5 ? pv.yz : -uCylJ;
 
   vec2 uv = plateUv(px * uTanPerPx + uK * bend);
   vec2 dx = dFdx(uv);
   vec2 dy = dFdy(uv);
   vec4 data = textureLod(tData, uv, 0.0);
 
-  float J = length(pv.yz);
-  float axis = 0.5 * atan(pv.z, pv.y + 1e-6);
+  float J = length(jv);
+  float axis = 0.5 * atan(jv.y, jv.x + 1e-6);
   vec2 dirA = vec2(cos(axis), sin(axis));
   vec2 dirB = vec2(-dirA.y, dirA.x);
   float res = residual(data.r * VMAX, naked, pv.x);
@@ -178,6 +185,9 @@ export interface ViewParams {
   /** how far the lens has opened: 0 is no lens at all, 1 its full size */
   reveal: number;
   sph: number;
+  /** cylinder (D, zero or minus) and axis (degrees, TABO) */
+  cyl: number;
+  axis: number;
   acc: number;
   abbe: number;
   /** multiplier the tint leaves on the light (linear) */
@@ -220,6 +230,7 @@ export function createViewPass(renderer: THREE.WebGLRenderer) {
     uTanPerPx: { value: 0.001 },
     uK: { value: 0.4 },
     uSph: { value: 0 },
+    uCylJ: { value: new THREE.Vector2() },
     uAcc: { value: 1 },
     uAbbe: { value: 58 },
     uBlurPerD: { value: 4 },
@@ -287,7 +298,11 @@ export function createViewPass(renderer: THREE.WebGLRenderer) {
     render(p: ViewParams) {
       uniforms.uLens.value = p.reveal > 0 ? 1 : 0;
       uniforms.uReveal.value = Math.max(p.reveal, 0.001);
-      uniforms.uSph.value = p.sph;
+      uniforms.uSph.value = p.sph + p.cyl / 2;
+      // The cylinder as a power vector (J0, J45) in the wearer's view: right is the wearer's right, so the axis as written,
+      // which is read facing the wearer, turns into 180° minus it.
+      const a = Math.PI - (p.axis * Math.PI) / 180;
+      uniforms.uCylJ.value.set((-p.cyl / 2) * Math.cos(2 * a), (-p.cyl / 2) * Math.sin(2 * a));
       uniforms.uAcc.value = p.acc;
       uniforms.uAbbe.value = p.abbe;
       uniforms.uPolar.value = p.polar;

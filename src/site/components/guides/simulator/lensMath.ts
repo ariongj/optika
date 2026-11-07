@@ -1,5 +1,6 @@
-// Lens geometry for the simulator: a real meniscus (spherical front and back surfaces) cut to the frame outline.
-// Plain numbers only, so the thickness, weight and comparison figures show before three.js has loaded.
+// Lens geometry for the simulator: a real meniscus cut to the frame outline, spherical in front and toric at the back when
+// the prescription has a cylinder (the usual minus-cylinder form). Plain numbers only, so the thickness, weight and
+// comparison figures show before three.js has loaded.
 import type { FrameShape } from '@/site/tryon/frames';
 import { outlinePoints } from '@/site/tryon/outline';
 import { clamp } from '@/lib/utils';
@@ -55,9 +56,16 @@ export function sagSlope(f: number, n: number, r: number) {
 export interface SolvedLens {
   sph: number;
   n: number;
-  /** front and back surface powers (D) */
+  /** front surface power, and the back surface's power along the cylinder axis (D) */
   f1: number;
   f2: number;
+  /** cylinder (D, zero or minus): the back surface is this much stronger across the axis */
+  cyl: number;
+  /**
+   * cylinder axis in this lens's own frame, temple at +x, seen from the front (rad). `solveLens` gives the left eye, where
+   * that frame is the prescription's own (TABO), so this is the axis as written; `rightEye` gives the other one.
+   */
+  ax: number;
   /** centre thickness (mm) */
   ct: number;
   /** optical centre on the lens x axis (mm); moved towards the nose to sit in front of the pupil */
@@ -81,29 +89,51 @@ function rimOf(fit: LensFit) {
   return rim;
 }
 
-export function solveLens(sph: number, n: number, centre: number, fit: LensFit): SolvedLens {
+/** `axis` is the prescription's, in degrees (TABO): the same for both eyes. */
+export function solveLens(sph: number, n: number, centre: number, fit: LensFit, cyl = 0, axis = 180): SolvedLens {
   const rim = rimOf(fit);
   const ox = -(fit.lensWidth + fit.bridge - fit.pd) / 2;
-  const radii = rim.map((p) => Math.hypot(p.x - ox, p.y));
-  // Vogel's rule for the front curve
-  const f1 = clamp(sph >= 0 ? sph + 5 : sph / 2 + 6, 1, 10);
-  let ct = centre;
-  let f2 = sph - f1;
+  // Vogel's rule for the front curve, from the spherical equivalent
+  const se = sph + cyl / 2;
+  const f1 = clamp(se >= 0 ? se + 5 : se / 2 + 6, 1, 10);
+  const l: SolvedLens = { sph, n, f1, f2: sph - f1, cyl, ax: (axis * Math.PI) / 180, ct: centre, ox, rim };
   for (let i = 0; i < 5; i += 1) {
-    // back-vertex power, so a thick plus lens still reads the prescribed strength
-    f2 = sph - f1 / (1 - (ct / 1000 / n) * f1);
+    // back-vertex power, so a thick plus lens still reads the prescribed strength; the cylinder meridian has the same
+    // correction, so it is the axis meridian's back power plus the cylinder
+    l.f2 = sph - f1 / (1 - (l.ct / 1000 / n) * f1);
+    // with a minus cylinder the strongest plus is along the axis: no plus anywhere, no edge to keep
     if (sph <= 0) break;
     let edge = Infinity;
-    for (const r of radii) edge = Math.min(edge, ct - sag(f1, n, r) - sag(f2, n, r));
-    ct = Math.max(centre, ct + MIN_EDGE - edge);
+    for (const p of rim) edge = Math.min(edge, thicknessAt(l, p.x, p.y));
+    l.ct = Math.max(centre, l.ct + MIN_EDGE - edge);
   }
-  return { sph, n, f1, f2, ct, ox, rim };
+  return l;
+}
+
+/**
+ * The right eye's lens in its own frame. It is drawn as the left one's mirror image, and a prescription's axis is read on
+ * the same face-on chart for both eyes, so in its frame the same number is 180° minus it.
+ */
+export function rightEye(l: SolvedLens): SolvedLens {
+  return l.cyl ? { ...l, ax: Math.PI - l.ax } : l;
+}
+
+/** Back surface power along the direction (dx, dy) from the optical centre: the axis meridian plus cyl·sin²(angle from the axis). */
+function backPower(l: SolvedLens, dx: number, dy: number) {
+  if (!l.cyl) return l.f2;
+  const across = Math.sin(Math.atan2(dy, dx) - l.ax);
+  return l.f2 + l.cyl * across * across;
+}
+
+/** Height of the back surface above its vertex (mm, signed as `sag`) at a point of the lens. */
+export function backSag(l: SolvedLens, x: number, y: number) {
+  const dx = x - l.ox;
+  return sag(backPower(l, dx, y), l.n, Math.hypot(dx, y));
 }
 
 /** Thickness (mm) at a point of the lens. */
 export function thicknessAt(l: SolvedLens, x: number, y: number) {
-  const r = Math.hypot(x - l.ox, y);
-  return l.ct - sag(l.f1, l.n, r) - sag(l.f2, l.n, r);
+  return l.ct - sag(l.f1, l.n, Math.hypot(x - l.ox, y)) - backSag(l, x, y);
 }
 
 export interface LensStats {
@@ -172,10 +202,14 @@ export function crossSection(l: SolvedLens, samples = 44) {
   const out: { x: number; front: number; back: number }[] = [];
   for (let i = 0; i <= samples; i += 1) {
     const x = x0 + ((x1 - x0) * i) / samples;
-    const r = Math.abs(x - l.ox);
-    out.push({ x, front: -sag(l.f1, l.n, r), back: -l.ct + sag(l.f2, l.n, r) });
+    out.push({ x, front: -sag(l.f1, l.n, Math.abs(x - l.ox)), back: -l.ct + backSag(l, x, 0) });
   }
   return out;
+}
+
+/** The stronger of the two principal meridians: what decides how thick the lens gets and which index suits it. */
+export function strongestPower(sph: number, cyl: number) {
+  return Math.abs(sph + cyl) > Math.abs(sph) ? sph + cyl : sph;
 }
 
 /** The chooser's strength band for a power (same bands as its answers). */
