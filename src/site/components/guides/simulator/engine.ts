@@ -325,14 +325,26 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
         if (state?.mode === 'lens') invalidate();
       });
   }
-  /** Once, then never again: the first switch to 3D otherwise stops the page. On a data-saving connection it waits for the click. */
+  /**
+   * Once, then never again: the first switch to 3D otherwise stops the page. It waits until the page has finished arriving, and
+   * for a moment with no frames coming rather than a gap between two of them, so it can't land in a load or in the middle of a
+   * drag. A click before then prepares it with the pill. On a data-saving connection it always waits for the click.
+   */
   function warmStage() {
     if ((navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData) return;
-    const go = () => {
-      if (!disposed && !stageReady && !stagePreparing && !renderer.getContext().isContextLost()) prepareStage(true);
+    const hasIdle = typeof requestIdleCallback === 'function';
+    const go = (idle?: IdleDeadline) => {
+      if (disposed || stageReady || stagePreparing) return;
+      if (idle && idle.timeRemaining() < 30) {
+        requestIdleCallback(go);
+        return;
+      }
+      if (!renderer.getContext().isContextLost()) prepareStage(true);
     };
-    if (typeof requestIdleCallback === 'function') requestIdleCallback(go, { timeout: 3000 });
-    else window.setTimeout(go, 1500);
+    window.setTimeout(() => {
+      if (hasIdle) requestIdleCallback(go);
+      else go();
+    }, 4000);
   }
 
   // ---------------------------------------------------------------- view through the lens
