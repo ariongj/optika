@@ -6,7 +6,7 @@ import { Button, buttonClass } from '@/components/ui/Button';
 import { openBooking } from '@/site/components/utility/Booking';
 import { Breadcrumbs } from '@/site/components/SectionHeading';
 import { useL, useLang } from '@/i18n';
-import { cn } from '@/lib/utils';
+import { cn, scrollMotion } from '@/lib/utils';
 import type { Discount, Offer } from '@/lib/types';
 import { Countdown, CodeBox } from './parts';
 import { longDate } from './model';
@@ -27,7 +27,7 @@ export function OfferHero({ offer, discount, value, onCta }: { offer: Offer; dis
   const toProducts = (e: React.MouseEvent) => {
     e.preventDefault();
     onCta();
-    document.getElementById('produktet')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('produktet')?.scrollIntoView({ behavior: scrollMotion(), block: 'start' });
   };
 
   return (

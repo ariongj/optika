@@ -16,7 +16,7 @@ import { usePageTitle } from '@/site/layout/SiteLayout';
 import { defineDict, useDict, useL, useLang } from '@/i18n';
 import { useDb } from '@/store/db';
 import { date } from '@/lib/format';
-import { cn } from '@/lib/utils';
+import { cn, scrollMotion } from '@/lib/utils';
 
 const T = defineDict({
   me: {
@@ -121,7 +121,7 @@ function Toc({ items, bodyRef, label }: { items: string[]; bodyRef: RefObject<HT
     window.addEventListener('scroll', update, { passive: true });
     return () => window.removeEventListener('scroll', update);
   }, [bodyRef, items]);
-  const go = (i: number) => bodyRef.current?.querySelectorAll('h2')[i]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const go = (i: number) => bodyRef.current?.querySelectorAll('h2')[i]?.scrollIntoView({ behavior: scrollMotion(), block: 'start' });
   return (
     <nav aria-label={label}>
       <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted">{label}</div>

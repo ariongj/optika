@@ -19,7 +19,7 @@ import { collectionProducts, sortProducts } from '@/lib/collections';
 import { basePrice, discountPct } from '@/lib/pricing';
 import { discountState } from '@/lib/discounts';
 import { money, perUnit } from '@/lib/format';
-import { cn } from '@/lib/utils';
+import { cn, scrollToSection } from '@/lib/utils';
 import type { Collection, CollectionSort, Product } from '@/lib/types';
 
 type SortKey = 'featured' | Exclude<CollectionSort, 'manual'>;
@@ -120,7 +120,15 @@ function CollectionView({ collection, products, preview }: { collection: Collect
                 )}
               </div>
               {products.length > 0 && (
-                <a href="#proizvodi" className={buttonClass({ variant: 'dark', size: 'lg', className: 'mt-8 max-sm:w-full' })}>
+                <a
+                  href="#proizvodi"
+                  onClick={(e) => {
+                    const el = document.getElementById('proizvodi');
+                    if (!el) return;
+                    e.preventDefault();
+                    scrollToSection(el);
+                  }}
+                  className={buttonClass({ variant: 'dark', size: 'lg', className: 'mt-8 max-sm:w-full' })}>
                   {t('browse')} <ArrowDown className="h-4 w-4" />
                 </a>
               )}

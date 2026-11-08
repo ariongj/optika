@@ -1,5 +1,5 @@
-import { Suspense, useEffect, useLayoutEffect, useSyncExternalStore, type ReactNode } from 'react';
-import { createBrowserRouter, Navigate, Outlet, RouterProvider, ScrollRestoration, useLocation, type RouteObject, type RouterNavigateOptions, type To } from 'react-router';
+import { Suspense, useEffect, useLayoutEffect, useRef, useSyncExternalStore, type ReactNode } from 'react';
+import { createBrowserRouter, Navigate, Outlet, RouterProvider, ScrollRestoration, useLocation, useNavigationType, type RouteObject, type RouterNavigateOptions, type To } from 'react-router';
 import { BASENAME } from '@/lib/paths';
 import { domAnimation, LazyMotion } from '@/lib/motion';
 import { Toaster, toast } from 'sonner';
@@ -110,6 +110,41 @@ function Redirect({ to }: { to: string }) {
   return <Navigate to={`${to}${search}${hash}`} replace />;
 }
 
+/**
+ * Every full page load starts as history key "default", so keying by it restored the previous page's scroll position onto a
+ * different page opened in the same tab. Fresh loads are keyed by their path instead (a reload still comes back to where you
+ * were); in-app navigations keep their unique keys (back/forward).
+ */
+const scrollKey = (location: { key: string; pathname: string }) => (location.key === 'default' ? location.pathname : location.key);
+
+/** A position kept from before a reload. (Within a visit the router keeps them in memory, where this can't see them.) */
+function hasSavedScroll(key: string) {
+  try {
+    return (JSON.parse(sessionStorage.getItem('react-router-scroll-positions') ?? '{}') as Record<string, number>)[key] > 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Back, forward or a reload returns to a position measured with the page drawn, but sections further down (`.below-fold`) only
+ * have an estimated height until they are, so the same number would land somewhere else. Rendered before ScrollRestoration, so
+ * that this runs first.
+ */
+function DrawPageOnReturn() {
+  const location = useLocation();
+  const type = useNavigationType();
+  const firstLoad = useRef(true);
+  useLayoutEffect(() => {
+    const first = firstLoad.current;
+    firstLoad.current = false;
+    if (type !== 'POP' || (first && !hasSavedScroll(scrollKey(location)))) return;
+    for (const s of document.querySelectorAll<HTMLElement>('.below-fold')) s.style.contentVisibility = 'visible';
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per entry in the history
+  }, [location.key]);
+  return null;
+}
+
 function Root() {
   const brand = useDb((s) => s.settings.brandColor);
   const { pathname } = useLocation();
@@ -131,10 +166,8 @@ function Root() {
   }, []);
   return (
     <>
-      {/* Every full page load starts as history key "default", so keying by it restored the previous page's scroll
-          position onto a different page opened in the same tab. Fresh loads are keyed by their path instead (a
-          reload still comes back to where you were); in-app navigations keep their unique keys (back/forward). */}
-      <ScrollRestoration getKey={(location) => (location.key === 'default' ? location.pathname : location.key)} />
+      <DrawPageOnReturn />
+      <ScrollRestoration getKey={scrollKey} />
       <NavProgress />
       <Suspense fallback={<Loader />}>
         <Outlet />

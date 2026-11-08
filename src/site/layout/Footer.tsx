@@ -11,7 +11,7 @@ import { useCategories, useSettings } from '@/store/hooks';
 import { useDb } from '@/store/db';
 import { isPromo, type NavNode } from '@/admin/components/menus/links';
 import { useNavMenu } from '@/admin/components/menus/useNav';
-import { cn, isFilled } from '@/lib/utils';
+import { cn, isFilled, scrollMotion } from '@/lib/utils';
 import { notifyNewsletter } from '@/lib/leads';
 import { CARD_PAYMENTS } from '@/lib/launch';
 import { isBookingHref, openBooking } from '@/site/components/utility/Booking';
@@ -194,7 +194,7 @@ export function Footer({ dark = false }: { dark?: boolean }) {
             <Link to="/admin" className="inline-flex min-h-10 items-center hover:text-white pointer-fine:min-h-0">
               {t('adminLink')}
             </Link>
-            <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="inline-flex min-h-10 items-center gap-1.5 hover:text-white pointer-fine:min-h-0">
+            <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: scrollMotion() })} className="inline-flex min-h-10 items-center gap-1.5 hover:text-white pointer-fine:min-h-0">
               {t('backToTop')} <ArrowUp className="h-3.5 w-3.5" />
             </button>
           </span>

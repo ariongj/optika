@@ -4,7 +4,7 @@ import type { Product } from '@/lib/types';
 import { Accent, Reveal } from '@/components/ui/misc';
 import { ProductCard } from '@/site/components/ProductCard';
 import { useDict } from '@/i18n';
-import { cn } from '@/lib/utils';
+import { cn, scrollMotion } from '@/lib/utils';
 import { PD } from './dict';
 
 /** Section heading + horizontally scrolling row of product cards. */
@@ -20,7 +20,7 @@ export function ProductRail({ eyebrow, title, products, action, className }: { e
   };
   useEffect(update, [products.length]);
 
-  const by = (dir: number) => ref.current?.scrollBy({ left: dir * ref.current.clientWidth * 0.8, behavior: 'smooth' });
+  const by = (dir: number) => ref.current?.scrollBy({ left: dir * ref.current.clientWidth * 0.8, behavior: scrollMotion() });
   if (!products.length) return null;
 
   return (

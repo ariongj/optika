@@ -7,7 +7,7 @@ import { Img } from '@/components/ui/misc';
 import { openBooking } from '@/site/components/utility/Booking';
 import { defineDict, useDict, useL } from '@/i18n';
 import { site } from '@/i18n/site';
-import { cn } from '@/lib/utils';
+import { cn, scrollMotion } from '@/lib/utils';
 import { C } from './Blocks';
 import { pad2 } from './data';
 
@@ -97,7 +97,7 @@ export function ProjectLightbox({
   useEffect(() => {
     if (!open) return;
     const el = strip.current?.querySelector<HTMLElement>(`[data-i="${i}"]`);
-    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    el?.scrollIntoView({ behavior: scrollMotion(), block: 'nearest', inline: 'center' });
   }, [open, i]);
 
   const touchX = useRef<number | null>(null);

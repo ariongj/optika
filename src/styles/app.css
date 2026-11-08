@@ -65,7 +65,8 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
-    scroll-behavior: smooth;
+    /* No scroll-behavior: smooth here. It would also apply to the router's jump to the top of a new page, which then glides up
+       from wherever the last page was. What should glide asks for it: see scrollMotion() in lib/utils.ts. */
   }
   body {
     @apply bg-paper text-ink font-sans antialiased;
@@ -258,9 +259,6 @@ html[data-admin] ::selection {
 
 /* Respect "reduce motion": no reveal/slide animations or smooth scrolling (functional transitions stay instant). */
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
   *,
   *::before,
   *::after {

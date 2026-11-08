@@ -4,6 +4,7 @@ import type { HomeSection } from '@/lib/types';
 import { useDb } from '@/store/db';
 import { usePageTitle } from '@/site/layout/SiteLayout';
 import { HeroSection } from '@/site/sections/Hero';
+import { scrollMotion } from '@/lib/utils';
 import {
   BlogSection, CategoriesSection, CtaSection, FaqSection, FeaturedSection, InstagramSection, ProcessSection,
   ProjectsSection, PromoSection, ServicesSection, SpotlightSection, StatsSection, TrustSection,
@@ -60,7 +61,7 @@ export default function Home() {
       if (e.origin !== window.location.origin || typeof e.data?.type !== 'string' || !/^[\w-]+:scrollTo$/.test(e.data.type)) return;
       const el = document.querySelector<HTMLElement>(`[data-section="${e.data.id}"]`);
       if (!el) return;
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      el.scrollIntoView({ behavior: scrollMotion(), block: 'start' });
       el.classList.add('preview-highlight');
       window.setTimeout(() => el.classList.remove('preview-highlight'), 1600);
     };

@@ -9,7 +9,7 @@ import { useDb } from '@/store/db';
 import { useSettings } from '@/store/hooks';
 import { allCities } from '@/lib/pricing';
 import type { Lang } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { cn, scrollMotion } from '@/lib/utils';
 import { notifyInquiry } from '@/lib/leads';
 
 /** Market of a partner application — the B2B tabs on /optical-lab. */
@@ -263,7 +263,7 @@ export function PartnerForm({
       phone: form.phone.trim(),
       ref: inq.id.replace(/^inq_/, '').slice(0, 6).toUpperCase(),
     });
-    requestAnimationFrame(() => top.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+    requestAnimationFrame(() => top.current?.scrollIntoView({ behavior: scrollMotion(), block: 'center' }));
   };
 
   const chip = (on: boolean) =>

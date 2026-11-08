@@ -15,6 +15,7 @@ import { lookupOrder, upcomingFor } from '@/site/components/booking/tracking';
 import { tr } from '@/site/components/booking/trackDict';
 import { TrackEmpty, TrackError, TrackResult } from '@/site/components/booking/TrackResult';
 import { useNow } from '@/site/components/booking/parts';
+import { scrollMotion } from '@/lib/utils';
 
 type Result = { kind: 'ok'; orderId: string } | { kind: 'notFound' } | { kind: 'mismatch' };
 
@@ -69,7 +70,7 @@ export default function OrderTracking() {
     const el = heading.current;
     if (!el) return;
     el.focus({ preventScroll: true });
-    if (window.matchMedia('(max-width: 1023px)').matches) el.closest('section,div[role=alert]')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    if (window.matchMedia('(max-width: 1023px)').matches) el.closest('section,div[role=alert]')?.scrollIntoView({ block: 'start', behavior: scrollMotion() });
   }, [result, checking]);
 
   const submit = (e: React.FormEvent) => {

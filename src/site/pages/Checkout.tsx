@@ -14,7 +14,7 @@ import { useActiveProducts, useCart, useSettings } from '@/store/hooks';
 import { allCities, zoneForCity } from '@/lib/pricing';
 import { money } from '@/lib/format';
 import type { Customer, DeliveryMethod, Lang, PaymentMethod } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { cn, scrollMotion } from '@/lib/utils';
 import { usePageTitle } from '@/site/layout/SiteLayout';
 import { CheckoutSteps, CompactLine, CouponBox, TotalsRows, TrustNotes, useItemsLabel, useTotalsView } from '@/site/components/checkout/parts';
 import { PaymentSim } from '@/site/components/checkout/PaymentSim';
@@ -431,7 +431,7 @@ export default function Checkout() {
     const first = FIELD_ORDER.find((k) => errors[k]);
     if (first) {
       const el = document.getElementById('f-' + first);
-      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el?.scrollIntoView({ behavior: scrollMotion(), block: 'center' });
       later(() => el?.focus({ preventScroll: true }), 450);
       toast.error(t('fixErrors'));
       return;
