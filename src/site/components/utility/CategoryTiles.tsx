@@ -50,7 +50,7 @@ export function CategoryTiles({ variant = 'tile', limit, className }: { variant?
             <span className="min-w-0 flex-1">
               <span className="block text-[15.5px] font-bold text-ink">{l(c.name)}</span>
               <span className="mt-0.5 block truncate text-[13px] text-muted">{l(c.tagline)}</span>
-              <span className="mt-1 block text-[11px] font-bold uppercase tracking-[0.14em] text-muted/80">{count(c.id)}</span>
+              <span className="mt-1 block text-[11px] font-bold uppercase tracking-[0.14em] text-muted">{count(c.id)}</span>
             </span>
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line text-ink-soft transition-colors duration-300 group-hover:border-ink group-hover:bg-ink group-hover:text-white">
               <ArrowRight className="h-4 w-4" />

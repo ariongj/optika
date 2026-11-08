@@ -1,22 +1,22 @@
-import { StrictMode } from 'react';
+import { startTransition, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import '@fontsource-variable/manrope';
 import '@fontsource-variable/fraunces/opsz.css';
 import '@fontsource-variable/fraunces/opsz-italic.css';
 import './index.css';
 import App from './App';
-import { reloadOnce } from './site/pages/lazy';
+import { appPath } from './lib/paths';
+import { preloadCurrentPage, reloadOnce } from './site/pages/lazy';
 
 /**
- * Production builds load the stylesheet without blocking the first paint (the static first screen in #root has
- * inline styles — see vite.config.ts / scripts/prerender-meta.mjs). React mounts once the sheet has applied, so the
- * real page never shows unstyled. In dev Vite injects the CSS itself and there is no such link.
+ * Production builds load the stylesheet without blocking the first paint (the static first screen in #root has its own
+ * styles — see vite.config.ts / scripts/prerender-meta.mjs). React mounts once the sheet has applied, so the real page
+ * never shows unstyled. In dev Vite injects the CSS itself and there is no such link.
  */
 function cssReady(): Promise<void> {
   const link = document.querySelector<HTMLLinkElement>('link[data-app-css]');
   const done = () => {
     if (link) link.media = 'all';
-    document.getElementById('shell-css')?.remove();
   };
   if (!link || link.sheet) {
     done();
@@ -56,11 +56,14 @@ if (framedByOtherSite()) {
   link.style.cssText = 'display:block;padding:24px;font:600 16px system-ui,sans-serif;color:#1c1a17';
   root.replaceChildren(link);
 } else {
-  void cssReady().then(() =>
-    createRoot(document.getElementById('root')!).render(
-      <StrictMode>
-        <App />
-      </StrictMode>,
+  // in a transition, so that React can pause between components instead of holding the phone up for the whole first render
+  void Promise.all([cssReady(), preloadCurrentPage(appPath(location.pathname))]).then(() =>
+    startTransition(() =>
+      createRoot(document.getElementById('root')!).render(
+        <StrictMode>
+          <App />
+        </StrictMode>,
+      ),
     ),
   );
 }

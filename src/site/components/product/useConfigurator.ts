@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { animate } from 'motion/react';
+import { animate } from '@/lib/motion';
 import type { Product } from '@/lib/types';
 import { defaultOptions, packsForArea, qtyUnits, regularUnitPrice, unitPrice, WASTE } from '@/lib/pricing';
 import { round2 } from '@/lib/utils';

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ComponentType, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { AlertTriangle, Archive, Check, ChevronDown, CircleDashed, Ellipsis, Infinity as InfinityIcon, Minus, XCircle } from 'lucide-react';
 import { Label, Hint, FieldError, Switch } from '@/components/ui/Field';
 import { Badge } from '@/components/ui/misc';

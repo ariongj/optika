@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
-import { useReducedMotion } from 'motion/react';
+import { useReducedMotion } from '@/lib/motion';
 import { CalendarCheck, ChevronDown, EyeOff, Glasses, Minus, Move3d, Plus, ShoppingBag, SlidersHorizontal, Waypoints } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Product } from '@/lib/types';

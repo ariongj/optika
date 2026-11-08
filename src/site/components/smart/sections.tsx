@@ -1,6 +1,6 @@
 import { useId, useMemo, useState, type ComponentType } from 'react';
 import { Link } from 'react-router';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { ArrowRight, CalendarCheck, Check, FlaskConical, Phone, Plus, Ruler, Send, ShieldPlus, Smartphone, UserCheck, Wrench } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import { Img, Reveal } from '@/components/ui/misc';

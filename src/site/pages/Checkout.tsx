@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { toast } from 'sonner';
 import { ArrowLeft, ArrowRight, Banknote, CalendarCheck, ChevronDown, CreditCard, FileText, Info, Landmark, Lock, ShieldCheck, ShoppingBag, Sparkles, Store, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/Button';

@@ -1,7 +1,7 @@
 import { useState, type Ref } from 'react';
 import { Link } from 'react-router';
 import { toast } from 'sonner';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import {
   ArrowRight, CalendarCheck, Check, Clock, Eye, FileText, FlaskConical, Heart, Phone, ScanFace, Send, Share2, ShieldCheck, ShieldPlus, ShoppingBag, Smartphone, Truck, Wrench,
 } from 'lucide-react';

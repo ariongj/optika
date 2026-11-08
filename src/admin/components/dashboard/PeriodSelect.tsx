@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { CalendarDays, Check, ChevronDown } from 'lucide-react';
 import { useDict, useLang } from '@/i18n';
 import { cn } from '@/lib/utils';

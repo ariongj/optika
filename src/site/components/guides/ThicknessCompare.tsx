@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
+import { motion, useReducedMotion } from '@/lib/motion';
 import { Check } from 'lucide-react';
 import { useDict, useL, useLang } from '@/i18n';
 import { cn } from '@/lib/utils';

@@ -33,7 +33,7 @@ function useOpenedOnce(open: boolean) {
  */
 function PageLoading() {
   return (
-    <div data-page-loading className="grid min-h-[100svh] place-items-center" aria-busy="true">
+    <div data-page-loading className="late-in grid min-h-[100svh] place-items-center" aria-busy="true">
       <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink/15 border-t-brand-600" />
     </div>
   );

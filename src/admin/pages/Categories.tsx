@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { motion } from 'motion/react';
+import * as motion from 'motion/react-client';
 import { toast } from 'sonner';
 import { ChevronDown, ChevronUp, ExternalLink, FolderTree, Pencil, Plus, Star, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';

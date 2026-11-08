@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import { motion } from '@/lib/motion';
 import { Check, Lock, ShieldCheck } from 'lucide-react';
 import { Modal } from '@/components/ui/Overlay';
 import { defineDict, useDict, useLang } from '@/i18n';

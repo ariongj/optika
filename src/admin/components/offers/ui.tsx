@@ -1,7 +1,7 @@
 // Offers centre — small shared UI: status pills (text + symbol), rule/content summaries, compact form controls, row menu.
 import { useEffect, useRef, useState, type ReactNode, type SelectHTMLAttributes, type InputHTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { ChevronDown, CircleDashed, CircleSlash2, Clock3, Ellipsis, Info, Pause, type LucideIcon } from 'lucide-react';
 import type { Discount, Lang, OfferState, Placement, PlacementState, Staff } from '@/lib/types';
 import { useDict, useLang } from '@/i18n';

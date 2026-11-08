@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useReducedMotion } from 'motion/react';
+import { useReducedMotion } from '@/lib/motion';
 import { useDict } from '@/i18n';
 import type { SmartPart, SmartVariant } from './three/SmartGlasses3D';
 import { SG, type SGKey } from './dict';

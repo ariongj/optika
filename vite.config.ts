@@ -71,8 +71,8 @@ function asyncCss(): Plugin {
             // no inline onload (the CSP allows no inline script): main.tsx switches media to "all"
             `<link rel="stylesheet" crossorigin href="${href}" media="print" data-app-css>`,
             `<noscript><link rel="stylesheet" crossorigin href="${href}"></noscript>`,
-            // until the sheet is in: no default body margin and the page colour (main.tsx removes it — unlayered, it
-            // would otherwise beat the sheet's layered base styles)
+            // until the first commit: no default body margin and the page colour (App.tsx removes it — unlayered, it
+            // would otherwise beat the sheet's layered base styles). prerender-meta.mjs adds the first screen's rules.
             '<style id="shell-css">body{margin:0;background:#f7f3ee}</style>',
           ].join('\n    '),
         );
@@ -156,5 +156,24 @@ export default defineConfig({
   preview: { port: 4173, host: true },
   // manifest: scripts/prerender-meta.mjs reads it to preload a route's lazy chunks from its HTML (then deletes it)
   // JS syntax for Safari/iOS 15 too (iPhone 6s/7 stop at iOS 15.8); the runtime APIs used need iOS 15.4+ at most
-  build: { chunkSizeWarningLimit: 1500, manifest: true, target: ['es2020', 'safari15', 'ios15', 'chrome100', 'edge100', 'firefox100'] },
+  build: {
+    chunkSizeWarningLimit: 1500,
+    manifest: true,
+    target: ['es2020', 'safari15', 'ios15', 'chrome100', 'edge100', 'firefox100'],
+    rolldownOptions: {
+      output: {
+        advancedChunks: {
+          includeDependenciesRecursively: false,
+          groups: [
+            // Motion's layout animation and drag: only the CMS and the wishlist use them (see src/lib/motion.ts). Named here,
+            // because the package's shared entry file would otherwise leave them in the bundle every page loads.
+            {
+              name: 'motion-layout',
+              test: /[\\/](motion-dom[\\/]dist[\\/]es[\\/]projection[\\/](node|animation|shared)|framer-motion[\\/]dist[\\/]es[\\/](gestures[\\/](drag|pan)|motion[\\/]features[\\/](layout|drag)|render[\\/]components[\\/]motion|components[\\/]Reorder))[\\/]?/,
+            },
+          ],
+        },
+      },
+    },
+  },
 });

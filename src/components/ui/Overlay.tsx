@@ -1,6 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { common } from '@/i18n/common';

@@ -1,7 +1,7 @@
 // Small UI pieces for the Online Store screens (neutral CMS look, PDF p.07).
 import { useEffect, useRef, useState, type ReactNode, type SelectHTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { CalendarX2, ChevronDown, CircleDashed, CirclePause, Clock3, Ellipsis, type LucideIcon } from 'lucide-react';
 import type { PlacementState } from '@/lib/types';
 import { useDict } from '@/i18n';

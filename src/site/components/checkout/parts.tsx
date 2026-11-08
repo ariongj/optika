@@ -1,6 +1,6 @@
 import { Fragment, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { toast } from 'sonner';
 import { Award, Check, ChevronDown, Eye, ShieldCheck, ShieldPlus, TicketPercent, X } from 'lucide-react';
 import { Img } from '@/components/ui/misc';
@@ -242,7 +242,7 @@ function Row({ label, value, sub, className }: { label: ReactNode; value: ReactN
     <div className={cn('flex items-start justify-between gap-4', className)}>
       <span className="text-muted">
         {label}
-        {sub && <span className="block text-[11.5px] leading-snug text-muted/80">{sub}</span>}
+        {sub && <span className="block text-[11.5px] leading-snug text-muted">{sub}</span>}
       </span>
       <span className="shrink-0 text-right font-medium tabular-nums text-ink">{value}</span>
     </div>

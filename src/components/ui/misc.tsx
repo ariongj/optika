@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useRef, useState, type ReactNode, type ImgHTMLAttributes } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { Minus, Plus, ChevronDown } from 'lucide-react';
 import { cn, thumb } from '@/lib/utils';
 

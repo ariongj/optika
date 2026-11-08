@@ -1,6 +1,6 @@
 import { useId, useState, type InputHTMLAttributes, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { ArrowDown, ArrowRight, ArrowUp, ChevronDown, Info, Link2, Plus, Trash2 } from 'lucide-react';
 import type { Cta, L10n } from '@/lib/types';
 import { Label, Hint } from '@/components/ui/Field';

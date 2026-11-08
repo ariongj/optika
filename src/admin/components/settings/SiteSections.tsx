@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { ArrowDown, ArrowUp, Check, Info, Languages, Megaphone, Palette, Plus, RotateCcw, Search, ShieldCheck, Sparkles, Trash2, Mail } from 'lucide-react';
 import { L10nInput } from '@/admin/components/L10nInput';
 import { Button } from '@/components/ui/Button';

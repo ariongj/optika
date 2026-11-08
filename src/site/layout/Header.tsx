@@ -4,7 +4,7 @@ import {
   Aperture, ArrowRight, ArrowUpRight, CalendarCheck, Eye, FlaskConical, Glasses, Heart, Layers, Menu, PackageSearch, Phone, ScanFace, Search, ShoppingBag,
   Sparkles, Stethoscope, type LucideIcon,
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { Logo } from '@/components/brand/Logo';
 import { LangSwitcher } from '@/components/LangSwitcher';
 import { ButtonLink } from '@/components/ui/Button';
@@ -439,7 +439,7 @@ export function Header({ transparentTop = false, dark = false }: { transparentTo
         className={cn(
           'sticky top-0 z-40 transition-[background,box-shadow,border-color] duration-300',
           !solid ? 'border-b border-transparent bg-transparent' : dark ? 'border-b border-white/10 bg-[#07090a]/90 backdrop-blur-xl' : 'border-b border-line/80 bg-paper/95 backdrop-blur-xl',
-          transparentTop && '-mb-[76px]',
+          transparentTop && '-mb-[77px]',
         )}
         onMouseLeave={() => setMega(null)}
       >

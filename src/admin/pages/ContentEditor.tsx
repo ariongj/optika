@@ -1,7 +1,7 @@
 // Online Store / Editori / Homepage — section editor with draft, preview, publish and version history
 // (CMS proposal pp.32–33). Every edit goes to `homeDraft` (debounced); "Publiko" makes it live.
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { toast } from 'sonner';
 import {
   AlertCircle, AlertTriangle, ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, CloudCheck, Copy, Eye, EyeOff, History, Loader2,

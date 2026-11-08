@@ -38,13 +38,17 @@ export function num(value: number, lang: Lang = 'sq', maxDecimals = 2) {
 /* Chrome ships without Albanian Intl data: `Intl.DateTimeFormat('sq-AL')` silently falls back to English
    ("9 October 2026"). When the runtime can't do Albanian, format in en-GB (same day-month-year order) and swap
    the month and weekday names for the CLDR Albanian ones. Works with any options, including timeZone. */
-const SQ_NATIVE = (() => {
-  try {
-    return Intl.DateTimeFormat.supportedLocalesOf(['sq']).length > 0;
-  } catch {
-    return false;
+let sqNative: boolean | undefined;
+function hasNativeAlbanian() {
+  if (sqNative === undefined) {
+    try {
+      sqNative = Intl.DateTimeFormat.supportedLocalesOf(['sq']).length > 0;
+    } catch {
+      sqNative = false;
+    }
   }
-})();
+  return sqNative;
+}
 const EN_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const EN_MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Sept', 'Oct', 'Nov', 'Dec'];
 const SQ_MONTHS = ['janar', 'shkurt', 'mars', 'prill', 'maj', 'qershor', 'korrik', 'gusht', 'shtator', 'tetor', 'nëntor', 'dhjetor'];
@@ -78,7 +82,7 @@ function sqParts(d: Date, opts: Intl.DateTimeFormatOptions) {
 export function date(iso: string | Date, lang: Lang = 'sq', opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' }) {
   const d = typeof iso === 'string' ? new Date(iso) : iso;
   try {
-    if (lang === 'sq' && !SQ_NATIVE) return sqParts(d, opts);
+    if (lang === 'sq' && !hasNativeAlbanian()) return sqParts(d, opts);
     return dateFormat(DATE_LOCALE[lang], opts).format(d);
   } catch {
     return dateFormat('en-GB', opts).format(d);

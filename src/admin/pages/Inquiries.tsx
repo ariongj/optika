@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { toast } from 'sonner';
 import { ArrowDown, CheckCheck, Copy, Download, Inbox, Plus, ShieldCheck, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';

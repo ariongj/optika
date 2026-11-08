@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
-import { motion } from 'motion/react';
 import { ArrowDown, CalendarCheck, Move3d } from 'lucide-react';
 import { useDict } from '@/i18n';
 import { cn } from '@/lib/utils';
@@ -14,10 +13,34 @@ import { Backdrop, LiveDot, useMedia } from './ui';
 type T = SGT;
 
 /** Segmented "Kamerë · Audio · Ekran" switch (sliding white pill). */
-export function KindSwitch({ value, onChange, id, labels, className }: { value: Kind; onChange: (k: Kind) => void; id: string; labels: Record<Kind, string>; className?: string }) {
+export function KindSwitch({ value, onChange, labels, className }: { value: Kind; onChange: (k: Kind) => void; labels: Record<Kind, string>; className?: string }) {
   const t = useDict(SG);
+  const box = useRef<HTMLDivElement>(null);
+  const [pill, setPill] = useState<{ x: number; w: number } | null>(null);
+  useLayoutEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const measure = () => {
+      const on = el.querySelector<HTMLElement>('[aria-checked="true"]');
+      if (!on) return;
+      // fractions of a pixel, or the pill sits visibly off the label's button
+      const r = on.getBoundingClientRect();
+      setPill({ x: r.left - el.getBoundingClientRect().left, w: r.width });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [value]);
   return (
-    <div role="radiogroup" aria-label={t('typeLabel')} className={cn('relative inline-flex rounded-full bg-white/[0.06] p-1 ring-1 ring-inset ring-white/12 backdrop-blur-md', className)}>
+    <div ref={box} role="radiogroup" aria-label={t('typeLabel')} className={cn('relative isolate inline-flex rounded-full bg-white/[0.06] p-1 ring-1 ring-inset ring-white/12 backdrop-blur-md', className)}>
+      {pill && (
+        <span
+          aria-hidden
+          style={{ width: pill.w, transform: `translateX(${pill.x}px)` }}
+          className="absolute inset-y-1 left-0 -z-10 rounded-full bg-white shadow-[0_0_24px_-4px_rgb(111_211_165/0.55)] transition-[transform,width] duration-300 ease-[cubic-bezier(0.3,1.25,0.5,1)] motion-reduce:transition-none"
+        />
+      )}
       {KINDS.map((k) => {
         const on = k === value;
         return (
@@ -29,7 +52,6 @@ export function KindSwitch({ value, onChange, id, labels, className }: { value: 
             onClick={() => onChange(k)}
             className={cn('relative isolate h-10 rounded-full px-4 text-[13px] font-semibold transition-colors sm:px-5', on ? 'text-[#06110c]' : 'text-white/70 hover:text-white')}
           >
-            {on && <motion.span layoutId={`sg-kind-${id}`} transition={{ type: 'spring', stiffness: 420, damping: 36 }} className="absolute inset-0 -z-10 rounded-full bg-white shadow-[0_0_24px_-4px_rgb(111_211_165/0.55)]" />}
             {labels[k]}
           </button>
         );
@@ -119,7 +141,7 @@ export function SmartHero({ onReady }: { onReady?: () => void } = {}) {
           </Stage>
           {/* switch + drag hint, under the model */}
           <div className="relative z-10 mt-1 flex flex-col items-center gap-3 px-4 lg:absolute lg:inset-x-0 lg:bottom-24 lg:mt-0">
-            <KindSwitch id="hero" value={kind} onChange={setKind} labels={labels} />
+            <KindSwitch value={kind} onChange={setKind} labels={labels} />
             <span className="sg-mono hidden items-center gap-2 text-[10.5px] text-white/50 sm:inline-flex">
               <Move3d className="h-3.5 w-3.5" /> {t('drag')}
             </span>

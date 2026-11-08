@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ComponentType, type KeyboardEvent, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { ArrowRight, CornerDownLeft, FileText, Inbox, LayoutGrid, Newspaper, Search, ShoppingBag, Sparkles } from 'lucide-react';
 import { useDict, useL, useLang } from '@/i18n';
 import { common } from '@/i18n/common';

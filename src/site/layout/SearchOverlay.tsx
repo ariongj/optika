@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { ArrowRight, Search, X } from 'lucide-react';
 import { Img } from '@/components/ui/misc';
 import { Price } from '@/site/components/Price';

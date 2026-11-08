@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { ArrowUpRight, Check, Minus } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import { useDict, useL } from '@/i18n';
@@ -79,7 +79,7 @@ export function SmartCompare({ products }: { products: Product[] }) {
             <Headline text={t('typesTitle')} className="mt-5 text-[36px] leading-[1.04] sm:text-[52px] lg:text-[58px]" />
             <p className="mt-5 max-w-xl text-[15.5px] leading-relaxed text-white/55 sm:text-[16.5px]">{t('typesText')}</p>
           </div>
-          <KindSwitch id="compare" value={kind} onChange={setKind} labels={labels} className="self-start lg:self-end" />
+          <KindSwitch value={kind} onChange={setKind} labels={labels} className="self-start lg:self-end" />
         </div>
 
         <div className="mt-10 grid gap-5 lg:mt-14 lg:grid-cols-12 lg:gap-6">

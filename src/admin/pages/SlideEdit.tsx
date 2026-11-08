@@ -5,7 +5,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { toast } from 'sonner';
-import { useReducedMotion } from 'motion/react';
+import { useReducedMotion } from '@/lib/motion';
 import {
   AlignCenter, AlignLeft, ArrowUpRight, CalendarClock, CircleAlert, Copy, Info, Keyboard, ListTree, Monitor, Plus, Save, SearchX, Smartphone, Trash2, Type, X,
 } from 'lucide-react';

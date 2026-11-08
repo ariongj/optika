@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useRef, useState, type PointerEvent, type ReactNode, type RefObject } from 'react';
-import { useReducedMotion } from 'motion/react';
+import { useReducedMotion } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 
 /* ------------------------------------------------------------------ */

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { toast } from 'sonner';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { Bell, CalendarClock, CheckCheck, Inbox, ShoppingBag, TimerReset } from 'lucide-react';
 import { useDict, useL, useLang } from '@/i18n';
 import { adm } from '@/admin/i18n';

@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import * as motion from 'motion/react-client';
+import { AnimatePresence } from '@/lib/motion';
 import { ChevronDown, ChevronUp, ListPlus, Plus, X } from 'lucide-react';
 import { Card } from '@/admin/components/kit';
 import { useDict, useL, useLang } from '@/i18n';

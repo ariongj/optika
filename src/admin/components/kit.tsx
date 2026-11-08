@@ -1,7 +1,7 @@
 import type { ReactNode, ThHTMLAttributes, TdHTMLAttributes } from 'react';
 import { Link } from 'react-router';
 import { create } from 'zustand';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { ArrowLeft, Search, AlertTriangle } from 'lucide-react';
 import { Badge, type BadgeTone } from '@/components/ui/misc';
 import { Button } from '@/components/ui/Button';

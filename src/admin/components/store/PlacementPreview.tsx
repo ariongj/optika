@@ -2,7 +2,7 @@
 // "Parapamje Desktop / Mobile"). Rendered at the device's real width and scaled down to the panel, inside a
 // wrapper that restores the Optika brand + warm tokens (the CMS itself stays neutral).
 import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { useReducedMotion } from 'motion/react';
+import { useReducedMotion } from '@/lib/motion';
 import { ArrowRight, CalendarCheck, ChevronLeft, ChevronRight, Phone } from 'lucide-react';
 import type { Lang, L10n } from '@/lib/types';
 import { lt } from '@/i18n';

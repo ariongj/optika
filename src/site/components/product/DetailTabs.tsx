@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import {
   ArrowRight, Banknote, CalendarCheck, CircleDot, Clock, FlaskConical, MapPin, Ruler, RotateCcw, ShieldCheck, ShieldPlus, Smartphone, Sparkles, Store, Truck, Wrench,
 } from 'lucide-react';

@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { toast } from 'sonner';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { Check, ChevronDown, ExternalLink, LogOut, Settings } from 'lucide-react';
 import { useDict, useL } from '@/i18n';
 import { adm } from '@/admin/i18n';

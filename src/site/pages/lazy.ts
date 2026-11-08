@@ -1,9 +1,9 @@
-import { lazy, type ComponentType } from 'react';
+import { createElement, lazy, useState, type ComponentType } from 'react';
 import { appPath } from '@/lib/paths';
 
 /* ------------------------------------------------------------------ */
-/* Storefront pages are code-split (only Home ships in the entry       */
-/* bundle) and prefetched so navigation still feels instant:           */
+/* Storefront pages are code-split and prefetched, so navigation      */
+/* still feels instant:                                                */
 /*  - on intent: pointer over / touch / focus on a link to the page    */
 /*  - when idle after the first page has loaded: the likeliest next     */
 /*    pages, unless the visitor is on Save-Data or a 2G connection     */
@@ -54,6 +54,7 @@ export function withRetry<T>(fn: () => Promise<T>): () => Promise<T> {
 export const lazyRetry = <C extends ComponentType<any>>(fn: () => Promise<{ default: C }>) => lazy(withRetry(fn));
 
 const LOADERS = {
+  home: () => import('@/site/pages/Home'),
   shop: () => import('@/site/pages/Shop'),
   product: () => import('@/site/pages/ProductPage'),
   cart: () => import('@/site/pages/CartPage'),
@@ -83,15 +84,42 @@ const LOADERS = {
 
 type Key = keyof typeof LOADERS;
 
-const started = new Set<Key>();
+/** Pages whose code has arrived. */
+const arrived = new Map<Key, ComponentType>();
+const loading = new Map<Key, Promise<void>>();
+
 /** Start loading a page chunk once (the browser caches the module afterwards). */
-function load(key: Key) {
-  if (started.has(key)) return;
-  started.add(key);
-  LOADERS[key]().catch(() => started.delete(key));
+function load(key: Key): Promise<void> {
+  let p = loading.get(key);
+  if (!p) {
+    p = (LOADERS[key] as Loader)().then(
+      (m) => void arrived.set(key, m.default),
+      () => void loading.delete(key),
+    );
+    loading.set(key, p);
+  }
+  return p;
 }
 
-export const Pages = Object.fromEntries(Object.entries(LOADERS).map(([k, fn]) => [k, lazy(withRetry(fn as Loader))])) as Record<Key, ReturnType<typeof lazy>>;
+/**
+ * A page that renders straight away once its code is here, so nothing shows in between; until then, `React.lazy`.
+ * Which of the two is decided once per mount: a page's component type must not change while it is on screen.
+ */
+function page(key: Key): ComponentType {
+  const Lazy = lazy(
+    withRetry(async () => {
+      const m = await (LOADERS[key] as Loader)();
+      arrived.set(key, m.default);
+      return m;
+    }),
+  );
+  return function Page() {
+    const [Current] = useState<ComponentType>(() => arrived.get(key) ?? Lazy);
+    return createElement(Current);
+  };
+}
+
+export const Pages = Object.fromEntries(Object.keys(LOADERS).map((k) => [k, page(k as Key)])) as Record<Key, ComponentType>;
 
 /** First path segment → page chunk (mirrors the storefront routes in App.tsx). */
 const BY_SEGMENT: Record<string, Key> = {
@@ -115,16 +143,37 @@ const BY_SEGMENT: Record<string, Key> = {
   'gjej-kornizen': 'frameFinder',
   rezervo: 'booking',
   'gjurmo-porosine': 'tracking',
+  'provo-virtualisht': 'tryOn',
   'syze-inteligjente': 'smart',
 };
 
+function keyFor(path: string): Key | undefined {
+  const [first, second] = path.replace(/^\/+/, '').split(/[/?#]/);
+  if (!first) return 'home';
+  if (first === 'keshilla') return second ? 'post' : 'blog';
+  return BY_SEGMENT[first];
+}
+
 /** Prefetch the chunk for an app path such as "/produkt/prism-m2". The try-on (three.js) only loads on demand. */
 export function prefetchPath(path: string) {
-  const [first, second] = path.replace(/^\/+/, '').split(/[/?#]/);
-  if (!first) return;
-  if (first === 'keshilla') return load(second ? 'post' : 'blog');
-  const key = BY_SEGMENT[first];
-  if (key) load(key);
+  const key = keyFor(path);
+  if (key && key !== 'tryOn') void load(key);
+}
+
+/** True when the page at this app path can render at once. */
+export function isPageReady(path: string) {
+  const key = keyFor(path);
+  return !!key && arrived.has(key);
+}
+
+/**
+ * The page being opened, before React mounts: its first render is then the whole page, with no loading state in between
+ * (scripts/prerender-meta.mjs preloads the same chunk from the HTML). A slow chunk doesn't hold the app back for long.
+ */
+export function preloadCurrentPage(path: string, patience = 4000): Promise<unknown> {
+  if (/^\/admin(\/|$)/.test(path)) return Promise.resolve();
+  const chunk = load(keyFor(path) ?? 'notFound');
+  return Promise.race([chunk, new Promise((resolve) => setTimeout(resolve, patience))]);
 }
 
 /** Link intent → prefetch. Attach once (SiteLayout). Returns the cleanup. */
@@ -149,14 +198,14 @@ export function listenForLinkIntent() {
 export function prefetchLikelyPages() {
   const conn = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
   if (conn?.saveData || /(^|-)2g$/.test(conn?.effectiveType ?? '')) return () => {};
-  const queue: Key[] = ['shop', 'product', 'cart', 'booking', 'services', 'checkout'];
+  const queue: Key[] = ['shop', 'product', 'home', 'cart', 'booking', 'services', 'checkout'];
   let cancelled = false;
   const idle = (cb: () => void) => (typeof requestIdleCallback === 'function' ? requestIdleCallback(cb, { timeout: 4000 }) : setTimeout(cb, 1200));
   const next = () => {
     if (cancelled) return;
     const key = queue.shift();
     if (!key) return;
-    load(key);
+    void load(key);
     idle(next);
   };
   const start = window.setTimeout(() => idle(next), 2500);

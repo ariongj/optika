@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
+import { motion, useReducedMotion } from '@/lib/motion';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 

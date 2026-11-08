@@ -102,6 +102,52 @@
   }
 }
 
+/* Loading states that a quick load never shows. */
+.late-in {
+  animation: late-in 0.2s ease-out 0.35s both;
+}
+@keyframes late-in {
+  from {
+    opacity: 0;
+  }
+}
+.nav-progress {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 70;
+  height: 2px;
+  overflow: hidden;
+  pointer-events: none;
+  animation: late-in 0.15s ease-out 0.2s both;
+}
+.nav-progress::before {
+  content: '';
+  display: block;
+  width: 40%;
+  height: 100%;
+  background: var(--color-brand-400);
+  animation: nav-progress 1.1s ease-in-out infinite;
+}
+@keyframes nav-progress {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-progress::before {
+    width: 100%;
+    animation: none;
+  }
+}
+/* Between pages: see fadesTo in App.tsx. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.2s;
+}
+
 @layer components {
   .container-x {
     @apply mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-8;

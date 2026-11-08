@@ -1,7 +1,7 @@
 // Small neutral controls for the CMS v2 content screens (PDF p.07: text + symbol statuses, compact controls).
 import { useEffect, useId, useRef, useState, type ComponentType, type ReactNode, type SelectHTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { ChevronDown, CircleCheck, CircleDashed, Clock3, Ellipsis, EyeOff, Lock, X } from 'lucide-react';
 import { Hint, Label } from '@/components/ui/Field';
 import { useDict } from '@/i18n';

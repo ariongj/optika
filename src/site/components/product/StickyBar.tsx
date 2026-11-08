@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { Link } from 'react-router';
 import { FileText, ScanFace, Send, ShoppingBag } from 'lucide-react';
 import { Img } from '@/components/ui/misc';

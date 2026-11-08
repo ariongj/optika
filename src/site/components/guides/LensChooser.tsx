@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, type ComponentType } from 'react';
 import { Link } from 'react-router';
 import { toast } from 'sonner';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from '@/lib/motion';
 import { ArrowRight, ArrowUpRight, BookOpen, CalendarCheck, Car, Check, FlaskConical, Glasses, Info, Layers, Monitor, ShoppingBag, Sun, SunMoon } from 'lucide-react';
 import type { L10n, Product } from '@/lib/types';
 import { Accent, Img } from '@/components/ui/misc';

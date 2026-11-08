@@ -1,6 +1,7 @@
-import { Suspense, useEffect, useLayoutEffect, type ReactNode } from 'react';
-import { createBrowserRouter, Navigate, Outlet, RouterProvider, ScrollRestoration, useLocation, type RouteObject } from 'react-router';
+import { Suspense, useEffect, useLayoutEffect, useSyncExternalStore, type ReactNode } from 'react';
+import { createBrowserRouter, Navigate, Outlet, RouterProvider, ScrollRestoration, useLocation, type RouteObject, type RouterNavigateOptions, type To } from 'react-router';
 import { BASENAME } from '@/lib/paths';
+import { domAnimation, LazyMotion } from '@/lib/motion';
 import { Toaster, toast } from 'sonner';
 import { SiteLayout } from '@/site/layout/SiteLayout';
 import { useDb } from '@/store/db';
@@ -11,13 +12,12 @@ import { defineDict } from '@/i18n';
 import { RequirePerm } from '@/admin/layout/RequirePerm';
 import type { Action, Module } from '@/lib/permissions';
 
-// Storefront pages: Home ships in the entry bundle; every other page is its own chunk, prefetched on link intent
-// and when idle (see site/pages/lazy.ts), so first load stays small on phones and navigation still feels instant.
-import Home from '@/site/pages/Home';
+// Storefront pages: each is its own chunk, preloaded by the page that opens with it and prefetched on link intent and
+// when idle (see site/pages/lazy.ts), so first load stays small on phones and navigation still feels instant.
 import RouteError from '@/site/pages/RouteError';
-import { lazyRetry, Pages as StorePages } from '@/site/pages/lazy';
+import { isPageReady, lazyRetry, Pages as StorePages } from '@/site/pages/lazy';
 const {
-  shop: Shop, product: ProductPage, cart: CartPage, checkout: Checkout, orderSuccess: OrderSuccess, services: Services, projects: Projects,
+  home: Home, shop: Shop, product: ProductPage, cart: CartPage, checkout: Checkout, orderSuccess: OrderSuccess, services: Services, projects: Projects,
   about: About, contact: Contact, blog: Blog, post: PostPage, cmsPage: CmsPageView, search: SearchPage, wishlist: Wishlist,
   collection: CollectionPage, offer: OfferPage, notFound: NotFound, clinic: Clinic, lab: OpticalLab, lensGuide: LensGuide,
   frameFinder: FrameFinder, booking: BookingPage, tracking: OrderTracking, tryOn: TryOn, smart: SmartGlasses,
@@ -76,10 +76,20 @@ const ModuleMap = lazyRetry(() => import('@/admin/pages/ModuleMap'));
 
 function Loader() {
   return (
-    <div className="grid min-h-[60vh] place-items-center">
+    <div className="late-in grid min-h-[60vh] place-items-center">
       <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink/15 border-t-brand-600" />
     </div>
   );
+}
+
+/**
+ * While a page's code is on its way the page you're on stays up (React Router navigates in a transition), so this thin
+ * line is the only sign of waiting; its CSS holds it back long enough that a quick navigation never shows it.
+ */
+function NavProgress() {
+  const shown = useLocation();
+  const target = useSyncExternalStore(router.subscribe, () => router.state.location);
+  return target.key === shown.key ? null : <div className="nav-progress" aria-hidden />;
 }
 
 function RequireAuth({ children }: { children: ReactNode }) {
@@ -106,6 +116,8 @@ function Root() {
   const admin = pathname === '/admin' || pathname.startsWith('/admin/');
   // Neutral CMS theme under /admin (PDF p.07); the storefront (and the builder's preview iframe) keeps the Miftari Vision gold.
   useLayoutEffect(() => setAdminTheme(admin), [admin]);
+  // the static first screen and its styles are gone with the first commit (unlayered, the rules would beat the sheet's base styles)
+  useLayoutEffect(() => document.getElementById('shell-css')?.remove(), []);
   useEffect(() => applyBrand(brand), [brand]);
   useEffect(() => startCrossTabSync(), []);
   useEffect(() => {
@@ -123,6 +135,7 @@ function Root() {
           position onto a different page opened in the same tab. Fresh loads are keyed by their path instead (a
           reload still comes back to where you were); in-app navigations keep their unique keys (back/forward). */}
       <ScrollRestoration getKey={(location) => (location.key === 'default' ? location.pathname : location.key)} />
+      <NavProgress />
       <Suspense fallback={<Loader />}>
         <Outlet />
       </Suspense>
@@ -264,6 +277,26 @@ const router = createBrowserRouter([
   },
 ], { basename: BASENAME });
 
+/**
+ * A soft cross-fade between storefront pages, where it can be had without risk: only Chromium, the engine it has been
+ * tried on (iOS Safari gets the plain swap); only to a page whose code is here, because the browser holds the screen still
+ * while the next page renders; and not within a page or in the CMS. See ::view-transition in app.css.
+ */
+function fadesTo(to: To | null) {
+  const path = (typeof to === 'string' ? to : to?.pathname ?? '').split(/[?#]/)[0].replace(/(.)\/$/, '$1');
+  if (!path.startsWith('/') || path.startsWith('/admin')) return false;
+  return path !== router.state.location.pathname.replace(/(.)\/$/, '$1') && isPageReady(path);
+}
+if ('startViewTransition' in document && 'userAgentData' in navigator && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const navigate = router.navigate;
+  router.navigate = ((to: To | number | null, opts?: RouterNavigateOptions) =>
+    typeof to === 'number' ? navigate(to) : navigate(to, fadesTo(to) ? { ...opts, viewTransition: true } : opts)) as typeof router.navigate;
+}
+
 export default function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <LazyMotion features={domAnimation}>
+      <RouterProvider router={router} />
+    </LazyMotion>
+  );
 }

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { toast } from 'sonner';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from '@/lib/motion';
 import { ArrowLeft, ArrowRight, ArrowUpRight, CalendarCheck, Check, Link2, Pencil, RotateCcw, Ruler, ScanFace } from 'lucide-react';
 import type { L10n, Product } from '@/lib/types';
 import { Accent, Img } from '@/components/ui/misc';

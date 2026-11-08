@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { useCallback, useEffect, useRef, useState, type MouseEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { ChevronLeft, ChevronRight, Expand, X } from 'lucide-react';
 import { Img } from '@/components/ui/misc';
 import { Modal } from '@/components/ui/Overlay';
@@ -149,6 +149,32 @@ function Lightbox({ open, onClose, images, index, onIndex, alt }: { open: boolea
     return () => window.removeEventListener('keydown', fn);
   }, [open, n, step]);
 
+  // Swipe: the picture follows the finger at a damped rate, then either the next one comes or it eases back.
+  const swipeFrom = useRef<number | null>(null);
+  const swipe = {
+    onPointerDown: (e: ReactPointerEvent<HTMLDivElement>) => {
+      swipeFrom.current = e.clientX;
+      e.currentTarget.setPointerCapture(e.pointerId);
+      e.currentTarget.style.transition = '';
+    },
+    onPointerMove: (e: ReactPointerEvent<HTMLDivElement>) => {
+      if (swipeFrom.current !== null) e.currentTarget.style.transform = `translateX(${(e.clientX - swipeFrom.current) * 0.4}px)`;
+    },
+    onPointerUp: (e: ReactPointerEvent<HTMLDivElement>) => {
+      if (swipeFrom.current === null) return;
+      const moved = e.clientX - swipeFrom.current;
+      swipeFrom.current = null;
+      e.currentTarget.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
+      e.currentTarget.style.transform = '';
+      if (moved < -60) step(1);
+      else if (moved > 60) step(-1);
+    },
+    onPointerCancel: (e: ReactPointerEvent<HTMLDivElement>) => {
+      swipeFrom.current = null;
+      e.currentTarget.style.transform = '';
+    },
+  };
+
   return (
     <Modal open={open} onClose={onClose} size="full" className="h-[92vh] bg-ink! sm:h-[90vh]">
       <div className="relative flex h-full flex-col">
@@ -170,16 +196,11 @@ function Lightbox({ open, onClose, images, index, onIndex, alt }: { open: boolea
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: dir * -60 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute inset-0 flex items-center justify-center px-4 sm:px-20"
-              drag={n > 1 ? 'x' : false}
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.4}
-              onDragEnd={(_, info) => {
-                if (info.offset.x < -60) step(1);
-                else if (info.offset.x > 60) step(-1);
-              }}
+              className="absolute inset-0"
             >
-              {images[index] && <img src={images[index]} alt={alt} draggable={false} className="max-h-full max-w-full rounded-2xl object-contain select-none" />}
+              <div {...(n > 1 ? swipe : {})} className="flex h-full touch-pan-y items-center justify-center px-4 sm:px-20">
+                {images[index] && <img src={images[index]} alt={alt} draggable={false} className="max-h-full max-w-full rounded-2xl object-contain select-none" />}
+              </div>
             </motion.div>
           </AnimatePresence>
           {n > 1 && (

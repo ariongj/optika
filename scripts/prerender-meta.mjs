@@ -121,35 +121,53 @@ pages.get('rreth-nesh').jsonld = group;
 pages.get('klinika').jsonld = { '@context': 'https://schema.org', ...clinic };
 pages.get('optical-lab').jsonld = { '@context': 'https://schema.org', ...lab };
 
-// Smart glasses: the page and its live 3D model are lazy chunks. Preload them from the HTML so the download starts
-// while the main bundle is still arriving — the glasses then fade in sooner (there is no still image first).
-{
-  const manifestPath = path.join(DIST, '.vite', 'manifest.json');
-  if (fs.existsSync(manifestPath)) {
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-    const shellHtml = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
-    const files = new Set();
-    const css = new Set();
-    const walk = (key) => {
-      const e = manifest[key];
-      if (!e || files.has(e.file)) return;
-      files.add(e.file);
-      (e.css ?? []).forEach((c) => css.add(c));
-      (e.imports ?? []).forEach(walk);
-    };
-    ['src/site/pages/SmartGlasses.tsx', 'src/site/components/smart/three/SmartGlasses3D.tsx', 'src/site/components/smart/three/engine.ts'].forEach(walk);
-    const fresh = [...files].filter((f) => !shellHtml.includes(f));
-    pages.get('syze-inteligjente').preload = [
-      ...fresh.map((f) => `<link rel="modulepreload" crossorigin href="${BASE}${f}" />`),
-      ...[...css].filter((c) => !shellHtml.includes(c)).map((c) => `<link rel="preload" as="style" crossorigin href="${BASE}${c}" />`),
-    ];
-  }
+// Every page is a lazy chunk. Preload it from the HTML so the download starts while the main bundle is still arriving:
+// main.tsx waits for it, so the first thing React draws is the whole page. Smart glasses also has its live 3D model
+// preloaded, because the glasses have no still image to show first.
+const manifestPath = path.join(DIST, '.vite', 'manifest.json');
+const manifest = fs.existsSync(manifestPath) ? JSON.parse(fs.readFileSync(manifestPath, 'utf8')) : {};
+const shellSource = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
+function chunkLinks(sources) {
+  const files = new Set();
+  const css = new Set();
+  const walk = (key) => {
+    const e = manifest[key];
+    if (!e || files.has(e.file)) return;
+    files.add(e.file);
+    (e.css ?? []).forEach((c) => css.add(c));
+    (e.imports ?? []).forEach(walk);
+  };
+  sources.forEach(walk);
+  return [
+    ...[...files].filter((f) => !shellSource.includes(f)).map((f) => `<link rel="modulepreload" crossorigin href="${BASE}${f}" />`),
+    ...[...css].filter((c) => !shellSource.includes(c)).map((c) => `<link rel="preload" as="style" crossorigin href="${BASE}${c}" />`),
+  ];
 }
+/** First path segment → page source (mirrors src/site/pages/lazy.ts). */
+const PAGE_SOURCE = {
+  '': 'Home', produktet: 'Shop', produkt: 'ProductPage', shporta: 'CartPage', pagesa: 'Checkout', porosia: 'OrderSuccess', sherbimet: 'Services',
+  lookbook: 'Projects', 'rreth-nesh': 'About', kontakt: 'Contact', faqe: 'CmsPageView', kerko: 'SearchPage', 'te-preferuarat': 'Wishlist',
+  koleksioni: 'CollectionPage', oferta: 'OfferPage', klinika: 'Clinic', 'optical-lab': 'OpticalLab', lentet: 'LensGuide', 'gjej-kornizen': 'FrameFinder',
+  rezervo: 'BookingPage', 'gjurmo-porosine': 'OrderTracking', 'provo-virtualisht': 'TryOn', 'syze-inteligjente': 'SmartGlasses',
+};
+function pageChunkLinks(route) {
+  const [first, second] = route.split('/');
+  const name = first === 'keshilla' ? (second ? 'PostPage' : 'Blog') : PAGE_SOURCE[first];
+  const extra = first === 'syze-inteligjente' ? ['src/site/components/smart/three/SmartGlasses3D.tsx', 'src/site/components/smart/three/engine.ts'] : [];
+  return name ? chunkLinks([`src/site/pages/${name}.tsx`, ...extra]) : [];
+}
+/** The picture a page opens with, fetched from the HTML: nothing else finds it until the JavaScript has run. */
+const openingImage = (src) => {
+  const rel = (BASE !== '/' && src.startsWith(BASE) ? src.slice(BASE.length) : src).replace(/^\/+/, '');
+  return fs.existsSync(path.join(DIST, rel)) ? [`<link rel="preload" as="image" href="${BASE}${rel}" fetchpriority="high" />`] : [];
+};
+pages.get('lentet').preload = openingImage('/images/sim/street-poster.webp');
+pages.get('sherbimet').preload = openingImage('/images/hero/exam.webp');
 for (const [r, t] of [['shporta', 'Shporta'], ['pagesa', 'Pagesa'], ['kerko', 'Kërko'], ['te-preferuarat', 'Të preferuarat'], ['gjurmo-porosine', 'Gjurmo porosinë'], ['admin', 'CMS'], ['admin/login', 'Hyrje në CMS']])
   put(r, { title: t, description: s.seo.description, image: '/images/hero/optical.webp', noindex: true });
 
 const catName = new Map(db.categories.map((c) => [c.id, c.name.sq]));
-for (const c of db.categories) put(`produktet/${c.slug}`, { title: `${c.name.sq} — ${c.tagline.sq}`, description: c.description.sq, image: c.image });
+for (const c of db.categories) put(`produktet/${c.slug}`, { title: `${c.name.sq} — ${c.tagline.sq}`, description: c.description.sq, image: c.image, preload: openingImage(c.image) });
 for (const p of db.products.filter((x) => x.status === 'active')) {
   const price = p.salePrice ?? p.price;
   // "price on request" listings (smart glasses): no price in the text and no Offer in the structured data
@@ -231,6 +249,7 @@ function render(route, m, shellFor = route) {
     `<meta name="twitter:description" content="${esc(desc)}" />`,
     `<meta name="twitter:image" content="${esc(image)}" />`,
     ...(m.preload ?? []),
+    ...(shellFor === '404' ? [] : pageChunkLinks(route)),
     m.jsonld ? `<script type="application/ld+json">${JSON.stringify(m.jsonld).replace(/</g, '\\u003c')}</script>` : '',
   ]
     .filter(Boolean)
@@ -242,24 +261,69 @@ function render(route, m, shellFor = route) {
     .replace(/\s*<meta name="twitter:[^>]*>/g, '')
     .replace(/\s*<link rel="canonical"[^>]*>/, '')
     .replace(/\s*<meta name="robots"[^>]*>/, '')
+    .replace('body{margin:0;background:#f7f3ee}', SHELL_CSS)
     .replace('</head>', `    ${head}\n  </head>`)
     .replace('<div id="root"></div>', `<div id="root">${appShell(shellFor)}</div>`);
 }
 
-/**
- * Static first screen inside #root, painted before any JavaScript runs (React replaces it on mount): the dark
- * announcement strip and, on the homepage, the first hero photo exactly where the real hero draws it (portrait crop on
- * phones) — so a phone on a slow network sees the page at once instead of a blank screen. Inline styles only.
+/*
+ * Static first screen inside #root, painted before any JavaScript runs (React replaces it on mount): the announcement
+ * strip, the header laid out as the real one (src/site/layout/Header.tsx), the colour the page opens on and, on the
+ * homepage, the first hero photo exactly where the real hero draws it (portrait crop on phones). A phone on a slow network
+ * sees the page at once instead of a blank screen, and the header doesn't move when React takes over. The words in the
+ * header depend on the visitor's language, which this page can't read (no inline script), so they come with React.
  */
+const logoSource = fs.readFileSync(path.join(path.dirname(DIST), 'src/components/brand/Logo.tsx'), 'utf8');
+const logoPath = (name) => logoSource.match(new RegExp(`const ${name} = '([^']+)'`))[1];
+const LOGO =
+  '<svg class="sh-logo" viewBox="0 -1 978 253">' +
+  ['ARCH', 'LENS_L', 'LENS_R'].map((n) => `<path d="${logoPath(n)}"/>`).join('') +
+  `<path d="${logoPath('MIFTARI')}" transform="translate(328 103.7) scale(1.4814)"/><path d="${logoPath('VISION')}" transform="translate(328 251) scale(1.4814)"/></svg>`;
+const icon = (body) => `<svg viewBox="0 0 24 24">${body}</svg>`;
+const MENU = icon('<path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/>');
+const SEARCH = icon('<path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/>');
+const HEART = icon('<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/>');
+const BAG = icon('<path d="M16 10a4 4 0 0 1-8 0"/><path d="M3.103 6.034h17.794"/><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z"/>');
+const SHELL_CSS = [
+  'body{margin:0;background:#f7f3ee}',
+  '.sh-bar{height:36px;background:#1c1a17}',
+  '.sh-h{height:76px;border-bottom:1px solid rgb(227 217 204/.8);color:#1c1a17}',
+  '.sh-over{position:absolute;inset:36px 0 auto;z-index:1;border-color:transparent;color:#fff}',
+  '.sh-c{box-sizing:border-box;display:flex;align-items:center;gap:12px;width:100%;max-width:1320px;height:76px;margin:0 auto;padding:0 16px}',
+  '.sh-logo{display:block;flex:none;height:42px;fill:currentColor}',
+  '.sh-i{display:grid;place-items:center;width:40px;height:40px}',
+  '.sh-i svg{display:block;width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}',
+  '.sh-m{margin-left:-8px}.sh-m svg{width:20px;height:20px}',
+  '.sh-r{display:flex;align-items:center;gap:2px;margin-left:auto}',
+  '.sh-w,.sh-b{display:none}',
+  '.sh-dark{height:calc(100svh - 113px);min-height:560px;background:#1c1a17}',
+  '.sh-srv{height:649px}.sh-cat{height:410px}',
+  '.sh-load{position:fixed;inset:0 0 auto;z-index:2;height:2px;overflow:hidden;animation:sh-in .2s .9s both}',
+  '.sh-load:before{content:"";display:block;width:40%;height:100%;background:#b39c71;animation:sh-run 1.1s ease-in-out infinite}',
+  '@keyframes sh-in{from{opacity:0}}@keyframes sh-run{from{transform:translateX(-100%)}to{transform:translateX(250%)}}',
+  '@media(prefers-reduced-motion:reduce){.sh-load:before{width:100%;animation:none}}',
+  '@media(min-width:640px){.sh-c{padding:0 24px}.sh-w{display:grid}}',
+  '@media(min-width:1024px){.sh-c{padding:0 32px}.sh-m{display:none}.sh-srv{height:575px}.sh-cat{height:461px}}',
+  '@media(min-width:1280px){.sh-b{display:block;flex:none;width:166px;margin-left:8px}}',
+  '@media(min-width:1536px){.sh-logo{height:46px}}',
+].join('');
 function appShell(route) {
-  const bar = '<div style="height:36px;background:#1c1a17"></div>';
+  const bar = '<div class="sh-load" aria-hidden="true"></div><div class="sh-bar"></div>';
+  const header = (over) =>
+    `<div class="sh-h${over ? ' sh-over' : ''}" aria-hidden="true"><div class="sh-c"><span class="sh-i sh-m">${MENU}</span>${LOGO}` +
+    `<span class="sh-r"><span class="sh-i">${SEARCH}</span><span class="sh-i sh-w">${HEART}</span><span class="sh-i">${BAG}</span><span class="sh-b"></span></span></div></div>`;
   // the smart-glasses launch page is dark from the top
-  if (route === 'syze-inteligjente') return `${bar}<div style="height:calc(100svh - 36px);min-height:600px;background:#07090a"></div>`;
-  if (route !== '' || !heroRel) return `${bar}<div style="height:76px;border-bottom:1px solid #e3d9cc"></div>`;
+  if (route === 'syze-inteligjente') return `${bar}${header(true)}<div style="height:calc(100svh - 36px);min-height:600px;background:#07090a"></div>`;
+  // pages that open on something dark, so a light page doesn't flash first
+  const first = route.split('/')[0];
+  if (first === 'lentet' || first === 'optical-lab') return `${bar}${header()}<div class="sh-dark"></div>`;
+  if (first === 'sherbimet') return `${bar}${header()}<div class="sh-dark sh-srv"></div>`;
+  if (route.startsWith('produktet/')) return `${bar}${header()}<div class="sh-dark sh-cat"></div>`;
+  if (route !== '' || !heroRel) return `${bar}${header()}`;
   const src = `${BASE}${heroRel}`;
   const portrait = heroPortrait && fs.existsSync(path.join(DIST, heroPortrait)) ? `<source media="(max-width: 767px)" srcset="${BASE}${heroPortrait}">` : '';
   return (
-    `${bar}<div aria-hidden="true" style="position:relative;height:calc(100svh - 36px);min-height:600px;max-height:1000px;overflow:hidden;background:#1c1a17">` +
+    `${bar}${header(true)}<div aria-hidden="true" style="position:relative;height:calc(100svh - 36px);min-height:600px;max-height:1000px;overflow:hidden;background:#1c1a17">` +
     `<picture>${portrait}<img src="${src}" alt="" fetchpriority="high" decoding="sync" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></picture>` +
     '<div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(28,26,23,.8),rgba(28,26,23,.4),rgba(28,26,23,.05))"></div>' +
     '<div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(28,26,23,.7),transparent,rgba(28,26,23,.3))"></div></div>'

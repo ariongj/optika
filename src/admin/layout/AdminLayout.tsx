@@ -2,7 +2,7 @@ import '@/admin/admin.css'; // full CMS stylesheet (the storefront sheet leaves 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
 import { toast } from 'sonner';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion } from '@/lib/motion';
 import { Eye, ExternalLink, Menu, Search, Store, X } from 'lucide-react';
 import { LogoMark } from '@/components/brand/Logo';
 import { ConfirmHost } from '@/admin/components/kit';
