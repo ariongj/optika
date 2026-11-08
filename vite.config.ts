@@ -160,20 +160,5 @@ export default defineConfig({
     chunkSizeWarningLimit: 1500,
     manifest: true,
     target: ['es2020', 'safari15', 'ios15', 'chrome100', 'edge100', 'firefox100'],
-    rolldownOptions: {
-      output: {
-        advancedChunks: {
-          includeDependenciesRecursively: false,
-          groups: [
-            // Motion's layout animation and drag: only the CMS and the wishlist use them (see src/lib/motion.ts). Named here,
-            // because the package's shared entry file would otherwise leave them in the bundle every page loads.
-            {
-              name: 'motion-layout',
-              test: /[\\/](motion-dom[\\/]dist[\\/]es[\\/]projection[\\/](node|animation|shared)|framer-motion[\\/]dist[\\/]es[\\/](gestures[\\/](drag|pan)|motion[\\/]features[\\/](layout|drag)|render[\\/]components[\\/]motion|components[\\/]Reorder))[\\/]?/,
-            },
-          ],
-        },
-      },
-    },
   },
 });

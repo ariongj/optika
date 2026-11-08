@@ -301,14 +301,15 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
   }
 
   /**
-   * The 3D view is prepared the first time it is opened: most visits start on the view through the lens. The picture on
-   * the canvas stays until it is ready, so the click answers at once. Render targets don't survive a lost context, so this can run again.
+   * The 3D view is prepared once the first picture is up, in a quiet moment (see warmStage), or else when it is opened. The
+   * picture on the canvas stays until it is ready, so the click answers at once. Render targets don't survive a lost context,
+   * so this can run again.
    */
   let stageReady = false;
   let stagePreparing = false;
-  function prepareStage() {
+  function prepareStage(quietly = false) {
     stagePreparing = true;
-    if (labels.busy) labels.busy.style.opacity = '1';
+    if (labels.busy && !quietly) labels.busy.style.opacity = '1';
     cubeCamera.update(renderer, envScene);
     renderer.setRenderTarget(pass.main);
     const compiled = compileShaders(renderer, stage, camera);
@@ -321,8 +322,17 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
         stageReady = true;
         stagePreparing = false;
         if (labels.busy && !loading.size) labels.busy.style.opacity = '0';
-        invalidate();
+        if (state?.mode === 'lens') invalidate();
       });
+  }
+  /** Once, then never again: the first switch to 3D otherwise stops the page. On a data-saving connection it waits for the click. */
+  function warmStage() {
+    if ((navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData) return;
+    const go = () => {
+      if (!disposed && !stageReady && !stagePreparing && !renderer.getContext().isContextLost()) prepareStage(true);
+    };
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(go, { timeout: 3000 });
+    else window.setTimeout(go, 1500);
   }
 
   // ---------------------------------------------------------------- view through the lens
@@ -400,6 +410,7 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
     if (painted) return;
     painted = true;
     events.onPainted?.();
+    warmStage();
   }
 
   function fit() {
@@ -513,6 +524,8 @@ export function createSimulator(host: HTMLElement, labels: LabelMap, reduceMotio
     if (s.mode === 'lens') {
       if (!stageReady) {
         if (!stagePreparing) prepareStage();
+        // it was getting ready unseen, and now someone is waiting for it
+        else if (labels.busy) labels.busy.style.opacity = '1';
         return false;
       }
       // morph to the new prescription / material

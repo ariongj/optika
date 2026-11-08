@@ -201,7 +201,7 @@ export function CouponBox({ totals, collapsible, className }: { totals: Totals; 
                   autoComplete="off"
                   spellCheck={false}
                   aria-invalid={!!error || undefined}
-                  className="h-11 min-w-0 flex-1 rounded-xl border border-line bg-white px-3.5 text-[14px] font-semibold uppercase tracking-wider text-ink outline-none transition-colors placeholder:font-medium placeholder:normal-case placeholder:tracking-normal placeholder:text-muted/70 focus:border-ink/40 focus:ring-4 focus:ring-ink/5 aria-[invalid=true]:border-red-500"
+                  className="h-11 min-w-0 flex-1 rounded-xl border border-line bg-white px-3.5 text-[14px] font-semibold uppercase tracking-wider text-ink outline-none transition-colors placeholder:font-medium placeholder:normal-case placeholder:tracking-normal placeholder:text-muted focus:border-ink/40 focus:ring-4 focus:ring-ink/5 aria-[invalid=true]:border-red-500"
                 />
                 <button
                   type="button"

@@ -6,6 +6,7 @@ import { ArrowRight, Search, X } from 'lucide-react';
 import { Img } from '@/components/ui/misc';
 import { Price } from '@/site/components/Price';
 import { useDict, useL, useLang } from '@/i18n';
+import { cn } from '@/lib/utils';
 import { site } from '@/i18n/site';
 import { common } from '@/i18n/common';
 import { useUi } from '@/store/ui';
@@ -79,7 +80,7 @@ export function SearchOverlay() {
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder={t('searchPlaceholder')}
-                  className="min-w-0 flex-1 appearance-none bg-transparent font-display text-2xl outline-none [&::-webkit-search-cancel-button]:hidden placeholder:text-muted/60 sm:text-4xl"
+                  className="min-w-0 flex-1 appearance-none bg-transparent font-display text-2xl outline-none [&::-webkit-search-cancel-button]:hidden placeholder:text-muted/75 sm:text-4xl"
                 />
                 <button type="button" onClick={close} className="grid h-11 w-11 shrink-0 place-items-center rounded-full hover:bg-ink/5" aria-label={tc('close')}>
                   <X className="h-6 w-6" />
@@ -100,7 +101,7 @@ export function SearchOverlay() {
                   </div>
                   <div>
                     <div className="eyebrow mb-3 text-muted">{t('categories')}</div>
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    <div className={cn('grid grid-cols-2 gap-2', cats.length === 4 ? 'xl:grid-cols-4' : 'sm:grid-cols-3')}>
                       {cats.map((c) => (
                         <Link key={c.id} to={`/produktet/${c.slug}`} onClick={close} className="group flex items-center gap-3 rounded-xl p-2 hover:bg-white">
                           <span className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-sand">

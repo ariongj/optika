@@ -4,7 +4,7 @@ import {
   Aperture, ArrowRight, ArrowUpRight, CalendarCheck, Eye, FlaskConical, Glasses, Heart, Layers, Menu, PackageSearch, Phone, ScanFace, Search, ShoppingBag,
   Sparkles, Stethoscope, type LucideIcon,
 } from 'lucide-react';
-import { AnimatePresence, motion } from '@/lib/motion';
+import { AnimatePresence, motion, useReducedMotion } from '@/lib/motion';
 import { Logo } from '@/components/brand/Logo';
 import { LangSwitcher } from '@/components/LangSwitcher';
 import { ButtonLink } from '@/components/ui/Button';
@@ -212,16 +212,19 @@ function AnnouncementBar() {
   const settings = useSettings();
   const bar = usePlacements('bar');
   const l = useL();
+  const reduce = useReducedMotion();
   const [i, setI] = useState(0);
+  // it holds still while someone is pointing at it or tabbing through it, so that a link in it can be reached
+  const [held, setHeld] = useState(false);
   const items = useMemo(() => {
     const live = bar.filter((p) => p.title.me.trim()).map((p) => ({ id: p.id, text: p.title, href: p.cta?.href?.trim() ?? '' }));
     return live.length ? live : settings.announcements.map((text, n) => ({ id: `a${n}`, text, href: '' }));
   }, [bar, settings.announcements]);
   useEffect(() => {
-    if (items.length < 2) return;
+    if (items.length < 2 || held) return;
     const t = setInterval(() => setI((x) => (x + 1) % items.length), 4500);
     return () => clearInterval(t);
-  }, [items.length]);
+  }, [items.length, held]);
   if (!items.length) return null;
   const cur = items[i % items.length];
   const textCls = 'block h-9 max-w-full truncate font-medium leading-9';
@@ -231,15 +234,22 @@ function AnnouncementBar() {
         <a href={`tel:${settings.phone.replace(/\s/g, '')}`} className="tap hidden items-center gap-1.5 text-paper/75 hover:text-white md:flex">
           <Phone className="h-3.5 w-3.5" /> {settings.phone}
         </a>
-        <div className="relative h-full flex-1 overflow-hidden text-center md:max-w-[60%]">
+        <div
+          onPointerEnter={() => setHeld(true)}
+          onPointerLeave={() => setHeld(false)}
+          onFocus={() => setHeld(true)}
+          onBlur={() => setHeld(false)}
+          className="relative h-full flex-1 overflow-hidden text-center md:max-w-[60%]"
+        >
           <AnimatePresence mode="wait">
             <motion.p
               key={cur.id}
-              // a clipped ticker slide, no fade: the text is never shown at low contrast mid-transition
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '-100%' }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              // A clipped ticker slide, no fade: the text is never shown at low contrast mid-transition. As a whole `transform`,
+              // which the browser plays by itself: this runs on every page, every few seconds, and must not cost a scroll a frame.
+              initial={{ transform: 'translateY(100%)' }}
+              animate={{ transform: 'translateY(0%)' }}
+              exit={{ transform: 'translateY(-100%)' }}
+              transition={{ duration: reduce ? 0 : 0.35, ease: [0.16, 1, 0.3, 1] }}
               className="absolute inset-0 flex items-center justify-center truncate font-medium"
             >
               {!cur.href ? (

@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { memo, useId, useState } from 'react';
 import { motion, useReducedMotion } from '@/lib/motion';
 import { Check } from 'lucide-react';
 import { useDict, useL, useLang } from '@/i18n';
@@ -45,7 +45,7 @@ function markerPath(centre: number, edge: number, sign: 'minus' | 'plus') {
   return `M ${f(XM - 4)} ${f(TOP)} L ${f(XM + 4)} ${f(TOP)} M ${f(XM)} ${f(TOP)} L ${f(XM)} ${f(y1)} M ${f(XM - 4)} ${f(y1)} L ${f(XM + 4)} ${f(y1)}`;
 }
 
-export function ThicknessCompare({ strength, onStrength }: { strength: Strength | undefined; onStrength: (s: KnownStrength) => void }) {
+export const ThicknessCompare = memo(function ThicknessCompare({ strength, onStrength }: { strength: Strength | undefined; onStrength: (s: KnownStrength) => void }) {
   const t = useDict(LG);
   const l = useL();
   const lang = useLang();
@@ -146,4 +146,4 @@ export function ThicknessCompare({ strength, onStrength }: { strength: Strength 
       <p className="mt-5 max-w-3xl text-[13px] leading-relaxed text-muted">{t('thickNote', { power: powerLabel })}</p>
     </div>
   );
-}
+});

@@ -37,7 +37,7 @@ export function CategoryTiles({ variant = 'tile', limit, className }: { variant?
 
   if (variant === 'compact') {
     return (
-      <div className={cn('grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3', className)}>
+      <div className={cn('grid grid-cols-1 gap-3 sm:grid-cols-2', list.length !== 4 && 'lg:grid-cols-3', className)}>
         {list.map((c) => (
           <Link
             key={c.id}
@@ -62,7 +62,7 @@ export function CategoryTiles({ variant = 'tile', limit, className }: { variant?
   }
 
   return (
-    <div className={cn('grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-6', className)}>
+    <div className={cn('grid grid-cols-2 gap-3 sm:gap-4', list.length === 4 ? 'lg:grid-cols-4' : 'sm:grid-cols-3 xl:grid-cols-6', className)}>
       {list.map((c) => (
         <Link key={c.id} to={`/produktet/${c.slug}`} className="group relative block aspect-[4/5] overflow-hidden rounded-2xl bg-ink sm:rounded-3xl">
           <Img src={c.image} small alt={l(c.name)} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-[1.07]" />

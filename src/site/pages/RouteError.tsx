@@ -46,7 +46,7 @@ export default function RouteError() {
         </a>
         <h1 className="display mt-10 text-[34px] leading-tight sm:text-[42px]">{t('title')}</h1>
         <p className="mx-auto mt-4 max-w-sm text-[15.5px] leading-relaxed text-muted">{t('text')}</p>
-        {status && <p className="mt-2 font-mono text-[12px] text-muted/70">HTTP {status}</p>}
+        {status && <p className="mt-2 font-mono text-[12px] text-muted">HTTP {status}</p>}
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
           <button
             type="button"

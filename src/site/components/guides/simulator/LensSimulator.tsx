@@ -1,5 +1,5 @@
-import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
-import { useReducedMotion } from '@/lib/motion';
+import { useDeferredValue, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from '@/lib/motion';
 import { CalendarCheck, ChevronDown, EyeOff, Glasses, Minus, Move3d, Plus, ShoppingBag, SlidersHorizontal, Waypoints } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Product } from '@/lib/types';
@@ -146,6 +146,26 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
     if (band !== strength) onStrength(band);
   };
   const changeSph = (v: number) => changeRx(clamp(Math.round(v * 4) / 4, SPH_MIN, SPH_MAX), cyl);
+  // the comparison below redraws when the power crosses into another band: a dragged slider doesn't wait for that
+  const shownStrength = useDeferredValue(strength);
+
+  // the control that was pressed goes away with the panel, so the keyboard moves on to what took its place
+  const cylSlider = useRef<HTMLInputElement>(null);
+  const cylAdd = useRef<HTMLButtonElement>(null);
+  const cylPressed = useRef(false);
+  useEffect(() => {
+    if (!cylPressed.current) return;
+    cylPressed.current = false;
+    (cylOpen ? cylSlider : cylAdd).current?.focus({ preventScroll: true });
+  }, [cylOpen]);
+  const reveal = {
+    initial: { height: 0, opacity: 0 },
+    animate: { height: 'auto', opacity: 1 },
+    exit: { height: 0, opacity: 0 },
+    transition: { duration: reduce ? 0 : 0.26, ease: [0.22, 1, 0.36, 1] as const },
+    // room for the ring around the panel and the focus ring, which the clipping would cut
+    className: '-mx-1 -mb-1 overflow-hidden px-1 pb-1',
+  };
 
   const packages = useMemo(() => KINDS.flatMap((k) => lenses.filter((p) => p.id === k.id).map((product) => ({ ...k, product }))), [lenses]);
   const pack = packages.find((p) => p.id === packageId) ?? packages[0];
@@ -315,7 +335,7 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
   if (status === 'fallback') {
     return (
       <Reveal className="mt-10 sm:mt-12">
-        <ThicknessCompare strength={strength} onStrength={onStrength} />
+        <ThicknessCompare strength={shownStrength} onStrength={onStrength} />
       </Reveal>
     );
   }
@@ -404,7 +424,7 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
                   </div>
                 </div>
               ) : (
-                !painted && !sceneFailed && <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-black/60 px-3 py-1 text-[12px] font-medium text-paper/85 backdrop-blur-md">{t('loading')}</div>
+                !painted && !sceneFailed && <div className="late-in pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-black/60 px-3 py-1 text-[12px] font-medium text-paper/85 backdrop-blur-md">{t('loading')}</div>
               )}
               {sceneFailed && mode === 'view' && (
                 <div className="absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-3 whitespace-nowrap rounded-full bg-black/70 py-1.5 pl-4 pr-1.5 text-[13px] font-medium text-paper backdrop-blur-md" role="status">
@@ -421,7 +441,7 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
                   </button>
                 </div>
               )}
-              <div ref={setLabel('busy')} style={{ opacity: 0 }} className="pointer-events-none absolute left-1/2 top-4 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/60 px-3 py-1 text-[12px] font-medium text-paper/85 backdrop-blur-md sm:top-20" aria-hidden>
+              <div ref={setLabel('busy')} style={{ opacity: 0 }} className={cn(!painted && 'hidden', 'pointer-events-none absolute left-1/2 top-4 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/60 px-3 py-1 text-[12px] font-medium text-paper/85 backdrop-blur-md sm:top-20')} aria-hidden>
                 {t('loading')}
               </div>
 
@@ -540,13 +560,16 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
               <span className="absolute right-0">+6</span>
             </div>
             <p className="mt-1.5 text-center text-[12.5px] font-medium text-paper/70">{sph < 0 ? t('rxMinus') : sph > 0 ? t('rxPlus') : t('rxZero')}</p>
+            <AnimatePresence initial={false}>
             {cylOpen ? (
+              <motion.div key="cyl" {...reveal}>
               <div className="mt-4 rounded-2xl bg-white/[0.035] p-4 ring-1 ring-white/10">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-[13.5px] font-bold text-white">{t('astig')}</span>
                   <button
                     type="button"
                     onClick={() => {
+                      cylPressed.current = true;
                       setCylOpen(false);
                       changeRx(sph, 0);
                     }}
@@ -564,6 +587,7 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
                   </output>
                 </div>
                 <input
+                  ref={cylSlider}
                   id="sim-cyl"
                   type="range"
                   min={CYL_MIN}
@@ -600,11 +624,15 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
                 />
                 <p className="mt-1 text-[12px] font-medium leading-snug text-paper/60">{t('cylHint')}</p>
               </div>
+              </motion.div>
             ) : (
+              <motion.div key="add" {...reveal}>
               <div className="mt-3 text-center">
                 <button
+                  ref={cylAdd}
                   type="button"
                   onClick={() => {
+                    cylPressed.current = true;
                     setCylOpen(true);
                     // a common cylinder to start from, so the change shows at once; the visitor then sets their own
                     changeRx(sph, -0.75);
@@ -615,7 +643,9 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
                   <Plus className="h-4 w-4 shrink-0" aria-hidden /> {t('cylAdd')}
                 </button>
               </div>
+              </motion.div>
             )}
+            </AnimatePresence>
             <p className="mt-3 text-center text-[13px] font-medium text-paper/70">
               {t('noRx')}{' '}
               <button type="button" onClick={() => openBooking('exam')} className="rounded font-semibold text-brand-200 underline underline-offset-2 outline-none hover:text-white focus-visible:ring-2 focus-visible:ring-brand-200">

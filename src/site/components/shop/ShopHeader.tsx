@@ -203,7 +203,7 @@ export function AllHeader({ products, categories, sale, params }: { products: Pr
         </div>
 
         {/* Category tiles */}
-        <div className={cn('mt-10 hidden gap-3 sm:grid sm:grid-cols-3', categories.length > 4 && 'lg:grid-cols-6')}>
+        <div className={cn('mt-10 hidden gap-3 sm:grid', categories.length === 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3', categories.length > 4 && 'lg:grid-cols-6')}>
           {categories.map((c, i) => {
             const n = shown.filter((p) => p.categoryId === c.id).length;
             return (

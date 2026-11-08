@@ -73,7 +73,7 @@ export function Footer({ dark = false }: { dark?: boolean }) {
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t('newsPlaceholder')}
               aria-label={t('newsPlaceholder')}
-              className="min-w-0 flex-1 bg-transparent px-4 text-[15px] text-white outline-none placeholder:text-paper/40"
+              className="min-w-0 flex-1 bg-transparent px-4 text-[15px] text-white outline-none placeholder:text-paper/60"
             />
             <button type="submit" className="inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-ink transition-colors hover:bg-brand-50">
               {t('subscribe')} <ArrowRight className="h-4 w-4" />

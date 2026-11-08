@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, type ComponentType } from 'react';
+import { memo, useEffect, useMemo, useRef, type ComponentType } from 'react';
 import { Link } from 'react-router';
 import { toast } from 'sonner';
 import { AnimatePresence, motion, useReducedMotion } from '@/lib/motion';
@@ -92,7 +92,7 @@ export function recommendLens(use: LensUse, strength: Strength, lenses: Product[
   return { product, options, index, indexIsOption, alt, altWhy, highNote };
 }
 
-export function LensChooser({
+export const LensChooser = memo(function LensChooser({
   use,
   strength,
   onUse,
@@ -218,7 +218,7 @@ export function LensChooser({
       </div>
     </div>
   );
-}
+});
 
 function Recommendation({ rec, use, strength }: { rec: LensRec; use: LensUse; strength: Strength }) {
   const t = useDict(LG);

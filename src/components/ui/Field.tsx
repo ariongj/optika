@@ -3,7 +3,7 @@ import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const control =
-  'w-full rounded-xl border border-line bg-white px-3.5 text-[15px] text-ink placeholder:text-muted/70 transition-colors outline-none focus:border-ink/40 focus:ring-4 focus:ring-ink/5 disabled:bg-sand/50 disabled:text-muted aria-[invalid=true]:border-red-500 aria-[invalid=true]:ring-red-500/10';
+  'w-full rounded-xl border border-line bg-white px-3.5 text-[15px] text-ink placeholder:text-muted transition-colors outline-none focus:border-ink/40 focus:ring-4 focus:ring-ink/5 disabled:bg-sand/50 disabled:text-muted aria-[invalid=true]:border-red-500 aria-[invalid=true]:ring-red-500/10';
 
 export function Label({ children, htmlFor, className, required }: { children: ReactNode; htmlFor?: string; className?: string; required?: boolean }) {
   return (

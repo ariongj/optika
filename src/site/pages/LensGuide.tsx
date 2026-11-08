@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { ArrowDown, ArrowRight, FlaskConical, Phone, Ruler, ShieldCheck } from 'lucide-react';
-import type { Post } from '@/lib/types';
+import type { Post, Product } from '@/lib/types';
 import { Accent, Accordion, Reveal } from '@/components/ui/misc';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Breadcrumbs, SectionHeading } from '@/site/components/SectionHeading';
@@ -29,65 +29,16 @@ const FACTS = [
   { icon: Ruler, key: 'fact3' },
 ] as const;
 
-/** /lentet — lens guide: 3D simulator first, then chooser, lens types, coatings, index table, prescription explainer. */
-export default function LensGuide() {
+/** The rest of the page. The sliders above change the page's state as they are dragged, and none of this depends on it. */
+const GuideSections = memo(function GuideSections({ lenses }: { lenses: Product[] }) {
   const t = useDict(LG);
-  const ts = useDict(SIM);
   const l = useL();
   const settings = useSettings();
-  const products = useActiveProducts();
-  const lenses = useMemo(() => products.filter(isLensPackage), [products]);
   const posts = usePublishedPosts();
   const advice = useMemo(() => ADVICE_SLUGS.map((s) => posts.find((p) => p.slug === s)).filter((p): p is Post => !!p), [posts]);
-  // Deep links: /lentet?per=screen&fuqia=mid pre-answers the chooser.
-  const [params] = useSearchParams();
-  const [use, setUse] = useState<LensUse | undefined>(() => asUse(params.get('per')));
-  const [strength, setStrength] = useState<Strength | undefined>(() => asStrength(params.get('fuqia')));
-  usePageTitle(t('title'));
-  // the chooser sits below the simulator: a link that pre-answers it should land on it
-  const toChooser = !!(params.get('per') || params.get('fuqia'));
-  useEffect(() => {
-    if (toChooser) scrollToId('zgjedhesi');
-  }, [toChooser]);
 
   return (
     <>
-      {/* 01 — the simulator opens the page: it is what people came to see, so the engine starts right away */}
-      <section id="simulatori" className="scroll-mt-24 bg-ink pb-16 pt-6 text-paper sm:pb-20 sm:pt-8">
-        <div className="container-x">
-          <Breadcrumbs items={[{ label: t('title') }]} tone="light" />
-          <h1 className="display mt-3 max-w-4xl text-[32px] leading-[1.06] text-white sm:text-[44px]">
-            <Accent text={ts('title')} accentClassName="text-brand-200!" />
-          </h1>
-          <p className="mt-2.5 max-w-3xl text-[15px] leading-relaxed text-paper/75 sm:text-base">{ts('text')}</p>
-          <LensSimulator strength={strength} onStrength={setStrength} lenses={lenses} />
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-x-8 gap-y-5 border-t border-white/10 pt-7">
-            <ul className="flex flex-wrap gap-x-7 gap-y-3 text-[13.5px] font-medium text-paper/75">
-              {FACTS.map(({ icon: Icon, key }) => (
-                <li key={key} className="inline-flex items-center gap-2">
-                  <Icon className="h-4 w-4 text-brand-200" /> {t(key)}
-                </li>
-              ))}
-            </ul>
-            <Button size="lg" variant="outlineLight" onClick={() => scrollToId('zgjedhesi')} iconRight={<ArrowDown className="h-4 w-4" />}>
-              {t('heroCta')}
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* 02 — chooser */}
-      <section id="zgjedhesi" className="scroll-mt-24 pb-20 pt-16 sm:pb-28 sm:pt-24">
-        <div className="container-x">
-          <Reveal>
-            <SectionHeading eyebrow={t('chooserEyebrow')} title={t('chooserTitle')} subtitle={t('chooserText')} />
-          </Reveal>
-          <div className="mt-10 sm:mt-12">
-            <LensChooser use={use} strength={strength} onUse={setUse} onStrength={setStrength} lenses={lenses} />
-          </div>
-        </div>
-      </section>
-
       {/* 03 — lens types: the chooser's own bottom padding is the gap, on the same background */}
       <section className="below-fold pb-20 sm:pb-28">
         <div className="container-x">
@@ -198,6 +149,68 @@ export default function LensGuide() {
       </section>
 
       <CtaBand image="/images/s/kontrolli.webp" className="pt-0! pb-8" />
+    </>
+  );
+});
+
+/** /lentet — lens guide: 3D simulator first, then chooser, lens types, coatings, index table, prescription explainer. */
+export default function LensGuide() {
+  const t = useDict(LG);
+  const ts = useDict(SIM);
+  const products = useActiveProducts();
+  const lenses = useMemo(() => products.filter(isLensPackage), [products]);
+  // Deep links: /lentet?per=screen&fuqia=mid pre-answers the chooser.
+  const [params] = useSearchParams();
+  const [use, setUse] = useState<LensUse | undefined>(() => asUse(params.get('per')));
+  const [strength, setStrength] = useState<Strength | undefined>(() => asStrength(params.get('fuqia')));
+  // the sliders up top set this as they are dragged: the chooser's answer doesn't hold them up
+  const chooserStrength = useDeferredValue(strength);
+  usePageTitle(t('title'));
+  // the chooser sits below the simulator: a link that pre-answers it should land on it
+  const toChooser = !!(params.get('per') || params.get('fuqia'));
+  useEffect(() => {
+    if (toChooser) scrollToId('zgjedhesi');
+  }, [toChooser]);
+
+  return (
+    <>
+      {/* 01 — the simulator opens the page: it is what people came to see, so the engine starts right away */}
+      <section id="simulatori" className="scroll-mt-24 bg-ink pb-16 pt-6 text-paper sm:pb-20 sm:pt-8">
+        <div className="container-x">
+          <Breadcrumbs items={[{ label: t('title') }]} tone="light" />
+          <h1 className="display mt-3 max-w-4xl text-[32px] leading-[1.06] text-white sm:text-[44px]">
+            <Accent text={ts('title')} accentClassName="text-brand-200!" />
+          </h1>
+          <p className="mt-2.5 max-w-3xl text-[15px] leading-relaxed text-paper/75 sm:text-base">{ts('text')}</p>
+          <LensSimulator strength={strength} onStrength={setStrength} lenses={lenses} />
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-x-8 gap-y-5 border-t border-white/10 pt-7">
+            <ul className="flex flex-wrap gap-x-7 gap-y-3 text-[13.5px] font-medium text-paper/75">
+              {FACTS.map(({ icon: Icon, key }) => (
+                <li key={key} className="inline-flex items-center gap-2">
+                  <Icon className="h-4 w-4 text-brand-200" /> {t(key)}
+                </li>
+              ))}
+            </ul>
+            <Button size="lg" variant="outlineLight" onClick={() => scrollToId('zgjedhesi')} iconRight={<ArrowDown className="h-4 w-4" />}>
+              {t('heroCta')}
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* 02 — chooser */}
+      <section id="zgjedhesi" className="scroll-mt-24 pb-20 pt-16 sm:pb-28 sm:pt-24">
+        <div className="container-x">
+          <Reveal>
+            <SectionHeading eyebrow={t('chooserEyebrow')} title={t('chooserTitle')} subtitle={t('chooserText')} />
+          </Reveal>
+          <div className="mt-10 sm:mt-12">
+            <LensChooser use={use} strength={chooserStrength} onUse={setUse} onStrength={setStrength} lenses={lenses} />
+          </div>
+        </div>
+      </section>
+
+      <GuideSections lenses={lenses} />
     </>
   );
 }

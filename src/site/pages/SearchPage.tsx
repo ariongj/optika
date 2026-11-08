@@ -259,7 +259,7 @@ export default function SearchPage() {
               enterKeyHint="search"
               autoComplete="off"
               spellCheck={false}
-              className="display min-w-0 flex-1 bg-transparent text-[30px] leading-tight text-ink outline-none placeholder:text-muted/45 sm:text-[52px] lg:text-[60px]"
+              className="display min-w-0 flex-1 bg-transparent text-[30px] leading-tight text-ink outline-none placeholder:text-muted/75 sm:text-[52px] lg:text-[60px]"
             />
             {value && (
               <button
