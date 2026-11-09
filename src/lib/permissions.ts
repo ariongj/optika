@@ -40,7 +40,7 @@ export const ROLE_META: Record<RoleId, { name: L10n; description: L10n }> = {
   },
   manager: {
     name: { me: 'Menadžer', sq: 'Menaxher', en: 'Manager' },
-    description: { me: 'Operacije i izvještaji: narudžbe, katalog, akcije, kontakti.', sq: 'Operacione dhe raporte: porosi, katalog, oferta, kontakte.', en: 'Operations and reports: orders, catalogue, campaigns, contacts.' },
+    description: { me: 'Operacije i izveštaji: narudžbe, katalog, akcije, kontakti.', sq: 'Operacione dhe raporte: porosi, katalog, oferta, kontakte.', en: 'Operations and reports: orders, catalogue, campaigns, contacts.' },
   },
   catalog: {
     name: { me: 'Katalog', sq: 'Katalog', en: 'Catalogue' },

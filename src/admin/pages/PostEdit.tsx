@@ -26,7 +26,7 @@ import { cn, slugify, thumb, uid } from '@/lib/utils';
 const T = defineDict({
   me: {
     newPost: 'Novi članak',
-    newPostText: 'Članak za blog „Savjeti“ — vodiči, savjeti i inspiracija za kupce.',
+    newPostText: 'Članak za blog „Saveti“ — vodiči, saveti i inspiracija za kupce.',
     title: 'Naslov članka',
     titlePh: 'npr. Kako izabrati okvir prema obliku lica',
     category: 'Kategorija',
@@ -35,7 +35,7 @@ const T = defineDict({
     body: 'Tekst članka',
     cover: 'Naslovna fotografija',
     coverHint: 'Preporučeno 1600 × 1000 px, pejzažni format.',
-    readMinutes: 'Vrijeme čitanja',
+    readMinutes: 'Vreme čitanja',
     min: 'min',
     auto: 'Izračunaj iz teksta (~{n} min)',
     saved: 'Članak je sačuvan',

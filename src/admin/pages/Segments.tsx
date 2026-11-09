@@ -19,10 +19,10 @@ import { uid } from '@/lib/utils';
 
 const T = defineDict({
   me: {
-    subtitle: 'Dinamičke grupe kupaca prema pravilima — publika za popuste, ponude i izvještaje.',
+    subtitle: 'Dinamičke grupe kupaca prema pravilima — publika za popuste, ponude i izveštaje.',
     newSegment: 'Novi segment',
     infoTitle: 'Segmenti ne šalju marketing automatski.',
-    infoText: 'Segment je živi filter, ne kopija kupaca: članstvo se mijenja čim se promijene narudžbe ili podaci kupca. Koristi se kao publika za popuste i ponude i u izvještajima.',
+    infoText: 'Segment je živi filter, ne kopija kupaca: članstvo se menja čim se promene narudžbe ili podaci kupca. Koristi se kao publika za popuste i ponude i u izveštajima.',
     col_segment: 'Segment',
     col_rules: 'Uslovi',
     col_matches: 'Poklapanja',

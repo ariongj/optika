@@ -15,7 +15,7 @@ import { od } from './dict';
 const T = defineDict({
   me: {
     title: 'Pripremi isporuku',
-    description: 'Izaberite stavke koje idu u ovu pošiljku. Ostatak ostaje „djelimično poslato“.',
+    description: 'Izaberite stavke koje idu u ovu pošiljku. Ostatak ostaje „delimično poslato“.',
     items: 'Stavke u pošiljci',
     carrier: 'Način slanja',
     tracking: 'Broj za praćenje',
@@ -24,8 +24,8 @@ const T = defineDict({
     submit: 'Označi kao poslato',
     submitPartial: 'Pošalji izabrane ({n})',
     done: 'Narudžba {n} je označena kao poslata',
-    donePartial: 'Djelimična isporuka evidentirana za {n}',
-    partialNote: 'Djelimična isporuka: {items}',
+    donePartial: 'Delimična isporuka evidentirana za {n}',
+    partialNote: 'Delimična isporuka: {items}',
     noneSelected: 'Izaberite bar jednu stavku',
   },
   sq: {

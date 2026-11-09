@@ -14,10 +14,10 @@ const T = defineDict({
   me: {
     title: 'Uvoz kupaca (CSV)',
     description: 'Postojeći kupci se prepoznaju po e-mailu ili telefonu i ažuriraju (oznake, saglasnosti); ostali se dodaju kao novi.',
-    drop: 'Izaberite CSV fajl ili ga prevucite ovdje',
+    drop: 'Izaberite CSV fajl ili ga prevucite ovde',
     dropHint: 'UTF-8 · separator zarez ili tačka-zarez · prvi red = nazivi kolona',
     template: 'Preuzmi šablon',
-    sample: 'Probaj sa primjerom',
+    sample: 'Probaj sa primerom',
     columns: 'Podržane kolone',
     note: 'Kupci koji su se odjavili sa marketinga neće biti ponovo prijavljeni uvozom.',
     change: 'Drugi fajl',

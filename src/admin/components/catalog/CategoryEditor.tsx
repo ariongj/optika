@@ -17,7 +17,7 @@ const T = defineDict({
     newTitle: 'Nova kategorija',
     editTitle: 'Uredi kategoriju',
     newText: 'Kategorija se odmah pojavljuje u meniju, na početnoj i u prodavnici.',
-    editText: 'Izmjene su vidljive na sajtu čim ih sačuvate.',
+    editText: 'Izmene su vidljive na sajtu čim ih sačuvate.',
     name: 'Naziv',
     namePh: 'npr. Kontaktna sočiva',
     tagline: 'Podnaslov',

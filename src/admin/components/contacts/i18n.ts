@@ -28,7 +28,7 @@ export const cx = defineDict({
     src_phone: 'Telefon',
     src_manual: 'Ručno',
     // assignee
-    unassigned: 'Nije dodijeljeno',
+    unassigned: 'Nije dodeljeno',
     me: 'Moji upiti',
     // due
     due_today: 'Danas {time}',

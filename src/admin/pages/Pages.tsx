@@ -52,7 +52,7 @@ const T = defineDict({
     tp_services: 'Usluge',
     tp_projects: 'Lookbook',
     tp_tryon: 'Virtuelna proba',
-    tp_blog: 'Savjeti (blog)',
+    tp_blog: 'Saveti (blog)',
     tp_faq: 'Česta pitanja',
     w_editor: 'Editor',
     w_settings: 'Konfiguracija',
@@ -64,7 +64,7 @@ const T = defineDict({
     faqWhere: 'sekcija na početnoj',
     menusManage: 'Meniji',
     noMenus: '—',
-    noFooterPerm: 'Promjena menija se odmah objavljuje — potrebna je dozvola za objavu.',
+    noFooterPerm: 'Promena menija se odmah objavljuje — potrebna je dozvola za objavu.',
   },
   sq: {
     description: 'Faqet informative — dërgesa, kushtet, reklamacionet, privatësia. Secila ka status, datë publikimi, shabllon dhe SEO, në tre gjuhë.',

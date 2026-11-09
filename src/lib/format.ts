@@ -94,7 +94,7 @@ export function dateTime(iso: string, lang: Lang = 'sq') {
 }
 
 const REL: Record<Lang, { now: string; min: string; h: string; d: string; ago: (s: string) => string }> = {
-  me: { now: 'upravo sada', min: 'min', h: 'h', d: 'd', ago: (s) => `prije ${s}` },
+  me: { now: 'upravo sada', min: 'min', h: 'h', d: 'd', ago: (s) => `pre ${s}` },
   sq: { now: 'tani', min: 'min', h: 'orë', d: 'ditë', ago: (s) => `para ${s}` },
   en: { now: 'just now', min: 'min', h: 'h', d: 'd', ago: (s) => `${s} ago` },
 };

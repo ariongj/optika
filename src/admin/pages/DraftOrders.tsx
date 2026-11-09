@@ -38,7 +38,7 @@ const T = defineDict({
     noCustomer: 'Bez kupca',
     stat_open: 'Otvoreni nacrti',
     stat_openHint: 'čekaju predračun ili potvrdu',
-    stat_value: 'Vrijednost otvorenih',
+    stat_value: 'Vrednost otvorenih',
     stat_valueHint: 'sa popustima i dostavom',
     stat_converted: 'Konvertovano',
     stat_convertedHint: 'nacrta je postalo narudžba',

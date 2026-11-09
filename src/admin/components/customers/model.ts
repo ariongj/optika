@@ -441,7 +441,7 @@ const ALIASES: Record<ImportField, string[]> = {
   name: ['name', 'full_name', 'full name', 'customer', 'kupac', 'klienti', 'ime i prezime', 'emri i plote', 'emri dhe mbiemri'],
   email: ['email', 'e-mail', 'e_mail', 'mail', 'email address'],
   phone: ['phone', 'telefon', 'telefoni', 'tel', 'mobile', 'mobilni', 'celular'],
-  city: ['city', 'grad', 'qyteti', 'town', 'mjesto'],
+  city: ['city', 'grad', 'qyteti', 'town', 'mesto', 'mjesto'],
   address: ['address', 'address1', 'adresa', 'street', 'rruga'],
   company: ['company', 'firma', 'kompania', 'organization'],
   lang: ['language', 'lang', 'jezik', 'gjuha', 'locale'],

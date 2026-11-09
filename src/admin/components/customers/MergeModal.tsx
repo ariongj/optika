@@ -17,7 +17,7 @@ import { CHANNELS, mergeMarketing, snapshotCustomers, useCustomerStore, type Mar
 const T = defineDict({
   me: {
     title: 'Spajanje duplikata',
-    description: 'Pregled prije spajanja — ništa se ne mijenja dok ne kliknete „Spoji“. Narudžbe ostaju netaknute; spaja se samo profil kupca.',
+    description: 'Pregled pre spajanja — ništa se ne menja dok ne kliknete „Spoji“. Narudžbe ostaju netaknute; spaja se samo profil kupca.',
     reasonPhone: 'Isti telefon',
     reasonName: 'Isto ime i grad',
     primary: 'Glavni zapis',
@@ -30,7 +30,7 @@ const T = defineDict({
     emails: 'E-mail adrese',
     phones: 'Telefoni',
     tags: 'Oznake',
-    notes: 'Bilješke',
+    notes: 'Beleške',
     addresses: 'Adrese',
     marketing: 'Saglasnosti',
     notDup: 'Nisu duplikati',

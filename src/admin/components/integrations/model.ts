@@ -102,7 +102,7 @@ export function logOf(x: IntegrationY, orders: Order[], now: Date): LogEntry[] {
   const shipped = recent.filter((o) => o.fulfillment?.shippedAt).slice(0, 4);
   if (x.kind === 'courier')
     for (const o of shipped)
-      out.push({ at: o.fulfillment!.shippedAt!, level: 'ok', text: T(`shipment.created — ${o.number} · naljepnica kreirana`, `shipment.created — ${o.number} · etiketa u krijua`, `shipment.created — ${o.number} · label created`) });
+      out.push({ at: o.fulfillment!.shippedAt!, level: 'ok', text: T(`shipment.created — ${o.number} · nalepnica kreirana`, `shipment.created — ${o.number} · etiketa u krijua`, `shipment.created — ${o.number} · label created`) });
   if (x.kind === 'fiscal')
     for (const o of recent.filter((o) => o.payment.status === 'paid').slice(0, 4))
       out.push({ at: o.createdAt, level: 'ok', text: T(`invoice.fiscalized — ${o.number} · fiskalni broj sačuvan`, `invoice.fiscalized — ${o.number} · numri fiskal u ruajt`, `invoice.fiscalized — ${o.number} · fiscal number stored`) });

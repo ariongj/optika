@@ -181,7 +181,7 @@ type BaseProps = {
   label?: ReactNode;
   hint?: ReactNode;
   error?: string;
-  /** Check the value for demo placeholders and show the "Primjer" chip. */
+  /** Check the value for demo placeholders and show the "Primer" chip. */
   example?: boolean;
   optional?: boolean;
   className?: string;

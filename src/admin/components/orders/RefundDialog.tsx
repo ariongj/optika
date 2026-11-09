@@ -18,7 +18,7 @@ import { Check, NumberInput, Stepper, TextInput } from './ui';
 const T = defineDict({
   me: {
     title: 'Refundacija · #{n}',
-    description: 'Iznos se računa iz neto plaćenog iznosa stavki (nakon popusta), ne iz trenutne cijene ili akcije.',
+    description: 'Iznos se računa iz neto plaćenog iznosa stavki (nakon popusta), ne iz trenutne cene ili akcije.',
     colItem: 'Stavka',
     colPaid: 'Plaćeno / kom',
     colQty: 'Refundirati',

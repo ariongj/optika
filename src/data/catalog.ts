@@ -57,7 +57,7 @@ export const CATEGORIES: Category[] = [
     name: T('Dioptrijska sočiva', 'Lente me recetë', 'Prescription lenses'),
     tagline: T('Izrađena u našoj optičkoj laboratoriji', 'Të punuara në laboratorin tonë optik', 'Made in our own optical lab'),
     description: T(
-      'Jednožižna, progresivna, sočiva za ekran i fotohromatska sočiva — centrirana, montirana i provjerena u našoj laboratoriji u Mitrovici.',
+      'Jednožižna, progresivna, sočiva za ekran i fotohromatska sočiva — centrirana, montirana i proverena u našoj laboratoriji u Mitrovici.',
       'Lente njëvizore, progresive, për ekran dhe fotokromatike — të centruara, të montuara dhe të kontrolluara në laboratorin tonë në Mitrovicë.',
       'Single-vision, progressive, screen and photochromic lenses — centred, fitted and verified in our lab in Mitrovica.',
     ),
@@ -107,7 +107,7 @@ const optRxLenses: ProductOption = {
   values: [
     { id: 'frame', label: T('Samo okvir', 'Vetëm korniza', 'Frame only'), priceDelta: 0 },
     { id: 'single', label: T('Jednožižna + antirefleks', 'Njëvizore + antirefleks', 'Single vision + anti-reflective'), priceDelta: 80 },
-    { id: 'screen', label: T('Za ekran (plavo svjetlo)', 'Për ekran (dritë blu)', 'Screen (blue-light)'), priceDelta: 120 },
+    { id: 'screen', label: T('Za ekran (plavo svetlo)', 'Për ekran (dritë blu)', 'Screen (blue-light)'), priceDelta: 120 },
     { id: 'progressive', label: T('Progresivna', 'Progresive', 'Progressive'), priceDelta: 210 },
   ],
 };

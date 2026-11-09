@@ -1629,7 +1629,7 @@ We can make most of our sunglasses with prescription lenses, polarised or not, i
 Kada ih ne nosite, stavite naočare u tvrdu futrolu. Ako ih ostavljate na kratko, spustite ih sa sočivima nagore. Ne ostavljajte ih u autu na suncu: toplota može da deformiše okvir i ošteti slojeve.
 
 ## Stavljanje i skidanje
-Skidajte naočare objema rukama. Skidanje jednom rukom rasteže drške na jednu stranu, pa okvir s vremenom počne da stoji iskrivljeno.
+Skidajte naočare obema rukama. Skidanje jednom rukom rasteže drške na jednu stranu, pa okvir s vremenom počne da stoji iskrivljeno.
 
 ## Podešavanje u optici
 Ako okvir klizi, steže ili stoji nakrivo, ne savijajte ga sami — naročito acetat, koji se zagreva kontrolisano. Podešavanje u našoj optici je brzo, a uz Negu+ i besplatno.

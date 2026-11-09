@@ -45,7 +45,7 @@ export function LanguagesSection({ s, set }: SectionProps) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Traka sa obavještenjima                                             */
+/* Traka sa obaveštenjima                                             */
 /* ------------------------------------------------------------------ */
 export function AnnouncementsSection({ s, set }: SectionProps) {
   const t = useDict(T, 'admin');

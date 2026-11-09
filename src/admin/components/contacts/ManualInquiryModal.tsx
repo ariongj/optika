@@ -31,7 +31,7 @@ const T = defineDict({
     service: 'Usluga',
     serviceAny: 'Bez usluge',
     preferred: 'Željeni datum',
-    message: 'Poruka / opis zahtjeva',
+    message: 'Poruka / opis zahteva',
     messagePh: 'Npr. B2B: 20 pari progresivnih sočiva 1.6 za optiku u Prizrenu, isporuka za 7 dana…',
     assignee: 'Odgovorni',
     followUp: 'Rok za praćenje',

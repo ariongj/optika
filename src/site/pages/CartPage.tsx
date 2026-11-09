@@ -38,7 +38,7 @@ const T = defineDict({
     browse: 'Pogledaj proizvode',
     recoEyebrow: 'Preporuka',
     recoTitle: 'Možda vam se *dopadne*',
-    recoTitleEmpty: 'Najprodavanije *ovog mjeseca*',
+    recoTitleEmpty: 'Najprodavanije *ovog meseca*',
     viewAll: 'Svi proizvodi',
   },
   sq: {

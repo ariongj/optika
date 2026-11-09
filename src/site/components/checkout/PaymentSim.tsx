@@ -11,7 +11,7 @@ const T = defineDict({
     processing: 'Povezivanje sa bankom…',
     processingText: 'Zaštićena stranica banke (3-D Secure) potvrđuje plaćanje. Ne zatvarajte ovu stranicu.',
     approved: 'Plaćanje odobreno',
-    approvedText: 'Iznos je uspješno naplaćen. Preusmjeravamo vas na potvrdu narudžbe…',
+    approvedText: 'Iznos je uspešno naplaćen. Preusmeravamo vas na potvrdu narudžbe…',
     amount: 'Iznos',
     merchant: 'Trgovac',
   },

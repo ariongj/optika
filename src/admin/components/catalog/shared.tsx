@@ -6,7 +6,7 @@ import type { Lang } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 const T = defineDict({
-  me: { copy: 'Kopiraj', copied: 'Kopirano u međuspremnik', copyFailed: 'Kopiranje nije uspjelo' },
+  me: { copy: 'Kopiraj', copied: 'Kopirano u međuspremnik', copyFailed: 'Kopiranje nije uspelo' },
   sq: { copy: 'Kopjo', copied: 'U kopjua në kujtesë', copyFailed: 'Kopjimi dështoi' },
   en: { copy: 'Copy', copied: 'Copied to clipboard', copyFailed: 'Could not copy' },
 });

@@ -19,7 +19,7 @@ import { Block, Note, Panel, StateText } from './ui';
 
 const D = defineDict({
   me: {
-    zonesTitle: 'Zone i cijene dostave',
+    zonesTitle: 'Zone i cene dostave',
     free: 'Besplatna dostava',
     free_h: 'Besplatna dostava je sada pravilo popusta — sa rasporedom, segmentima i pravilima kombinovanja.',
     freeOn: 'Aktivno · besplatno iznad {amount}',
@@ -32,7 +32,7 @@ const D = defineDict({
     locations: 'Lokacije',
     local: 'Lokalna dostava',
     local_d: 'Našim vozilom po Mitrovici, u dogovorenom terminu.',
-    localFee: 'Cijena',
+    localFee: 'Cena',
     localArea: 'Područje (gradovi)',
     free0: 'Besplatno',
     taxNote: 'Cene uključuju PDV (TVSH) {rate}%. Pakovanje, praćenje i otpremnice zavise od kurirskog partnera. CMS ne zamenjuje fiskalizaciju ATK.',

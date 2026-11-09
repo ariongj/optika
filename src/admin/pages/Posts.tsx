@@ -22,7 +22,7 @@ import { href } from '@/lib/paths';
 
 const T = defineDict({
   me: {
-    description: 'Članci sa savjetima — stranica „Savjeti“ i sekcija na početnoj. Kategorija, autor, sažetak, oznake, SEO i datum objave.',
+    description: 'Članci sa savetima — stranica „Saveti“ i sekcija na početnoj. Kategorija, autor, sažetak, oznake, SEO i datum objave.',
     newPost: 'Novi članak',
     colPost: 'Članak',
     colCategory: 'Kategorija',
@@ -47,7 +47,7 @@ const T = defineDict({
     uncategorized: 'Bez kategorije',
     comments: 'Komentari',
     commentsOff: 'Isključeno',
-    commentsText: 'Komentari se uključuju kao poseban modul, uz moderaciju prije javnog prikaza.',
+    commentsText: 'Komentari se uključuju kao poseban modul, uz moderaciju pre javnog prikaza.',
     moduleMap: 'Mapa modula',
     articles: '{n} čl.',
   },

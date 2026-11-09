@@ -19,7 +19,7 @@ import { cn, thumb } from '@/lib/utils';
 
 const T = defineDict({
   me: {
-    subtitle: 'Biblioteka fajlova sajta — pretraga, tip, alt tekst, dimenzije i reference upotrebe. Fajl koji se koristi briše se tek uz zamjenu ili jasnu potvrdu.',
+    subtitle: 'Biblioteka fajlova sajta — pretraga, tip, alt tekst, dimenzije i reference upotrebe. Fajl koji se koristi briše se tek uz zamenu ili jasnu potvrdu.',
     upload: 'Otpremi fajlove',
     statTotal: 'Ukupno fajlova',
     statTotalHint: '{n} otpremljeno · {size}',
@@ -44,7 +44,7 @@ const T = defineDict({
     noAlt: 'Bez alt teksta',
     fresh: 'Novo',
     emptyTitle: 'Nema fajlova za prikaz',
-    emptyText: 'Promijenite pretragu ili filter, ili otpremite nove fotografije.',
+    emptyText: 'Promenite pretragu ili filter, ili otpremite nove fotografije.',
     resetFilters: 'Poništi filtere',
     sortHint: 'Najnovije prvo',
     loadMore: 'Prikaži još {n}',

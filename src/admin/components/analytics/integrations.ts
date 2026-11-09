@@ -41,21 +41,21 @@ export const KIND_META: Record<IntegrationKind, KindMeta> = {
     scopes: [
       { id: 'payments:write', label: T('Kreiranje i naplata plaćanja', 'Krijo dhe kap pagesa', 'Create and capture payments'), required: true },
       { id: 'refunds:write', label: T('Povrat novca', 'Rimburso', 'Refunds') },
-      { id: 'webhooks:read', label: T('Webhook obavještenja (potpisana)', 'Njoftime webhook (të nënshkruara)', 'Webhook notifications (signed)'), required: true },
+      { id: 'webhooks:read', label: T('Webhook obaveštenja (potpisana)', 'Njoftime webhook (të nënshkruara)', 'Webhook notifications (signed)'), required: true },
     ],
   },
   courier: {
     icon: Truck,
     label: T('Kurir', 'Korrier', 'Courier'),
     title: T('Kurirska služba', 'Shërbimi i korrierit', 'Courier service'),
-    desc: T('Kreiranje pošiljki i naljepnica, broj za praćenje u narudžbi i obavještenje kupcu.', 'Krijim dërgesash dhe etiketash, numri i gjurmimit në porosi dhe njoftim për klientin.', 'Shipments and labels, tracking number on the order and a customer notification.'),
+    desc: T('Kreiranje pošiljki i nalepnica, broj za praćenje u narudžbi i obaveštenje kupcu.', 'Krijim dërgesash dhe etiketash, numri i gjurmimit në porosi dhe njoftim për klientin.', 'Shipments and labels, tracking number on the order and a customer notification.'),
     providers: [
       { id: 'postakosoves', name: 'Posta e Kosovës', note: T('Nacionalna pošta', 'Posta kombëtare', 'National post') },
       { id: 'partner', name: 'Kurirski partner (Kosovo)', note: T('Dostava 1–3 dana širom Kosova', 'Dërgesë 1–3 ditë në gjithë Kosovën', '1–3 day delivery across Kosovo') },
       { id: 'dhl', name: 'DHL Express', note: T('Međunarodne pošiljke', 'Dërgesa ndërkombëtare', 'International shipments') },
     ],
     scopes: [
-      { id: 'shipments:write', label: T('Pošiljke i naljepnice', 'Dërgesa dhe etiketa', 'Shipments and labels'), required: true },
+      { id: 'shipments:write', label: T('Pošiljke i nalepnice', 'Dërgesa dhe etiketa', 'Shipments and labels'), required: true },
       { id: 'tracking:read', label: T('Praćenje pošiljke', 'Gjurmimi i dërgesës', 'Shipment tracking'), required: true },
       { id: 'pickups:write', label: T('Zakazivanje preuzimanja', 'Porosit marrje', 'Schedule pickups') },
     ],
@@ -95,7 +95,7 @@ export const KIND_META: Record<IntegrationKind, KindMeta> = {
     icon: ChartColumn,
     label: T('Analitika', 'Analitikë', 'Analytics'),
     title: T('Merenje poseta i konverzija', 'Matja e vizitave dhe konvertimeve', 'Visit and conversion tracking'),
-    desc: T('Strukturisani događaji: posjeta, korpa, checkout, kupovina, UTM i klikovi na ponude — uz poštovanje pristanka na kolačiće.', 'Ngjarje të strukturuara: vizitë, shportë, checkout, blerje, UTM dhe klikime ofertash — duke respektuar pëlqimin për cookies.', 'Structured events: visit, cart, checkout, purchase, UTM and offer clicks — respecting cookie consent.'),
+    desc: T('Strukturisani događaji: poseta, korpa, checkout, kupovina, UTM i klikovi na ponude — uz poštovanje pristanka na kolačiće.', 'Ngjarje të strukturuara: vizitë, shportë, checkout, blerje, UTM dhe klikime ofertash — duke respektuar pëlqimin për cookies.', 'Structured events: visit, cart, checkout, purchase, UTM and offer clicks — respecting cookie consent.'),
     providers: [
       { id: 'ga4', name: 'Google Analytics 4', note: T('Besplatno, standard', 'Falas, standard', 'Free, standard') },
       { id: 'plausible', name: 'Plausible', note: T('Bez kolačića', 'Pa cookies', 'Cookie-less') },
@@ -104,7 +104,7 @@ export const KIND_META: Record<IntegrationKind, KindMeta> = {
     scopes: [
       { id: 'events:write', label: T('Slanje događaja', 'Dërgo ngjarje', 'Send events'), required: true },
       { id: 'consent:read', label: T('Pristanak na kolačiće', 'Pëlqimi për cookies', 'Cookie consent'), required: true },
-      { id: 'reports:read', label: T('Čitanje izvještaja u CMS-u', 'Lexo raportet në CMS', 'Read reports in the CMS') },
+      { id: 'reports:read', label: T('Čitanje izveštaja u CMS-u', 'Lexo raportet në CMS', 'Read reports in the CMS') },
     ],
   },
   erp: {
@@ -172,7 +172,7 @@ export function demoLog(x: IntegrationX, orders: Order[], now: Date): { at: stri
   }
   if (x.kind === 'analytics' && x.status !== 'disconnected') {
     out.push({ at: min(9), level: 'ok', text: T('Poslato 312 događaja (page_view, add_to_cart, purchase) u test property', 'U dërguan 312 ngjarje (page_view, add_to_cart, purchase) në property prove', '312 events sent (page_view, add_to_cart, purchase) to the test property') });
-    out.push({ at: min(60 * 5), level: 'warn', text: T('18 % posjetilaca odbilo je analitičke kolačiće — ne mjere se', '18 % e vizitorëve refuzuan cookies analitike — nuk maten', '18% of visitors declined analytics cookies — not measured') });
+    out.push({ at: min(60 * 5), level: 'warn', text: T('18 % posetilaca odbilo je analitičke kolačiće — ne mere se', '18 % e vizitorëve refuzuan cookies analitike — nuk maten', '18% of visitors declined analytics cookies — not measured') });
   }
   return out.sort((a, b) => b.at.localeCompare(a.at));
 }
