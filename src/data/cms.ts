@@ -1508,6 +1508,7 @@ export function buildMenus(): Menu[] {
     lensGuide: T('Vodič kroz sočiva', 'Udhëzuesi i lenteve', 'Lens guide'),
     sale: T('Akcije', 'Ofertat', 'Offers'),
     tryOn: T('Probajte virtuelno', 'Provo virtualisht', 'Virtual try-on'),
+    pd: T('Merenje PD kamerom', 'Matja e PD-së me kamerë', 'Measure your PD'),
     services: T('Usluge', 'Shërbimet', 'Services'),
     ourServices: T('Naše usluge', 'Shërbimet tona', 'Our services'),
     book: T('Zakažite termin', 'Rezervo termin', 'Book an appointment'),
@@ -1539,6 +1540,7 @@ export function buildMenus(): Menu[] {
         url('mi-services', L.services, '/sherbimet', [
           url('mi-services-all', L.ourServices, '/sherbimet'),
           url('mi-book', L.book, '/rezervo'),
+          url('mi-pd', L.pd, '/matja-pd'),
           url('mi-clinic', L.clinic, '/klinika'),
           url('mi-lab', L.lab, '/optical-lab'),
         ]),
@@ -1576,6 +1578,7 @@ export function buildMenus(): Menu[] {
         url('mi-f-help', T('Za klijente', 'Për klientët', 'Customer care'), '', [
           url('mi-f-book', T('Zakažite pregled vida', 'Rezervo kontrollin e syve', 'Book an eye exam'), '/rezervo'),
           url('mi-f-track', L.track, '/gjurmo-porosine'),
+          url('mi-f-pd', L.pd, '/matja-pd'),
           page('pg-dostava', T('Dostava i plaćanje', 'Dërgesa dhe pagesa', 'Delivery & payment')),
           page('pg-reklamacije', T('Povrat i garancija', 'Kthimet dhe garancia', 'Returns & warranty')),
           page('pg-kujdes', T('Nega+', 'Kujdes+', 'Care+')),

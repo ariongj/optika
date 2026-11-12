@@ -20,7 +20,7 @@ const {
   home: Home, shop: Shop, product: ProductPage, cart: CartPage, checkout: Checkout, orderSuccess: OrderSuccess, services: Services, projects: Projects,
   about: About, contact: Contact, blog: Blog, post: PostPage, cmsPage: CmsPageView, search: SearchPage, wishlist: Wishlist,
   collection: CollectionPage, offer: OfferPage, notFound: NotFound, clinic: Clinic, lab: OpticalLab, lensGuide: LensGuide,
-  frameFinder: FrameFinder, booking: BookingPage, tracking: OrderTracking, tryOn: TryOn, smart: SmartGlasses,
+  frameFinder: FrameFinder, booking: BookingPage, tracking: OrderTracking, tryOn: TryOn, smart: SmartGlasses, pdMeasure: PdMeasure,
 } = StorePages;
 
 // CMS (lazy — separate bundle)
@@ -284,6 +284,7 @@ const router = createBrowserRouter([
           { path: 'gjurmo-porosine', element: <OrderTracking /> },
           { path: 'provo-virtualisht', element: <TryOn /> },
           { path: 'syze-inteligjente', element: <SmartGlasses /> },
+          { path: 'matja-pd', element: <PdMeasure /> },
           { path: '*', element: <NotFound /> },
         ],
       },

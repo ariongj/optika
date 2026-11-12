@@ -109,6 +109,7 @@ const STATIC = [
   ['kontakt', 'Kontakt — Mbretëresha Teutë 182, Mitrovicë', `Na telefononi në ${s.phone}, na shkruani në WhatsApp ose ejani në optikë. Hën–Sht 10:00–19:30.`, '/images/misc/contact.webp'],
   ['keshilla', 'Këshilla për syzet dhe shëndetin e syve', 'Si ta lexoni recetën, çfarë është PD, lentet progresive, lentet për ekran dhe më shumë — të shpjeguara thjesht.', '/images/misc/lens.webp'],
   ['provo-virtualisht', 'Provo virtualisht — syzet në fytyrën tuaj', 'Provoni kornizat me kamerën live, me një foto ose në 3D. Imazhi përpunohet vetëm në pajisjen tuaj.', '/images/hero/sun.webp'],
+  ['matja-pd', 'Matja e PD-së me kamerë — distanca pupilare për pak sekonda', 'Matni distancën pupilare (PD) me kamerën e telefonit ose kompjuterit. Vlerë orientuese; imazhi përpunohet vetëm në pajisjen tuaj. Matja e saktë në optikë është falas.', '/images/misc/lens.webp'],
   ['klinika', 'Klinika Miftari — kujdes specialistik për sytë', 'Konsulta specialistike dhe vlerësim për sytë në Klinikën Miftari, Mitrovicë. Rezervoni termin online ose me telefon.', '/images/s/klinika.webp'],
   ['optical-lab', 'Optical Lab — lente me recetë dhe partneritet B2B', 'Laboratori optik i Miftari Vision Group: punim, centrim, montim dhe kontroll i lenteve me recetë — edhe për optikat partnere në Kosovë dhe BE.', '/images/s/lab-polish.webp'],
   ['lentet', 'Udhëzuesi i lenteve — zgjidhni lentet e duhura', 'Njëvizore, progresive, për ekran, fotokromatike apo me dioptri dielli? Gjeni lentet dhe indeksin e duhur për recetën tuaj.', '/images/misc/lens.webp'],
@@ -148,7 +149,7 @@ const PAGE_SOURCE = {
   '': 'Home', produktet: 'Shop', produkt: 'ProductPage', shporta: 'CartPage', pagesa: 'Checkout', porosia: 'OrderSuccess', sherbimet: 'Services',
   lookbook: 'Projects', 'rreth-nesh': 'About', kontakt: 'Contact', faqe: 'CmsPageView', kerko: 'SearchPage', 'te-preferuarat': 'Wishlist',
   koleksioni: 'CollectionPage', oferta: 'OfferPage', klinika: 'Clinic', 'optical-lab': 'OpticalLab', lentet: 'LensGuide', 'gjej-kornizen': 'FrameFinder',
-  rezervo: 'BookingPage', 'gjurmo-porosine': 'OrderTracking', 'provo-virtualisht': 'TryOn', 'syze-inteligjente': 'SmartGlasses',
+  rezervo: 'BookingPage', 'gjurmo-porosine': 'OrderTracking', 'provo-virtualisht': 'TryOn', 'syze-inteligjente': 'SmartGlasses', 'matja-pd': 'PdMeasure',
 };
 function pageChunkLinks(route) {
   const [first, second] = route.split('/');

@@ -47,7 +47,8 @@ function DemoBadge() {
   const { pathname } = useLocation();
   const tryOn = pathname.startsWith('/provo-virtualisht') || pathname.startsWith('/syze-inteligjente');
   // The lens simulator opens on its stage and scene photos: only the icon there, where it clears them, and the words on hover or focus.
-  const compact = pathname.startsWith('/lentet');
+  // The PD measurement has its buttons along the bottom of its stage: the same there.
+  const compact = pathname.startsWith('/lentet') || pathname.startsWith('/matja-pd');
   if (!settings.demoBanner) return null;
   return (
     <Link

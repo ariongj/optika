@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
 import {
-  Aperture, ArrowRight, ArrowUpRight, CalendarCheck, Eye, FlaskConical, Glasses, Heart, Layers, Menu, PackageSearch, Phone, ScanFace, Search, ShoppingBag,
+  Aperture, ArrowRight, ArrowUpRight, CalendarCheck, Eye, FlaskConical, Glasses, Heart, Layers, Menu, PackageSearch, Phone, Ruler, ScanFace, Search, ShoppingBag,
   Sparkles, Stethoscope, type LucideIcon,
 } from 'lucide-react';
 import { AnimatePresence, motion, useReducedMotion } from '@/lib/motion';
@@ -63,6 +63,7 @@ const PAGE_HINTS: Record<string, { icon: LucideIcon; sub: L10n; image?: string }
   },
   '/gjurmo-porosine': { icon: PackageSearch, sub: { me: 'Gde je vaša porudžbina', sq: 'Ku ndodhet porosia juaj', en: 'See where your order is' } },
   '/provo-virtualisht': { icon: ScanFace, sub: { me: 'Kamera, fotografija ili 3D', sq: 'Kamera, foto ose 3D', en: 'Camera, photo or 3D' } },
+  '/matja-pd': { icon: Ruler, sub: { me: 'Razmak zenica za nekoliko sekundi', sq: 'Distanca pupilare për pak sekonda', en: 'Your pupillary distance in a few seconds' } },
   '/syze-inteligjente': {
     icon: Aperture,
     image: '/images/cat/smart.webp',

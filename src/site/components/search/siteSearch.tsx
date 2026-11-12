@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import {
-  Aperture, ArrowUpRight, BookOpen, CalendarCheck, FileText, FlaskConical, Glasses, Images, Layers, MapPin, PackageSearch, ScanFace, Sparkles, Stethoscope, Users,
+  Aperture, ArrowUpRight, BookOpen, CalendarCheck, FileText, FlaskConical, Glasses, Images, Layers, MapPin, PackageSearch, Ruler, ScanFace, Sparkles, Stethoscope, Users,
   type LucideIcon,
 } from 'lucide-react';
 import { defineDict, lt, useDict } from '@/i18n';
@@ -31,6 +31,7 @@ const STATIC_PAGES: StaticPage[] = [
   { to: '/gjej-kornizen', icon: Glasses, title: T('Pronađite svoj okvir', 'Gjeni kornizën tuaj', 'Find your frame'), sub: T('Kviz za oblik lica i stil', 'Kuiz për formën e fytyrës dhe stilin', 'Face-shape and style quiz'), keys: 'kuiz quiz kviz forma fytyres lice face shape kornize okvir frame stil style madhesia size' },
   { to: '/syze-inteligjente', icon: Aperture, title: T('Pametne naočare', 'Syze inteligjente', 'Smart glasses'), sub: T('Ray-Ban Meta, Oakley Meta i Meta Ray-Ban Display', 'Ray-Ban Meta, Oakley Meta dhe Meta Ray-Ban Display', 'Ray-Ban Meta, Oakley Meta and Meta Ray-Ban Display'), keys: 'smart glasses inteligjente syze pametne naocare meta ray-ban rayban oakley display kamere kamera camera ai asistent assistant audio wayfarer aviator zena hstn' },
   { to: '/provo-virtualisht', icon: ScanFace, title: T('Virtuelna proba', 'Provo virtualisht', 'Virtual try-on'), sub: T('Kamera, fotografija ili 3D', 'Kamera, foto ose 3D', 'Camera, photo or 3D'), keys: 'provo virtual virtuelno try on kamera camera foto selfie 3d' },
+  { to: '/matja-pd', icon: Ruler, title: T('Merenje PD kamerom', 'Matja e PD-së me kamerë', 'Measure your PD'), sub: T('Razmak zenica za nekoliko sekundi', 'Distanca pupilare për pak sekonda', 'Your pupillary distance in a few seconds'), keys: 'pd matja mat mas distanca pupilare bebeza razmak zenica merenje pupillary distance measure kamera camera' },
   { to: '/gjurmo-porosine', icon: PackageSearch, title: T('Pratite porudžbinu', 'Gjurmo porosinë', 'Track your order'), sub: T('Status porudžbine', 'Statusi i porosisë', 'Order status'), keys: 'gjurmo porosi porosine status order track narudzba porudzbina dergesa delivery dostava' },
   { to: '/kontakt', icon: MapPin, title: T('Kontakt', 'Kontakt', 'Contact'), sub: T('Mbretëresha Teutë 182, Mitrovica', 'Mbretëresha Teutë 182, Mitrovicë', 'Mbretëresha Teutë 182, Mitrovica'), keys: 'kontakt contact adresa address telefon phone whatsapp orari hours mitrovice mitrovica' },
   { to: '/rreth-nesh', icon: Users, title: T('O nama', 'Rreth nesh', 'About'), sub: T('30 godina porodične tradicije', '30 vjet traditë familjare', '30 years of family tradition'), keys: 'rreth nesh o nama about histori familje family miftari vision group grupi kompani holding' },

@@ -378,6 +378,11 @@ function DefaultColumns() {
               <TryOnLabel label={t('nav_tryon')} />
             </Link>
           </li>
+          <li>
+            <Link to="/matja-pd" className={linkCls}>
+              {t('nav_pd')}
+            </Link>
+          </li>
         </ul>
       </div>
 

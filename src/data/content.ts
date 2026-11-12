@@ -470,9 +470,9 @@ export function buildHome(now = new Date()): HomeSection[] {
           {
             q: T('Da li se čuvaju fotografije iz virtuelne probe?', 'A ruhen fotot nga prova virtuale?', 'Are photos from the virtual try-on stored?'),
             a: T(
-              'Ne. Virtuelna proba obrađuje kameru ili fotografiju isključivo u vašem pregledaču, na vašem uređaju. Ništa se ne otprema i ništa ne čuvamo na našim serverima.',
-              'Jo. Prova virtuale e përpunon kamerën ose fotografinë vetëm në shfletuesin tuaj, në pajisjen tuaj. Asgjë nuk ngarkohet dhe asgjë nuk ruhet në serverët tanë.',
-              'No. The virtual try-on processes your camera or photo only in your browser, on your own device. Nothing is uploaded and nothing is stored on our servers.',
+              'Ne. Virtuelna proba obrađuje kameru ili fotografiju isključivo u vašem pregledaču, na vašem uređaju. Ništa se ne otprema i ništa ne čuvamo na našim serverima. Isto važi i za merenje PD kamerom.',
+              'Jo. Prova virtuale e përpunon kamerën ose fotografinë vetëm në shfletuesin tuaj, në pajisjen tuaj. Asgjë nuk ngarkohet dhe asgjë nuk ruhet në serverët tanë. E njëjta vlen edhe për matjen e PD-së me kamerë.',
+              'No. The virtual try-on processes your camera or photo only in your browser, on your own device. Nothing is uploaded and nothing is stored on our servers. The same goes for measuring your PD with the camera.',
             ),
           },
           {
@@ -927,7 +927,7 @@ Laboratorija počinje izradu tek kada potvrdimo recept sa vama.
 PD merimo pupilometrom u optici, za svako oko posebno, i proveravamo ga na okviru koji ste izabrali. Za progresivna sočiva merimo i visinu montaže — položaj zenice unutar okvira. Merenje je besplatno i traje nekoliko minuta.
 
 ## Virtuelna proba i PD
-Virtuelna proba na sajtu pomaže da izaberete oblik i veličinu okvira, ali nije merenje za montažu. Ako PD nije upisan u recept, javićemo vam se pre izrade.
+Virtuelna proba na sajtu pomaže da izaberete oblik i veličinu okvira, ali nije merenje za montažu. [Merenje PD kamerom](/matja-pd) daje orijentacionu vrednost za nekoliko sekundi; ni ono ne zamenjuje merenje u optici. Ako PD nije upisan u recept, javićemo vam se pre izrade.
 
 ## Koliko dugo važi recept
 Kao opšta smernica, recept za odrasle se proverava na svakih jednu do dve godine, a kod dece češće. Ako vam se vid promenio, ne čekajte — [zakažite pregled](/#rezervo).
@@ -954,7 +954,7 @@ Laboratori fillon punën vetëm pasi ta konfirmojmë recetën me ju.
 PD-në e masim me pupilometër në optikë, veç e veç për secilin sy, dhe e verifikojmë në kornizën që keni zgjedhur. Për lentet progresive masim edhe lartësinë e montimit — pozicionin e bebëzës brenda kornizës. Matja është falas dhe zgjat pak minuta.
 
 ## Prova virtuale dhe PD
-Prova virtuale në faqe ju ndihmon të zgjidhni formën dhe madhësinë e kornizës, por nuk është matje për punimin e lenteve. Nëse PD-ja nuk është në recetë, ju kontaktojmë para punimit.
+Prova virtuale në faqe ju ndihmon të zgjidhni formën dhe madhësinë e kornizës, por nuk është matje për punimin e lenteve. [Matja e PD-së me kamerë](/matja-pd) jep një vlerë orientuese për pak sekonda; as ajo nuk e zëvendëson matjen në optikë. Nëse PD-ja nuk është në recetë, ju kontaktojmë para punimit.
 
 ## Sa kohë vlen receta
 Si orientim i përgjithshëm, receta e të rriturve rishikohet çdo një deri në dy vjet, ndërsa te fëmijët më shpesh. Nëse shikimi ju ka ndryshuar, mos prisni — [rezervoni një kontroll](/#rezervo).
@@ -981,7 +981,7 @@ The lab only starts work once we have confirmed the prescription with you.
 We measure PD in store with a pupillometer, separately for each eye, and verify it on the frame you have chosen. For progressive lenses we also measure the fitting height — where your pupil sits within the frame. It’s free and takes a few minutes.
 
 ## Virtual try-on and PD
-The virtual try-on on our site helps you choose a frame shape and size, but it isn’t a fitting measurement. If your PD isn’t on the prescription, we’ll contact you before production.
+The virtual try-on on our site helps you choose a frame shape and size, but it isn’t a fitting measurement. [Measuring your PD with the camera](/matja-pd) gives a guide value in a few seconds; it doesn’t replace the measurement in store either. If your PD isn’t on the prescription, we’ll contact you before production.
 
 ## How long a prescription lasts
 As a general guide, adults should have their prescription checked every one to two years, and children more often. If your vision has changed, don’t wait — [book an eye exam](/#rezervo).
@@ -1013,8 +1013,10 @@ Sajt nema bazu podataka na serveru: kopija onoga što pošaljete čuva se u vaš
 ## Recept je osetljiv podatak
 Vrednosti sa recepta odnose se na vaše zdravlje. Koristimo ih isključivo za izradu sočiva; pristup imaju samo naši optičari i laboratorija i nikada ih ne koristimo za marketing.
 
-## Virtuelna proba
+## Virtuelna proba i merenje PD kamerom
 Virtuelna proba naočara radi **u potpunosti u vašem pregledaču**. Slika sa kamere ili fotografija koju izaberete obrađuje se na vašem uređaju i **ne otprema se, ne čuva i ne šalje** nama niti trećim licima. Kada zatvorite probu, kamera se isključuje. Softver za praćenje lica (Google MediaPipe) učitava se sa ovog sajta.
+
+Isto važi za merenje PD kamerom: slika i tačke lica obrađuju se na vašem uređaju, a fotografija iz koje se rezultat računa postoji samo u memoriji stranice i nestaje kada je napustite. Kamera se isključuje čim je merenje gotovo. Rezultat ne čuvamo i ne šalje nam se.
 
 ## Šta se čuva u vašem pregledaču
 Da bi radio, sajt čuva nekoliko stvari u lokalnoj memoriji vašeg pregledača — nikada u kolačićima. Ništa od toga ne napušta vaš uređaj, osim podataka iz obrasca koji pošaljete:
@@ -1052,8 +1054,10 @@ Faqja nuk ka bazë të dhënash në server: një kopje e asaj që dërgoni ruhet
 ## Receta është e dhënë e ndjeshme
 Vlerat e recetës kanë të bëjnë me shëndetin tuaj. I përdorim vetëm për punimin e lenteve; qasje kanë vetëm optikët dhe laboratori ynë, dhe nuk i përdorim kurrë për marketing.
 
-## Prova virtuale
+## Prova virtuale dhe matja e PD-së me kamerë
 Prova virtuale e syzeve funksionon **tërësisht në shfletuesin tuaj**. Imazhi i kamerës ose fotografia që zgjidhni përpunohen në pajisjen tuaj dhe **nuk ngarkohen, nuk ruhen dhe nuk u dërgohen** as neve, as palëve të treta. Kur e mbyllni provën, kamera fiket. Softueri për ndjekjen e fytyrës (Google MediaPipe) ngarkohet nga vetë kjo faqe.
+
+E njëjta vlen për matjen e PD-së me kamerë: imazhi dhe pikat e fytyrës përpunohen në pajisjen tuaj, ndërsa fotografia nga e cila llogaritet rezultati gjendet vetëm në memorien e faqes dhe zhduket kur e lini atë. Kamera fiket sapo mbaron matja. Rezultatin nuk e ruajmë dhe ai nuk na dërgohet.
 
 ## Çfarë ruhet në shfletuesin tuaj
 Që të funksionojë, faqja ruan disa gjëra në hapësirën lokale të shfletuesit tuaj — asnjëherë në cookies. Asgjë prej tyre nuk largohet nga pajisja juaj, përveç të dhënave të formularit që dërgoni:
@@ -1091,8 +1095,10 @@ The site has no server-side database: a copy of what you send is kept in your br
 ## Your prescription is sensitive data
 Prescription values relate to your health. We use them only to make your lenses; only our opticians and our lab have access, and we never use them for marketing.
 
-## Virtual try-on
+## Virtual try-on and PD measurement with the camera
 The virtual try-on runs **entirely in your browser**. Your camera feed or the photo you choose is processed on your own device and is **never uploaded, stored or sent** to us or to any third party. When you close the try-on, the camera switches off. The face-tracking software (Google MediaPipe) is served from this site.
+
+The same applies to the PD measurement with the camera: the image and the facial points are processed on your device, and the still picture the result is worked out from exists only in the page’s memory and is gone when you leave it. The camera switches off as soon as the measurement is done. We don’t store the result and it isn’t sent to us.
 
 ## Stored in your browser
 To work, the site keeps a few things in your browser’s local storage — never in cookies. None of it leaves your device, except the form entries you send:
@@ -1139,7 +1145,7 @@ Plaćanje je moguće pouzećem ili uplatom na račun; plaćanje karticom uskoro.
 Pravo na povraćaj i garancija na okvire opisani su na stranici [Povraćaj i garancija](/faqe/kthimet-dhe-garancia).
 
 ## Virtuelna proba i saveti
-Virtuelna proba prikazuje okvir okvirno i ne zamenjuje probu u optici niti merenja za montažu. Tekstovi u rubrici Saveti su informativni i nisu medicinski savet — za svaku tegobu sa vidom zakažite pregled.
+Virtuelna proba prikazuje okvir okvirno i ne zamenjuje probu u optici niti merenja za montažu. Merenje PD kamerom daje orijentacionu vrednost i ne zamenjuje merenje u optici. Tekstovi u rubrici Saveti su informativni i nisu medicinski savet — za svaku tegobu sa vidom zakažite pregled.
 
 ## Merodavno pravo
 Na ove uslove primenjuje se pravo Republike Kosovo. Svaki eventualni spor nastojimo najpre da rešimo dogovorom.`,
@@ -1158,7 +1164,7 @@ Mund të paguani me para në dorëzim ose me transfertë bankare; pagesa me kart
 E drejta e kthimit dhe garancia për kornizat përshkruhen te [Kthimet & garancia](/faqe/kthimet-dhe-garancia).
 
 ## Prova virtuale dhe këshillat
-Prova virtuale tregon një pamje orientuese të kornizës dhe nuk e zëvendëson provën në optikë apo matjet për punimin e lenteve. Artikujt te Këshilla janë informues dhe nuk janë këshillë mjekësore — për çdo shqetësim me shikimin rezervoni një kontroll.
+Prova virtuale tregon një pamje orientuese të kornizës dhe nuk e zëvendëson provën në optikë apo matjet për punimin e lenteve. Matja e PD-së me kamerë jep një vlerë orientuese dhe nuk e zëvendëson matjen në optikë. Artikujt te Këshilla janë informues dhe nuk janë këshillë mjekësore — për çdo shqetësim me shikimin rezervoni një kontroll.
 
 ## Ligji i zbatueshëm
 Për këto kushte zbatohet ligji i Republikës së Kosovës. Çdo mosmarrëveshje të mundshme përpiqemi ta zgjidhim fillimisht me marrëveshje.`,
@@ -1177,7 +1183,7 @@ You can pay cash on delivery or by bank transfer; card payment is coming soon. D
 Your right of return and the frame warranty are described on the [Returns & warranty](/faqe/kthimet-dhe-garancia) page.
 
 ## Virtual try-on and advice
-The virtual try-on gives an approximate preview of a frame and doesn’t replace trying it on in store or a fitting measurement. Articles in our Advice section are for information only and are not medical advice — for any concern about your vision, book an eye exam.
+The virtual try-on gives an approximate preview of a frame and doesn’t replace trying it on in store or a fitting measurement. The PD measurement with the camera gives a guide value and doesn’t replace the measurement in store. Articles in our Advice section are for information only and are not medical advice — for any concern about your vision, book an eye exam.
 
 ## Governing law
 These terms are governed by the law of the Republic of Kosovo. We always try to resolve any dispute amicably first.`,

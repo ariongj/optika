@@ -2,6 +2,7 @@ import { useDeferredValue, useEffect, useId, useMemo, useRef, useState, type CSS
 import { AnimatePresence, motion, useReducedMotion } from '@/lib/motion';
 import { CalendarCheck, ChevronDown, EyeOff, Glasses, Minus, Move3d, Plus, ShoppingBag, SlidersHorizontal, Waypoints } from 'lucide-react';
 import { toast } from 'sonner';
+import { Link } from 'react-router';
 import type { Product } from '@/lib/types';
 import { Button } from '@/components/ui/Button';
 import { Reveal } from '@/components/ui/misc';
@@ -776,6 +777,9 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
                         <Plus className="h-4 w-4" />
                       </StepButton>
                     </div>
+                    <Link to="/matja-pd" className="mt-2 inline-block text-[12.5px] font-semibold text-paper/60 underline decoration-paper/30 underline-offset-4 transition hover:text-white">
+                      {site[lang].nav_pd}
+                    </Link>
                   </Field>
                 </div>
               </details>

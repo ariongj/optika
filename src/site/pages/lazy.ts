@@ -80,6 +80,7 @@ const LOADERS = {
   tracking: () => import('@/site/pages/OrderTracking'),
   tryOn: () => import('@/site/pages/TryOn'),
   smart: () => import('@/site/pages/SmartGlasses'),
+  pdMeasure: () => import('@/site/pages/PdMeasure'),
 } satisfies Record<string, Loader>;
 
 type Key = keyof typeof LOADERS;
@@ -145,6 +146,7 @@ const BY_SEGMENT: Record<string, Key> = {
   'gjurmo-porosine': 'tracking',
   'provo-virtualisht': 'tryOn',
   'syze-inteligjente': 'smart',
+  'matja-pd': 'pdMeasure',
 };
 
 function keyFor(path: string): Key | undefined {
