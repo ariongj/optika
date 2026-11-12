@@ -39,21 +39,27 @@ export function SectionHeading({
   );
 }
 
-export function Breadcrumbs({ items, tone = 'dark' }: { items: { label: string; to?: string }[]; tone?: 'dark' | 'light' }) {
+/**
+ * `oneLine`: the trail never wraps: the current page's name is cut with an ellipsis instead. The product page uses it, so
+ * the photo below sits at the same height in every language (its static first screen draws the photo there too).
+ */
+export function Breadcrumbs({ items, tone = 'dark', oneLine }: { items: { label: string; to?: string }[]; tone?: 'dark' | 'light'; oneLine?: boolean }) {
   const t = useDict(site);
   const tc = useDict(common);
   const all = [{ label: t('home'), to: '/' }, ...items];
   return (
-    <nav aria-label={tc('breadcrumb')} className={cn('flex flex-wrap items-center gap-1 text-[13px]', tone === 'light' ? 'text-white/70' : 'text-muted')}>
+    <nav aria-label={tc('breadcrumb')} className={cn('flex items-center gap-1 text-[13px]', oneLine ? 'min-w-0 flex-nowrap' : 'flex-wrap', tone === 'light' ? 'text-white/70' : 'text-muted')}>
       {all.map((it, i) => (
-        <span key={i} className="inline-flex items-center gap-1">
-          {i > 0 && <ChevronRight className="h-3.5 w-3.5 opacity-60" />}
+        <span key={i} className={cn('inline-flex items-center gap-1', oneLine && (i < all.length - 1 ? 'shrink-0 whitespace-nowrap' : 'min-w-0'))}>
+          {i > 0 && <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-60" />}
           {it.to && i < all.length - 1 ? (
             <Link to={it.to} className={cn('-my-2.5 inline-flex py-2.5 hover:underline', tone === 'light' ? 'hover:text-white' : 'hover:text-ink')}>
               {it.label}
             </Link>
           ) : (
-            <span className={tone === 'light' ? 'text-white' : 'text-ink'}>{it.label}</span>
+            <span className={cn(tone === 'light' ? 'text-white' : 'text-ink', oneLine && 'truncate')} title={oneLine ? it.label : undefined}>
+              {it.label}
+            </span>
           )}
         </span>
       ))}

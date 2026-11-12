@@ -16,9 +16,24 @@ export function ProductRail({ eyebrow, title, products, action, className }: { e
   const update = () => {
     const el = ref.current;
     if (!el) return;
-    setEdges({ start: el.scrollLeft < 8, end: el.scrollLeft + el.clientWidth >= el.scrollWidth - 8 });
+    const start = el.scrollLeft < 8;
+    const end = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
+    // the same object back when nothing changed: scrolling the row doesn't re-render every card
+    setEdges((e) => (e.start === start && e.end === end ? e : { start, end }));
   };
-  useEffect(update, [products.length]);
+  // Measured by a ResizeObserver: it reports once the browser has laid the page out (and again when the row's width
+  // changes), so the first render isn't held up by a forced layout of the whole page.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (!('ResizeObserver' in window)) {
+      update();
+      return;
+    }
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [products.length]);
 
   const by = (dir: number) => ref.current?.scrollBy({ left: dir * ref.current.clientWidth * 0.8, behavior: scrollMotion() });
   if (!products.length) return null;

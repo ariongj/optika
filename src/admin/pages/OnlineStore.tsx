@@ -473,7 +473,8 @@ function ThemeCard() {
           </ul>
 
 
-          <div className="mt-auto grid gap-2 pt-5">
+          {/* minmax(0,1fr): the one-line descriptions are cut with an ellipsis instead of pushing the cards out of the panel */}
+          <div className="mt-auto grid grid-cols-[minmax(0,1fr)] gap-2 pt-5">
             <QuickLink to="/admin/prodavnica/editor" icon={<LayoutTemplate className="h-4 w-4" />} title={ta('nav_editor')} text={t('editorDesc')} />
             <QuickLink to="/admin/prodavnica/slajdovi" icon={<GalleryHorizontalEnd className="h-4 w-4" />} title={ta('nav_slides')} text={t('slidesDesc', { a: counts.slides, b: counts.banners, c: counts.bars })} />
           </div>

@@ -167,15 +167,20 @@ for (const [r, t] of [['shporta', 'Shporta'], ['pagesa', 'Pagesa'], ['kerko', 'K
   put(r, { title: t, description: s.seo.description, image: '/images/hero/optical.webp', noindex: true });
 
 const catName = new Map(db.categories.map((c) => [c.id, c.name.sq]));
+/** Product route → its first photo (file path inside dist) and whether a thumbnail strip stands beside it. */
+const productPhoto = new Map();
 for (const c of db.categories) put(`produktet/${c.slug}`, { title: `${c.name.sq} — ${c.tagline.sq}`, description: c.description.sq, image: c.image, preload: openingImage(c.image) });
 for (const p of db.products.filter((x) => x.status === 'active')) {
   const price = p.salePrice ?? p.price;
   // "price on request" listings (smart glasses): no price in the text and no Offer in the structured data
   const onRequest = !!p.quoteOnly && !(p.price > 0);
+  const firstRel = (BASE !== '/' && (p.images[0] ?? '').startsWith(BASE) ? p.images[0].slice(BASE.length) : (p.images[0] ?? '')).replace(/^\/+/, '');
+  if (firstRel && fs.existsSync(path.join(DIST, firstRel))) productPhoto.set(`produkt/${p.slug}`, { rel: firstRel, many: p.images.length > 1 });
   put(`produkt/${p.slug}`, {
     title: p.seo?.title || `${p.name.sq} — ${catName.get(p.categoryId) ?? ''}`,
     description: p.seo?.description || `${plain(p.short.sq)} ${onRequest ? 'Çmimi sipas kërkesës' : `${price} €`} · ${brand}, Mitrovicë.`,
     image: p.images[0],
+    preload: p.images[0] ? openingImage(p.images[0]) : [],
     type: 'product',
     jsonld: {
       '@context': 'https://schema.org',
@@ -287,7 +292,9 @@ const BAG = icon('<path d="M16 10a4 4 0 0 1-8 0"/><path d="M3.103 6.034h17.794"/
 const SHELL_CSS = [
   'body{margin:0;background:#f7f3ee}',
   '.sh-bar{height:36px;background:#1c1a17}',
-  '.sh-h{height:76px;border-bottom:1px solid rgb(227 217 204/.8);color:#1c1a17}',
+  // content-box: 76px + the 1px border, as the real header — also once the app stylesheet (border-box everywhere) has
+  // arrived but React hasn't mounted yet, so what stands below the header doesn't move by a pixel in between
+  '.sh-h{box-sizing:content-box;height:76px;border-bottom:1px solid rgb(227 217 204/.8);color:#1c1a17}',
   '.sh-over{position:absolute;inset:36px 0 auto;z-index:1;border-color:transparent;color:#fff}',
   '.sh-c{box-sizing:border-box;display:flex;align-items:center;gap:12px;width:100%;max-width:1320px;height:76px;margin:0 auto;padding:0 16px}',
   '.sh-logo{display:block;flex:none;height:42px;fill:currentColor}',
@@ -298,13 +305,21 @@ const SHELL_CSS = [
   '.sh-w,.sh-b{display:none}',
   '.sh-dark{height:calc(100svh - 113px);min-height:560px;background:#1c1a17}',
   '.sh-srv{height:649px}.sh-cat{height:410px}',
+  // product page: the main photo where the gallery draws it (src/site/pages/ProductPage.tsx, product/Gallery.tsx):
+  // page padding, one line of breadcrumb (19.5px), the gap, then a 4:5 rounded box; from 1024px the 7-of-12 column,
+  // with room on its left for the thumbnail strip (84px + 16px) when the product has more than one photo
+  '.sh-p{box-sizing:border-box;width:100%;max-width:1320px;margin:0 auto;padding:24px 16px 0}',
+  '.sh-pg{margin-top:43.5px}',
+  '.sh-pm{aspect-ratio:4/5;overflow:hidden;border-radius:24px;background:#efe7dc}',
+  '.sh-pm img{display:block;width:100%;height:100%;object-fit:cover}',
   '.sh-load{position:fixed;inset:0 0 auto;z-index:2;height:2px;overflow:hidden;animation:sh-in .2s .9s both}',
   '.sh-load:before{content:"";display:block;width:40%;height:100%;background:#b39c71;animation:sh-run 1.1s ease-in-out infinite}',
   '@keyframes sh-in{from{opacity:0}}@keyframes sh-run{from{transform:translateX(-100%)}to{transform:translateX(250%)}}',
   '@media(prefers-reduced-motion:reduce){.sh-load:before{width:100%;animation:none}}',
-  '@media(min-width:640px){.sh-c{padding:0 24px}.sh-w{display:grid}}',
-  '@media(min-width:1024px){.sh-c{padding:0 32px}.sh-m{display:none}.sh-srv{height:575px}.sh-cat{height:461px}}',
-  '@media(min-width:1280px){.sh-b{display:block;flex:none;width:166px;margin-left:8px}}',
+  '@media(min-width:640px){.sh-c{padding:0 24px}.sh-w{display:grid}.sh-p{padding:32px 24px 0}.sh-pg{margin-top:51.5px}}',
+  '@media(min-width:1024px){.sh-c{padding:0 32px}.sh-m{display:none}.sh-srv{height:575px}.sh-cat{height:461px}' +
+    '.sh-p{padding:32px 32px 0}.sh-pg{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:48px}.sh-pl{grid-column:span 7/span 7}.sh-pt{padding-left:100px}}',
+  '@media(min-width:1280px){.sh-b{display:block;flex:none;width:166px;margin-left:8px}.sh-pg{gap:64px}}',
   '@media(min-width:1536px){.sh-logo{height:46px}}',
 ].join('');
 function appShell(route) {
@@ -319,6 +334,13 @@ function appShell(route) {
   if (first === 'lentet' || first === 'optical-lab') return `${bar}${header()}<div class="sh-dark"></div>`;
   if (first === 'sherbimet') return `${bar}${header()}<div class="sh-dark sh-srv"></div>`;
   if (route.startsWith('produktet/')) return `${bar}${header()}<div class="sh-dark sh-cat"></div>`;
+  // a product: its first photo, in place. On a slow phone that is seconds before the JavaScript has it.
+  const photo = productPhoto.get(route);
+  if (photo)
+    return (
+      `${bar}${header()}<div class="sh-p" aria-hidden="true"><div class="sh-pg"><div class="sh-pl${photo.many ? ' sh-pt' : ''}">` +
+      `<div class="sh-pm"><img src="${BASE}${photo.rel}" alt="" fetchpriority="high" decoding="sync"></div></div></div></div>`
+    );
   if (route !== '' || !heroRel) return `${bar}${header()}`;
   const src = `${BASE}${heroRel}`;
   const portrait = heroPortrait && fs.existsSync(path.join(DIST, heroPortrait)) ? `<source media="(max-width: 767px)" srcset="${BASE}${heroPortrait}">` : '';

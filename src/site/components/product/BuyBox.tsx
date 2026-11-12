@@ -339,7 +339,7 @@ function Summary({ cfg, onAdd, ctaRef }: { cfg: Configurator; onAdd: () => void;
         <button
           type="button"
           onClick={add}
-          className="relative inline-flex h-14 flex-1 items-center justify-center gap-2.5 overflow-hidden rounded-full bg-brand-600 px-6 text-[15.5px] font-bold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.14)] transition-[background,transform] duration-200 hover:bg-brand-500 active:scale-[0.98]"
+          className="relative inline-flex h-14 flex-1 items-center justify-center gap-2.5 overflow-hidden whitespace-nowrap rounded-full bg-brand-600 px-4 text-[15.5px] font-bold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.14)] transition-[background,transform] duration-200 hover:bg-brand-500 active:scale-[0.98] min-[360px]:px-6"
         >
           <AnimatePresence mode="wait" initial={false}>
             {justAdded ? (
@@ -462,7 +462,9 @@ function SmartPanel({ cfg, onRequest, ctaRef }: { cfg: Configurator; onRequest: 
             onClick={onRequest}
             className="inline-flex h-14 min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-brand-600 px-4 text-[14px] font-bold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.14)] transition-[background,transform] duration-200 hover:bg-brand-500 active:scale-[0.98] sm:gap-2.5 sm:px-6 sm:text-[15.5px]"
           >
-            <Send className="hidden h-5 w-5 shrink-0 min-[380px]:block" /> <span className="truncate">{t('sg_request')}</span>
+            {/* the narrowest phones get the short wording, so the label is never cut */}
+            <Send className="hidden h-5 w-5 shrink-0 min-[380px]:block" /> <span className="truncate min-[350px]:hidden">{t('sg_requestShort')}</span>
+            <span className="truncate max-[349px]:hidden">{t('sg_request')}</span>
           </button>
           <WishButton productId={p.id} />
         </div>

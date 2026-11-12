@@ -41,6 +41,11 @@ export function Img({ src, alt = '', className, small, eager, ...rest }: ImgHTML
   if (!real) return null;
   return (
     <img
+      // A picture the page already holds (shown a moment ago, or drawn by the static first screen) is there at once:
+      // no fade from empty. The state change lands in the same commit, before the browser paints.
+      ref={(el) => {
+        if (el?.complete && el.naturalWidth > 0) setLoaded(true);
+      }}
       src={real}
       alt={alt}
       loading={eager ? 'eager' : 'lazy'}

@@ -270,12 +270,22 @@ export function FeaturedSection({ data }: { data: DataOf<'featured'> }) {
             </div>
           </div>
           <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex gap-1 rounded-full bg-white p-1 ring-1 ring-line">
-              {tabs.map((m) => (
-                <button key={m} onClick={() => setMode(m)} className={cn('rounded-full px-4 py-2 text-[13.5px] font-semibold transition-colors', mode === m ? 'bg-ink text-paper' : 'text-ink-soft hover:text-ink')}>
-                  {h(`tab_${m}`)}
-                </button>
-              ))}
+            {/* On a narrow phone the row scrolls sideways rather than breaking a label onto two lines. It runs to the
+                screen's edge, so the tab that doesn't fit is seen cut off there: that is what says "there is more". */}
+            <div className="no-scrollbar -mx-4 max-w-[calc(100%+2rem)] overflow-x-auto px-4 py-0.5 sm:mx-0 sm:max-w-full sm:px-0">
+              <div className="flex w-max gap-1 rounded-full bg-white p-1 ring-1 ring-line">
+                {tabs.map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    aria-pressed={mode === m}
+                    onClick={() => setMode(m)}
+                    className={cn('shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 text-[13.5px] font-semibold transition-colors sm:px-4', mode === m ? 'bg-ink text-paper' : 'text-ink-soft hover:text-ink')}
+                  >
+                    {h(`tab_${m}`)}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </Reveal>
@@ -307,7 +317,7 @@ export function PromoSection({ data }: { data: DataOf<'promo'> }) {
     <section className="pb-24 sm:pb-28">
       <div className="container-x">
         <Reveal>
-          <div className="grid overflow-hidden rounded-[32px] bg-ink lg:grid-cols-2">
+          <div className="grid grid-cols-[minmax(0,1fr)] overflow-hidden rounded-[32px] bg-ink lg:grid-cols-2">
             <div className="relative min-h-[320px] overflow-hidden lg:min-h-[560px]">
               <Img src={data.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-r from-transparent to-ink/30" />
@@ -317,7 +327,7 @@ export function PromoSection({ data }: { data: DataOf<'promo'> }) {
                 </div>
               )}
             </div>
-            <div className="bg-grain relative flex flex-col justify-center p-8 sm:p-12 lg:p-16">
+            <div className="bg-grain relative flex flex-col justify-center p-6 min-[360px]:p-8 sm:p-12 lg:p-16">
               <div className="eyebrow text-brand-200">{l(data.eyebrow)}</div>
               <h2 className="display mt-4 text-[38px] leading-[1.02] text-white sm:text-[54px]">
                 <Accent text={l(data.title)} accentClassName="text-brand-200!" />
@@ -335,7 +345,7 @@ export function PromoSection({ data }: { data: DataOf<'promo'> }) {
                 </div>
               </div>
               <div className="mt-8 flex flex-wrap items-center gap-3">
-                <CtaLink to={data.cta.href} variant="light" size="lg" iconRight={<ArrowRight className="h-4 w-4" />}>
+                <CtaLink to={data.cta.href} variant="light" size="lg" iconRight={<ArrowRight className="h-4 w-4" />} className="max-[359px]:px-5">
                   {l(data.cta.label)}
                 </CtaLink>
                 {data.code && (
@@ -344,12 +354,13 @@ export function PromoSection({ data }: { data: DataOf<'promo'> }) {
                       void navigator.clipboard?.writeText(data.code);
                       toast.success(h('copied'), { description: data.code });
                     }}
-                    className="group inline-flex h-13 items-center gap-3 rounded-full border border-dashed border-white/35 px-5 text-left text-white transition hover:border-white"
+                    className="group inline-flex h-13 max-w-full items-center gap-3 rounded-full border border-dashed border-white/35 px-4 text-left text-white transition hover:border-white min-[360px]:px-5"
                     title={h('useCode')}
                   >
                     <span className="text-[11px] font-semibold uppercase leading-tight tracking-[0.14em] text-paper/55">{h('useCode')}</span>
                     <span className="font-mono text-[15px] font-bold tracking-wider">{data.code}</span>
-                    <Copy className="h-4 w-4 opacity-60 group-hover:opacity-100" />
+                    {/* the narrowest phones have no room for the icon: the whole button copies the code anyway */}
+                    <Copy className="h-4 w-4 shrink-0 opacity-60 group-hover:opacity-100 max-[359px]:hidden" />
                   </button>
                 )}
               </div>
@@ -717,7 +728,7 @@ export function SpotlightSection({ data }: { data: DataOf<'spotlight'> }) {
     <section className="pb-24 sm:pb-28">
       <div className="container-x">
         <Reveal>
-          <div className="relative isolate grid items-center gap-4 overflow-hidden rounded-[36px] bg-[#07090a] p-3 text-white ring-1 ring-inset ring-white/[0.06] sm:p-4 lg:grid-cols-[1.08fr_1fr] lg:gap-10">
+          <div className="relative isolate grid grid-cols-[minmax(0,1fr)] items-center gap-4 overflow-hidden rounded-[36px] bg-[#07090a] p-3 text-white ring-1 ring-inset ring-white/[0.06] sm:p-4 lg:grid-cols-[1.08fr_1fr] lg:gap-10">
             {/* soft mint glow + hairline grid */}
             <div aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={{ background: 'radial-gradient(ellipse 50% 70% at 28% 50%, rgb(111 211 165 / 0.14), rgb(44 74 58 / 0.1) 50%, transparent 80%)' }} />
             <div
@@ -729,7 +740,7 @@ export function SpotlightSection({ data }: { data: DataOf<'spotlight'> }) {
               <Img src={data.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
               {isRender(data.image) && <RenderChip tone="dark" className="absolute left-4 top-4" />}
             </div>
-            <div className="px-3 pb-5 pt-2 sm:px-5 lg:py-8 lg:pl-0 lg:pr-10">
+            <div className="px-2 pb-5 pt-2 min-[360px]:px-3 sm:px-5 lg:py-8 lg:pl-0 lg:pr-10">
               <div className="inline-flex items-center gap-2.5 text-[0.7rem] font-bold uppercase tracking-[0.22em] text-[#6fd3a5]">
                 <span aria-hidden className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#6fd3a5] opacity-60 [animation-duration:2.4s]" />
@@ -759,8 +770,8 @@ export function SpotlightSection({ data }: { data: DataOf<'spotlight'> }) {
                     to={data.primary.href}
                     variant="ghost"
                     size="lg"
-                    iconRight={<ArrowRight className="h-4 w-4" />}
-                    className="bg-[#6fd3a5]! text-[#06110c]! shadow-[0_0_40px_-10px_rgb(111_211_165/0.8)] hover:bg-[#8fe2bd]!"
+                    iconRight={<ArrowRight className="h-4 w-4 max-[359px]:hidden" />}
+                    className="bg-[#6fd3a5]! text-[#06110c]! shadow-[0_0_40px_-10px_rgb(111_211_165/0.8)] hover:bg-[#8fe2bd]! max-[359px]:px-5"
                   >
                     {l(data.primary.label)}
                   </CtaLink>

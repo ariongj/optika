@@ -114,9 +114,10 @@ function ProductView({ product }: { product: Product }) {
   return (
     <div>
       <div className="container-x pt-6 sm:pt-8">
-        <Breadcrumbs items={[...(category ? [{ label: l(category.name), to: `/produktet/${category.slug}` }] : []), { label: l(product.name) }]} />
+        <Breadcrumbs oneLine items={[...(category ? [{ label: l(category.name), to: `/produktet/${category.slug}` }] : []), { label: l(product.name) }]} />
 
-        <div className="mt-6 grid gap-8 sm:mt-8 lg:grid-cols-12 lg:gap-12 xl:gap-16">
+        {/* minmax(0,1fr): a label that can't wrap must never make the single phone column wider than the screen */}
+        <div className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-8 sm:mt-8 lg:grid-cols-12 lg:gap-12 xl:gap-16">
           <div className="lg:col-span-7">
             <div className="lg:sticky lg:top-[100px]">
               <Gallery images={product.images} alt={l(product.name)} />

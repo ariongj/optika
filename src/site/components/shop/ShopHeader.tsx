@@ -257,12 +257,16 @@ export function CategoryChips({
   // phones: bring the active chip into view (horizontal only — never scroll the page)
   const row = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const box = row.current;
-    const el = box?.querySelector<HTMLElement>('[aria-current="page"]');
-    if (!box || !el) return;
-    const r = el.getBoundingClientRect();
-    const b = box.getBoundingClientRect();
-    if (r.right > b.right) box.scrollLeft += r.left - b.left - 16;
+    // on the next frame: measuring straight after the render would make the browser lay the whole page out twice
+    const frame = requestAnimationFrame(() => {
+      const box = row.current;
+      const el = box?.querySelector<HTMLElement>('[aria-current="page"]');
+      if (!box || !el) return;
+      const r = el.getBoundingClientRect();
+      const b = box.getBoundingClientRect();
+      if (r.right > b.right) box.scrollLeft += r.left - b.left - 16;
+    });
+    return () => cancelAnimationFrame(frame);
   }, [active]);
   const chip = (on: boolean) =>
     cn(

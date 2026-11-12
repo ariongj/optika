@@ -51,8 +51,9 @@ export function Footer({ dark = false }: { dark?: boolean }) {
       <div className="bg-grain pointer-events-none absolute inset-0 opacity-60" />
       <div className="container-x relative">
         {/* Newsletter */}
-        <div className="grid gap-8 border-b border-white/10 py-14 lg:grid-cols-2 lg:items-end">
-          <div>
+        {/* minmax(0,1fr): the e-mail field's built-in width must not widen the column past a narrow phone's screen */}
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-8 border-b border-white/10 py-14 lg:grid-cols-2 lg:items-end">
+          <div className="min-w-0">
             <h2 className="display max-w-lg text-3xl leading-tight text-white sm:text-4xl">{t('newsTitle')}</h2>
             <p className="mt-3 max-w-md text-[15px] text-paper/60">{t('newsText')}</p>
           </div>
@@ -64,7 +65,7 @@ export function Footer({ dark = false }: { dark?: boolean }) {
               toast.success(t('subscribed'));
               setEmail('');
             }}
-            className="flex w-full max-w-lg gap-2 rounded-full bg-white/[0.07] p-1.5 ring-1 ring-white/10 focus-within:ring-white/30 lg:justify-self-end"
+            className="flex w-full min-w-0 max-w-lg gap-2 rounded-full bg-white/[0.07] p-1.5 ring-1 ring-white/10 focus-within:ring-white/30 lg:justify-self-end"
           >
             <input
               type="email"
