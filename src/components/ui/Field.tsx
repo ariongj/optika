@@ -187,7 +187,8 @@ export function RadioCard({
       <span className={cn('mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition-colors', checked ? 'border-ink' : 'border-ink/25')}>
         <span className={cn('h-2.5 w-2.5 rounded-full bg-ink transition-transform', checked ? 'scale-100' : 'scale-0')} />
       </span>
-      {icon && <span className="mt-0.5 text-ink-soft">{icon}</span>}
+      {/* on the narrowest phones the icon goes: with a long title and a price beside it the row would not fit */}
+      {icon && <span className="mt-0.5 text-ink-soft max-[349px]:hidden">{icon}</span>}
       <span className="min-w-0 flex-1">
         <span className="block text-[15px] font-semibold text-ink">{title}</span>
         {description && <span className="mt-0.5 block text-[13px] leading-snug text-muted">{description}</span>}

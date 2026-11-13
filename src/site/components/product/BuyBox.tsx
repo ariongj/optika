@@ -10,6 +10,7 @@ import { WhatsAppIcon } from '@/components/brand/Social';
 import { ProductBadges } from '@/site/components/ProductCard';
 import { Price } from '@/site/components/Price';
 import { useDict, useL, useLang } from '@/i18n';
+import { site } from '@/i18n/site';
 import { useUi } from '@/store/ui';
 import { useSettings } from '@/store/hooks';
 import { basePrice, priceOnRequest } from '@/lib/pricing';
@@ -200,6 +201,7 @@ function StockLine({ cfg }: { cfg: Configurator }) {
 /** Prescription lens chosen → how the prescription reaches us, plus a shortcut to book an eye exam. */
 function RxNote({ cfg, onBook }: { cfg: Configurator; onBook: () => void }) {
   const t = useDict(PD);
+  const ts = useDict(site);
   const p = cfg.product;
   const show = needsRx(p, cfg.options);
   const days = LENS_DAYS[cfg.options.lenses ?? ''] ?? (isLensPackage(p) ? labDays(p) : '2–7');
@@ -235,6 +237,9 @@ function RxNote({ cfg, onBook }: { cfg: Configurator; onBook: () => void }) {
                 </button>
                 <Link to="/faqe/receta-dhe-pd" className="link-u text-[12.5px] font-semibold text-ink-soft hover:text-ink">
                   {t('rxLink')}
+                </Link>
+                <Link to="/matja-pd" className="link-u text-[12.5px] font-semibold text-ink-soft hover:text-ink">
+                  {ts('nav_pd')}
                 </Link>
               </div>
             </div>

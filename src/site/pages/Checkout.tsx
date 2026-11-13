@@ -8,6 +8,7 @@ import { Checkbox, Input, RadioCard, Select, Switch, Textarea } from '@/componen
 import { Accent } from '@/components/ui/misc';
 import { defineDict, useDict, useL, useLang } from '@/i18n';
 import { common } from '@/i18n/common';
+import { site } from '@/i18n/site';
 import { useDb } from '@/store/db';
 import { useUi } from '@/store/ui';
 import { useActiveProducts, useCart, useSettings } from '@/store/hooks';
@@ -670,7 +671,13 @@ export default function Checkout() {
                   </AnimatePresence>
                   <p className="mt-4 flex items-start gap-2 text-[12.5px] leading-snug text-muted">
                     <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                    {tk('rx_pd')}
+                    <span>
+                      {tk('rx_pd')}{' '}
+                      {/* a new tab: the checkout form keeps what has been typed */}
+                      <Link to="/matja-pd" target="_blank" rel="noopener" className="font-semibold text-ink-soft underline decoration-ink/25 underline-offset-2 hover:text-ink">
+                        {site[lang].nav_pd}
+                      </Link>
+                    </span>
                   </p>
                 </Section>
               )}

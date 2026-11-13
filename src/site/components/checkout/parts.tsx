@@ -64,10 +64,13 @@ export function CheckoutSteps({ current, className }: { current: 0 | 1 | 2 | 3 |
               {done ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : i + 1}
             </span>
           );
-          const text = <span className={cn('text-[12px] font-semibold sm:text-[13px]', active ? 'text-ink' : done ? 'text-ink-soft' : 'text-muted')}>{label}</span>;
+          // Four labels in a row are wider than a phone: there, only the step the visitor is on is spelled out (the
+          // others stay as numbered dots, and keep their names for screen readers).
+          const named = i === Math.min(current, steps.length - 1);
+          const text = <span className={cn('text-[12px] font-semibold sm:text-[13px]', !named && 'max-sm:sr-only', active ? 'text-ink' : done ? 'text-ink-soft' : 'text-muted')}>{label}</span>;
           return (
             <Fragment key={label}>
-              {i > 0 && <li aria-hidden className={cn('h-px w-3 shrink sm:w-8', i <= current ? 'bg-ink/50' : 'bg-ink/15')} />}
+              {i > 0 && <li aria-hidden className={cn('h-px w-5 shrink sm:w-8', i <= current ? 'bg-ink/50' : 'bg-ink/15')} />}
               <li aria-current={active ? 'step' : undefined} className="flex shrink-0 items-center gap-1.5 sm:gap-2">
                 {done && i === 0 ? (
                   <Link to="/shporta" className="flex items-center gap-1.5 hover:opacity-75 sm:gap-2">

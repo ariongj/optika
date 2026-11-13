@@ -17,7 +17,8 @@ import { SIM } from '@/site/components/guides/simulator/dict';
 import { Coatings, IndexTable, LabBlock, LensTypes, RxExplainer } from '@/site/components/guides/LensSections';
 import { LG } from '@/site/components/guides/lensDict';
 import { ADVICE_SLUGS, LENS_FAQ, STRENGTHS, USES, type LensUse, type Strength } from '@/site/components/guides/lensData';
-import { useDict, useL } from '@/i18n';
+import { useDict, useL, useLang } from '@/i18n';
+import { site } from '@/i18n/site';
 import { useActiveProducts, useSettings } from '@/store/hooks';
 
 const asUse = (v: string | null) => USES.find((u) => u.id === v)?.id;
@@ -33,6 +34,7 @@ const FACTS = [
 const GuideSections = memo(function GuideSections({ lenses }: { lenses: Product[] }) {
   const t = useDict(LG);
   const l = useL();
+  const lang = useLang();
   const settings = useSettings();
   const posts = usePublishedPosts();
   const advice = useMemo(() => ADVICE_SLUGS.map((s) => posts.find((p) => p.slug === s)).filter((p): p is Post => !!p), [posts]);
@@ -93,6 +95,11 @@ const GuideSections = memo(function GuideSections({ lenses }: { lenses: Product[
           </Reveal>
           <Reveal className="mt-10 sm:mt-12">
             <RxExplainer />
+          </Reveal>
+          <Reveal className="mt-6">
+            <ButtonLink to="/matja-pd" variant="outline" icon={<Ruler className="h-4 w-4" />} iconRight={<ArrowRight className="h-4 w-4" />}>
+              {site[lang].nav_pd}
+            </ButtonLink>
           </Reveal>
         </div>
       </section>
