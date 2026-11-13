@@ -316,8 +316,10 @@ export function RxExplainer() {
   const hl = (col: RxTerm) => (term === col ? 'bg-brand-600 text-white' : '');
 
   return (
+    // min-w-0 on both columns: a grid column is otherwise never narrower than its widest content, and the example
+    // table pushed the whole explainer past the screen edge (cut off, not scrollable) on phones below about 390 px
     <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:gap-10">
-      <div>
+      <div className="min-w-0">
         <ChoiceGroup
           ariaLabel={t('rxTitle').replace(/\*/g, '')}
           variant="pill"
@@ -326,20 +328,21 @@ export function RxExplainer() {
           className="flex flex-wrap gap-2"
           options={RX_TERMS.map((x) => ({ id: x.id, label: <span className="tabular-nums">{x.short}</span> }))}
         />
-        <figure className="mt-5 rotate-[-0.6deg] rounded-[24px] bg-white p-5 shadow-[0_30px_60px_-40px_rgba(28,26,23,0.5)] ring-1 ring-line sm:p-7">
+        <figure className="mt-5 rotate-[-0.6deg] rounded-[24px] bg-white p-4 shadow-[0_30px_60px_-40px_rgba(28,26,23,0.5)] ring-1 ring-line sm:p-7">
           <figcaption className="flex items-center justify-between gap-3 border-b border-dashed border-line pb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-muted">
             <span>{t('rxExample')}</span>
             <span className="font-display text-[15px] font-normal normal-case italic tracking-normal text-brand-600">Rx</span>
           </figcaption>
+          {/* compact on phones so all six columns fit a 320 px screen; the scroll box stays only as a safety net */}
           <div className="no-scrollbar mt-4 overflow-x-auto">
-            <table className="w-full min-w-[320px] border-separate border-spacing-x-1 border-spacing-y-1.5 text-center text-[14px] tabular-nums">
+            <table className="w-full border-separate border-spacing-x-0.5 border-spacing-y-1.5 text-center text-[13px] tabular-nums sm:border-spacing-x-1 sm:text-[14px]">
               <thead>
                 <tr className="text-[11.5px] font-bold uppercase tracking-[0.1em] text-muted">
-                  <th scope="col" className={cn('rounded-lg px-1.5 py-1.5 text-left transition-colors motion-reduce:transition-none', hl('eye'))}>
+                  <th scope="col" className={cn('rounded-lg px-0.5 min-[360px]:px-1 sm:px-1.5 py-1.5 text-left transition-colors motion-reduce:transition-none', hl('eye'))}>
                     <span className="sr-only">OD / OS</span>
                   </th>
                   {RX_COLS.map((c) => (
-                    <th key={c} scope="col" className={cn('rounded-lg px-1.5 py-1.5 transition-colors motion-reduce:transition-none', hl(c))}>
+                    <th key={c} scope="col" className={cn('rounded-lg px-0.5 min-[360px]:px-1 sm:px-1.5 py-1.5 transition-colors motion-reduce:transition-none', hl(c))}>
                       {RX_TERMS.find((x) => x.id === c)!.short}
                     </th>
                   ))}
@@ -348,12 +351,12 @@ export function RxExplainer() {
               <tbody>
                 {RX_ROWS.map((r) => (
                   <tr key={r.eye}>
-                    <th scope="row" className={cn('rounded-lg px-1.5 py-2 text-left transition-colors motion-reduce:transition-none', term === 'eye' ? 'bg-brand-600 text-white' : 'text-ink')}>
+                    <th scope="row" className={cn('rounded-lg px-0.5 min-[360px]:px-1 sm:px-1.5 py-2 text-left transition-colors motion-reduce:transition-none', term === 'eye' ? 'bg-brand-600 text-white' : 'text-ink')}>
                       <span className="block text-[14px] font-bold">{r.eye}</span>
                       <span className={cn('block text-[10.5px] font-semibold', term === 'eye' ? 'text-white/75' : 'text-muted')}>{t(r.label)}</span>
                     </th>
                     {RX_COLS.map((c) => (
-                      <td key={c} className={cn('rounded-lg px-1.5 py-2 font-semibold transition-colors motion-reduce:transition-none', term === c ? 'bg-brand-50 text-brand-700 ring-1 ring-brand-600/30' : 'text-ink-soft')}>
+                      <td key={c} className={cn('rounded-lg px-0.5 min-[360px]:px-1 sm:px-1.5 py-2 font-semibold transition-colors motion-reduce:transition-none', term === c ? 'bg-brand-50 text-brand-700 ring-1 ring-brand-600/30' : 'text-ink-soft')}>
                         {r.values[c as Exclude<RxTerm, 'eye'>]}
                       </td>
                     ))}
@@ -365,7 +368,7 @@ export function RxExplainer() {
         </figure>
       </div>
 
-      <div className="flex flex-col">
+      <div className="flex min-w-0 flex-col">
         <div className="rounded-[24px] bg-ink p-6 text-white sm:p-7" aria-live="polite">
           <div className="flex items-baseline gap-3">
             <span className="display text-[34px] leading-none text-brand-200">{info.short}</span>

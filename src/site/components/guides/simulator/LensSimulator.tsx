@@ -649,7 +649,8 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
             </AnimatePresence>
             <p className="mt-3 text-center text-[13px] font-medium text-paper/70">
               {t('noRx')}{' '}
-              <button type="button" onClick={() => openBooking('exam')} className="rounded font-semibold text-brand-200 underline underline-offset-2 outline-none hover:text-white focus-visible:ring-2 focus-visible:ring-brand-200">
+              {/* 'rounded' (for the focus ring) opts out of the site-wide wider hit area, so it gets its own ::after */}
+              <button type="button" onClick={() => openBooking('exam')} className="relative rounded font-semibold text-brand-200 underline underline-offset-2 outline-none after:absolute after:-inset-x-1.5 after:-inset-y-2 after:content-[''] hover:text-white focus-visible:ring-2 focus-visible:ring-brand-200">
                 {tl('bookExam')}
               </button>
             </p>

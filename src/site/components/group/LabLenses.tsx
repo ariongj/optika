@@ -74,7 +74,9 @@ export function LabLenses() {
               <ul className="space-y-4">
                 {rows.map(({ p, days, r: [from, to] }) => (
                   <li key={p.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)_4.5rem]">
-                    <Link to={`/produkt/${p.slug}`} className="link-u truncate text-[14px] font-semibold text-ink sm:col-start-1">
+                    {/* truncate clips the site-wide wider hit area (::after), so the link gets it as padding instead;
+                        the negative margin keeps the row as it was and bg-origin-content keeps the underline on the text */}
+                    <Link to={`/produkt/${p.slug}`} className="link-u -my-1.5 truncate bg-origin-content py-1.5 text-[14px] font-semibold text-ink sm:col-start-1">
                       {l(p.name)}
                     </Link>
                     <span className="text-right text-[13px] font-semibold tabular-nums text-ink-soft sm:col-start-3">{t('days', { days })}</span>
