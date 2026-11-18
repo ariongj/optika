@@ -250,10 +250,14 @@ function Editor({ source }: { source?: ProductX }) {
     const oldSlug = source?.slug;
     const redirects = [...(source?.redirects ?? [])];
     if (oldSlug && oldSlug !== slug && f.redirect && !redirects.includes(oldSlug)) redirects.push(oldSlug);
+    // an order or a stock count made while this editor was open must not be undone by saving other changes:
+    // stock the form did not touch, and the sold counter, come from the product as it is now
+    const stockNow = source && next0.stock === compose(original).stock ? source.stock : next0.stock;
     const next: ProductX = {
       ...next0,
       id: pid,
       slug,
+      stock: stockNow,
       sku: next0.sku.trim(),
       price: round2(next0.price),
       packSize: next0.unit === 'm2' ? next0.packSize || 1 : undefined,
@@ -261,7 +265,7 @@ function Editor({ source }: { source?: ProductX }) {
       vendor: next0.vendor?.trim() || undefined,
       redirects: redirects.filter((r) => r !== slug).length ? redirects.filter((r) => r !== slug) : undefined,
       createdAt: next0.createdAt || now,
-      sold: isNew ? 0 : next0.sold,
+      sold: isNew ? 0 : (source?.sold ?? next0.sold),
     };
     upsertProduct(next);
 

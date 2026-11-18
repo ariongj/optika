@@ -122,7 +122,7 @@ export function SearchOverlay() {
               ) : (
                 <div className="py-6">
                   <div className="mb-4 flex items-center justify-between">
-                    <span className="text-sm text-muted">{t('results', { n: results.length })}</span>
+                    <span className="text-sm text-muted">{t((lang === 'me' ? results.length % 10 === 1 && results.length % 100 !== 11 : results.length === 1) ? 'resultsOne' : 'results', { n: results.length })}</span>
                     <button onClick={submit} className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink hover:text-brand-700">
                       {t('seeAll')} <ArrowRight className="h-4 w-4" />
                     </button>

@@ -15,9 +15,9 @@ import { site } from '@/i18n/site';
 import { common } from '@/i18n/common';
 import { useUi } from '@/store/ui';
 import { isBookingHref, openBooking } from '@/site/components/utility/Booking';
-import { useCategories, usePlacements, useSettings } from '@/store/hooks';
+import { useActiveProducts, useCategories, usePlacements, useSettings } from '@/store/hooks';
 import { isPromo, type NavNode } from '@/admin/components/menus/links';
-import { useNavMenu } from '@/admin/components/menus/useNav';
+import { useNavMenu, useSaleHref } from '@/admin/components/menus/useNav';
 import type { L10n } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -97,6 +97,7 @@ function useMainNav(): { items: NavItem[]; fallback: boolean } {
   const cats = useCategories();
   const l = useL();
   const t = useDict(site);
+  const saleTo = useSaleHref();
   return useMemo(() => {
     if (nodes.length) return { items: nodes.map((n) => toItem(n, l)), fallback: false };
     const link = (id: string, to: string, label: string): NavItem => {
@@ -115,7 +116,7 @@ function useMainNav(): { items: NavItem[]; fallback: boolean } {
               .map((c): NavItem => ({ id: c.id, label: l(c.name), to: `/produktet/${c.slug}`, external: false, type: 'category', image: c.image, sub: l(c.tagline), children: [] })),
             link('nav-finder', '/gjej-kornizen', t('nav_finder')),
             link('nav-lens-guide', '/lentet', t('nav_lensGuide')),
-            link('nav-sale', '/produktet?akcija=1', t('sale')),
+            ...(saleTo ? [link('nav-sale', saleTo, t('sale'))] : []),
           ],
         },
         link('nav-smart', SMART, t('nav_smart')),
@@ -135,7 +136,7 @@ function useMainNav(): { items: NavItem[]; fallback: boolean } {
         link('nav-contact', '/kontakt', t('nav_contact')),
       ],
     };
-  }, [nodes, cats, l, t]);
+  }, [nodes, cats, l, t, saleTo]);
 }
 
 const pathOf = (to: string) => to.split(/[?#]/)[0];
@@ -218,7 +219,8 @@ function AnnouncementBar() {
   // it holds still while someone is pointing at it or tabbing through it, so that a link in it can be reached
   const [held, setHeld] = useState(false);
   const items = useMemo(() => {
-    const live = bar.filter((p) => p.title.me.trim()).map((p) => ({ id: p.id, text: p.title, href: p.cta?.href?.trim() ?? '' }));
+    // any language filled counts (the Serbian text is optional; l() falls back to the others)
+    const live = bar.filter((p) => [p.title.sq, p.title.en, p.title.me].some((v) => v?.trim())).map((p) => ({ id: p.id, text: p.title, href: p.cta?.href?.trim() ?? '' }));
     return live.length ? live : settings.announcements.map((text, n) => ({ id: `a${n}`, text, href: '' }));
   }, [bar, settings.announcements]);
   useEffect(() => {
@@ -384,7 +386,13 @@ export function Header({ transparentTop = false, dark = false }: { transparentTo
   const [scrolled, setScrolled] = useState(false);
   const [mega, setMega] = useState<string | null>(null);
   const cartCount = useUi((s) => s.cart.length);
-  const wishCount = useUi((s) => s.wishlist.length);
+  // saved products that were unpublished or deleted in the CMS are not on the wishlist page, so not in the count
+  const wishlist = useUi((s) => s.wishlist);
+  const activeProducts = useActiveProducts();
+  const wishCount = useMemo(() => {
+    const ids = new Set(activeProducts.map((p) => p.id));
+    return wishlist.filter((id) => ids.has(id)).length;
+  }, [wishlist, activeProducts]);
   const setCartOpen = useUi((s) => s.setCartOpen);
   const setSearchOpen = useUi((s) => s.setSearchOpen);
   const [mobileOpen, setMobileOpen] = useState(false);

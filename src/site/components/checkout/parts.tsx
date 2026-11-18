@@ -101,11 +101,13 @@ export function CouponBox({ totals, collapsible, className }: { totals: Totals; 
   const applied = useUi((s) => s.coupon);
   const setCoupon = useUi((s) => s.setCoupon);
   const discounts = useDb((s) => s.discounts);
+  const settings = useSettings();
   const [code, setCode] = useState(applied ?? '');
   const [open, setOpen] = useState(!collapsible || !!applied);
 
   const apply = (value = code) => {
-    const v = value.trim().toUpperCase();
+    // same normalising as the store (spaces dropped), so "MIFTARI 10" is the code MIFTARI10 and its error shows
+    const v = value.replace(/\s+/g, '').toUpperCase();
     setCode(v);
     setCoupon(v || null);
   };
@@ -142,7 +144,7 @@ export function CouponBox({ totals, collapsible, className }: { totals: Totals; 
     );
   }
 
-  const showError = !!applied && !!totals.couponError && code.trim().toUpperCase() === applied.toUpperCase();
+  const showError = !!applied && !!totals.couponError && code.replace(/\s+/g, '').toUpperCase() === applied.toUpperCase();
   let error = '';
   if (showError && applied) {
     if (totals.couponError === 'min') {
@@ -217,12 +219,23 @@ export function CouponBox({ totals, collapsible, className }: { totals: Totals; 
               </div>
               {error ? (
                 <p className="mt-2 text-[12.5px] font-medium leading-snug text-red-600" role="alert">
-                  {error}
+                  {error}{' '}
+                  {/* a wrong code stays saved with the bag until it is taken off */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCoupon(null);
+                      setCode('');
+                    }}
+                    className="tap font-semibold text-ink-soft underline underline-offset-2 hover:text-ink"
+                  >
+                    {t('couponRemove')}
+                  </button>
                 </p>
               ) : (
                 demo && (
                   <p className="mt-2 text-[12px] text-muted">
-                    {t('couponDemo')}{' '}
+                    {settings.demoBanner ? t('couponDemo') : t('couponAvailable')}{' '}
                     <button type="button" onClick={() => apply(demo.code)} className="tap font-bold tracking-wide text-ink-soft underline decoration-dotted underline-offset-2 hover:text-brand-700">
                       {demo.code}
                     </button>

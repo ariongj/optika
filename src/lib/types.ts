@@ -175,6 +175,8 @@ export interface Customer {
   company?: string;
   pib?: string;
   note?: string;
+  /** Ticked "send me news and offers" at checkout (Settings → Checkout → marketing opt-in) */
+  marketing?: boolean;
 }
 
 export interface OrderEvent {
@@ -191,6 +193,8 @@ export interface Order {
   status: OrderStatus;
   customer: Customer;
   items: OrderLine[];
+  /** productId → units this order actually took from stock (stock never goes below 0); cancelling puts back exactly these */
+  stockTaken?: Record<string, number>;
   delivery: { method: DeliveryMethod; fee: number; date?: string };
   payment: {
     method: PaymentMethod;

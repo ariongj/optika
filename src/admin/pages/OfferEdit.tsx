@@ -1,5 +1,6 @@
 // Offer editor — Rritja > Ofertat > … (CMS proposal pp.28–30). One flow for the staff preparing promotions:
 // 1 Përgatit → 2 Paraqit dhe publiko → 3 Mat dhe përfundo. Only roles with `offers.publish` activate an offer.
+import { useUnsavedGuard } from '@/admin/components/editorial/hooks';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { toast } from 'sonner';
@@ -112,6 +113,7 @@ function Editor({ id }: { id: string }) {
   );
   const createdIds = useMemo(() => new Set(created.map((c) => c.id)), [created]);
   const dirty = keyOf(draft, linkedIds, created) !== keyOf(base.offer, base.linked, []);
+  const allowNav = useUnsavedGuard(dirty);
 
   const savedState = stored ? offerState(stored) : 'draft';
   const state = offerState(draft);
@@ -202,7 +204,10 @@ function Editor({ id }: { id: string }) {
     setDraft(next);
     setBase({ offer: next, linked: ids, mode });
     if (!quiet) toast.success(isNew ? t('createdToast') : t('saved'), { description: l(next.name) });
-    if (isNew) navigate(`/admin/ponude/${next.id}?hapi=${step}`, { replace: true });
+    if (isNew) {
+      allowNav();
+      navigate(`/admin/ponude/${next.id}?hapi=${step}`, { replace: true });
+    }
     return next;
   };
   const discard = () => {
@@ -288,7 +293,10 @@ function Editor({ id }: { id: string }) {
       </Button>
     ) : savedState === 'expired' ? (
       canEdit && (
-        <Button shape="rounded" size="sm" className={cn(full && 'w-full')} icon={<Copy className="h-4 w-4" />} onClick={() => navigate(`/admin/ponude/${act.duplicate(stored!)}`)}>
+        <Button shape="rounded" size="sm" className={cn(full && 'w-full')} icon={<Copy className="h-4 w-4" />} onClick={() => {
+            allowNav();
+            navigate(`/admin/ponude/${act.duplicate(stored!)}`);
+          }}>
           {ta('duplicate')}
         </Button>
       )
@@ -300,7 +308,10 @@ function Editor({ id }: { id: string }) {
 
   const menu: MenuItem[] = [];
   if (stored) {
-    if (canEdit) menu.push({ label: ta('duplicate'), icon: Copy, onSelect: () => navigate(`/admin/ponude/${act.duplicate(stored)}`) });
+    if (canEdit) menu.push({ label: ta('duplicate'), icon: Copy, onSelect: () => {
+          allowNav();
+          navigate(`/admin/ponude/${act.duplicate(stored)}`);
+        } });
     if (savedState === 'scheduled' || savedState === 'paused') menu.push({ label: t('a_unpublish'), icon: RotateCcw, disabled: !canPublish, reason: t('noPublishPerm'), onSelect: () => changeStatus('draft') });
     if (savedState === 'active' || savedState === 'paused') menu.push({ label: t('a_end'), icon: Flag, disabled: !can('offers', 'archive'), reason: t('noPerm'), onSelect: () => goStep(3, 'of-end') });
     if (can('offers', 'delete'))
@@ -310,7 +321,10 @@ function Editor({ id }: { id: string }) {
         danger: true,
         divider: true,
         onSelect: async () => {
-          if (await act.del(stored)) navigate('/admin/ponude');
+          if (await act.del(stored)) {
+            allowNav();
+            navigate('/admin/ponude');
+          }
         },
       });
   }

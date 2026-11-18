@@ -1,6 +1,7 @@
 // Draft / paused / expired / unknown offer → a friendly "this offer has ended" page with the live offers
 // (PDF p.28 "Ofertë e skaduar hiqet nga vendet aktive"; p.50 "landing page joaktive trajtohen").
 import { ArrowRight, Hourglass, Percent } from 'lucide-react';
+import { useSaleHref } from '@/admin/components/menus/useNav';
 import { Accent, Reveal } from '@/components/ui/misc';
 import { ButtonLink } from '@/components/ui/Button';
 import { SectionHeading } from '@/site/components/SectionHeading';
@@ -15,6 +16,7 @@ export function OfferEnded({ slug, offer, state, others }: { slug?: string; offe
   const t = useOT();
   const l = useL();
   const lang = useLang();
+  const saleTo = useSaleHref();
   const name = offer ? l(offer.name) : '';
   const soon = state === 'scheduled';
   const expired = state === 'expired' && offer?.endsAt;
@@ -47,9 +49,11 @@ export function OfferEnded({ slug, offer, state, others }: { slug?: string; offe
             </div>
           )}
           <div className="mt-8 flex w-full animate-fade-up flex-col items-stretch justify-center gap-3 [animation-delay:220ms] sm:w-auto sm:flex-row sm:items-center">
-            <ButtonLink to="/produktet?akcija=1" size="lg" icon={<Percent className="h-4 w-4" />}>
-              {t('onSale')}
-            </ButtonLink>
+            {saleTo && (
+              <ButtonLink to={saleTo} size="lg" icon={<Percent className="h-4 w-4" />}>
+                {t('onSale')}
+              </ButtonLink>
+            )}
             <ButtonLink to="/produktet" size="lg" variant="outline" iconRight={<ArrowRight className="h-4 w-4" />}>
               {t('allProducts')}
             </ButtonLink>

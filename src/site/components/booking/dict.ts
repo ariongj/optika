@@ -40,6 +40,7 @@ export const bk = defineDict({
     freeShort: '{n} slobodno',
     full: 'Popunjeno',
     none: 'Nema više',
+    tzNote: 'Vremena su po lokalnom vremenu Kosova (CET).',
     closed: 'Zatvoreno',
     daysLabel: 'Izaberite dan',
 
@@ -162,6 +163,7 @@ export const bk = defineDict({
     freeShort: '{n} të lira',
     full: 'E plotë',
     none: 'Pa orare',
+    tzNote: 'Oraret janë sipas orës lokale të Kosovës (CET).',
     closed: 'Mbyllur',
     daysLabel: 'Zgjidhni ditën',
 
@@ -284,6 +286,7 @@ export const bk = defineDict({
     freeShort: '{n} free',
     full: 'Fully booked',
     none: 'No times',
+    tzNote: 'Times are Kosovo local time (CET).',
     closed: 'Closed',
     daysLabel: 'Choose a day',
 

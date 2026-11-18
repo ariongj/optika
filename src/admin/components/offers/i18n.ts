@@ -102,7 +102,7 @@ export const OF = defineDict({
     toast_duplicated: 'Ponuda je duplirana kao nacrt',
     toast_deleted: 'Ponuda je obrisana',
     deleteTitle: 'Obrisati „{name}“?',
-    deleteText: 'Povezani slajdovi i baneri ostaju, ali se odvajaju od ponude. Pravilo popusta se ne briše.',
+    deleteText: 'Povezani slajdovi i baneri ostaju kao nacrt, odvojeni od ponude. Pravilo popusta se ne briše.',
     copySuffix: '(kopija)',
     waitsApproval: 'Čeka odobrenje',
 
@@ -517,7 +517,7 @@ export const OF = defineDict({
     toast_duplicated: 'Oferta u dyfishua si draft',
     toast_deleted: 'Oferta u fshi',
     deleteTitle: 'Të fshihet „{name}“?',
-    deleteText: 'Slide-t dhe bannerët e lidhur mbeten, por shkëputen nga oferta. Rregulli i zbritjes nuk fshihet.',
+    deleteText: 'Slide-t dhe bannerët e lidhur mbeten si draft, të shkëputur nga oferta. Rregulli i zbritjes nuk fshihet.',
     copySuffix: '(kopje)',
     waitsApproval: 'Pret miratimin',
 
@@ -932,7 +932,7 @@ export const OF = defineDict({
     toast_duplicated: 'Offer duplicated as a draft',
     toast_deleted: 'Offer deleted',
     deleteTitle: 'Delete "{name}"?',
-    deleteText: 'Linked slides and banners stay but are unlinked from the offer. The discount rule is not deleted.',
+    deleteText: 'Linked slides and banners stay as drafts, unlinked from the offer. The discount rule is not deleted.',
     copySuffix: '(copy)',
     waitsApproval: 'Awaiting approval',
 

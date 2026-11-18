@@ -127,10 +127,11 @@ function PageEditor({ id }: { id: string }) {
   const [showErrors, setShowErrors] = useState(false);
   const allowNav = useUnsavedGuard(dirty && !readOnly);
 
-  const slugTaken = useMemo(() => !!draft.slug && pages.some((p) => p.id !== draft.id && p.slug === draft.slug), [pages, draft.slug, draft.id]);
+  // compared as it will be saved (Ctrl+S can save before the field is tidied on blur)
+  const slugTaken = useMemo(() => !!slugify(draft.slug) && pages.some((p) => p.id !== draft.id && p.slug === slugify(draft.slug)), [pages, draft.slug, draft.id]);
   const errors = {
     title: !draft.title.sq.trim() ? te('titleRequired') : undefined,
-    slug: !draft.slug.trim() ? te('slugRequired') : slugTaken ? te('slugTaken') : undefined,
+    slug: !slugify(draft.slug) ? te('slugRequired') : slugTaken ? te('slugTaken') : undefined,
   };
 
   const authors = useMemo(

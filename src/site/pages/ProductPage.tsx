@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
-import { useParams } from 'react-router';
+import { Navigate, useLocation, useParams } from 'react-router';
+import { useDb } from '@/store/db';
+import type { ProductX } from '@/admin/components/products/model';
 import { toast } from 'sonner';
 import { ArrowRight, PackageSearch } from 'lucide-react';
 import type { Product } from '@/lib/types';
@@ -22,15 +24,28 @@ import { DetailTabs } from '@/site/components/product/DetailTabs';
 import { StickyBar } from '@/site/components/product/StickyBar';
 import { openBooking } from '@/site/components/utility/Booking';
 import { ProductRail } from '@/site/components/product/ProductRail';
+import { useCartFull } from '@/site/components/product/useCartFull';
+import { common } from '@/i18n/common';
 
 export default function ProductPage() {
   const { slug } = useParams();
   const product = useProduct(slug);
   const t = useDict(PD);
   const visible = product && product.status === 'active' ? product : undefined;
+  // a product whose address was changed in the CMS ("keep the old link working") answers on its old slug too
+  // (copies made before duplicates stopped inheriting the list may carry it too: the oldest product wins)
+  const moved = useDb((s) =>
+    product || !slug
+      ? undefined
+      : (s.products as ProductX[])
+          .filter((p) => p.status === 'active' && p.redirects?.includes(slug))
+          .sort((a, b) => (a.createdAt ?? '').localeCompare(b.createdAt ?? ''))[0],
+  );
+  const { search, hash } = useLocation();
   const l = useL();
   usePageTitle(visible ? l(visible.name) : t('notFoundTitle'));
 
+  if (moved) return <Navigate to={`/produkt/${moved.slug}${search}${hash}`} replace />;
   if (!visible) return <NotFoundProduct />;
   // key → options/quantity reset when navigating to another product
   return <ProductView key={visible.id} product={visible} />;
@@ -71,6 +86,8 @@ function ProductView({ product }: { product: Product }) {
   const pushViewed = useUi((s) => s.pushViewed);
   const addToCart = useUi((s) => s.addToCart);
   const setCartOpen = useUi((s) => s.setCartOpen);
+  const cartFull = useCartFull();
+  const tc = useDict(common);
   const cfg = useConfigurator(product);
   const [quoteOpen, setQuoteOpen] = useState(false);
   const ctaRef = useRef<HTMLDivElement>(null);
@@ -92,13 +109,15 @@ function ProductView({ product }: { product: Product }) {
   );
 
   const add = () => {
-    addToCart({ productId: product.id, qty: cfg.qty, options: cfg.options, installation: cfg.installation });
+    const added = addToCart({ productId: product.id, qty: cfg.qty, options: cfg.options, installation: cfg.installation }, cfg.maxQty);
+    if (cartFull(added, t('viewCart'))) return;
     const qty =
       product.unit === 'm2' && product.packSize
         ? `${cfg.qty} ${packWord(cfg.qty, lang, t('pack_one'), t('pack_many'))} (${num(cfg.units, lang)} ${unitLabel('m2', lang)})`
         : `${num(cfg.qty, lang)} ${unitLabel(product.unit, lang)}`;
     toast.success(t('added'), {
-      description: `${l(product.name)} · ${qty} · ${money(cfg.total, lang)}`,
+      // part of the stock was already in the cart: say how many went in rather than the chosen amount and its total
+      description: added < cfg.qty ? `${l(product.name)} · ${tc('cartPartial', { n: num(added, lang) })}` : `${l(product.name)} · ${qty} · ${money(cfg.total, lang)}`,
       action: { label: t('viewCart'), onClick: () => setCartOpen(true) },
     });
     setCartOpen(true);

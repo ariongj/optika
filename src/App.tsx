@@ -15,6 +15,9 @@ import type { Action, Module } from '@/lib/permissions';
 // Storefront pages: each is its own chunk, preloaded by the page that opens with it and prefetched on link intent and
 // when idle (see site/pages/lazy.ts), so first load stays small on phones and navigation still feels instant.
 import RouteError from '@/site/pages/RouteError';
+import { setStoreZone } from '@/admin/components/appointments/dates';
+import { setFallbackLang } from '@/i18n';
+import type { Lang } from '@/lib/types';
 import { isPageReady, lazyRetry, Pages as StorePages } from '@/site/pages/lazy';
 const {
   home: Home, shop: Shop, product: ProductPage, cart: CartPage, checkout: Checkout, orderSuccess: OrderSuccess, services: Services, projects: Projects,
@@ -147,6 +150,9 @@ function DrawPageOnReturn() {
 
 function Root() {
   const brand = useDb((s) => s.settings.brandColor);
+  // opening hours and booking times are on the shop's clock, whatever the visitor's time zone
+  setStoreZone(useDb((s) => s.settings.timezone));
+  setFallbackLang(useDb((s) => (s.settings as { ext?: { langFallback?: Lang } }).ext?.langFallback));
   const { pathname } = useLocation();
   const admin = pathname === '/admin' || pathname.startsWith('/admin/');
   // Neutral CMS theme under /admin (PDF p.07); the storefront (and the builder's preview iframe) keeps the Miftari Vision gold.

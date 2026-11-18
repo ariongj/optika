@@ -5,7 +5,13 @@ import { matchesSegment, type SegmentSubject } from '@/lib/crm';
 import { fold } from '@/lib/search';
 import { round2, slugify } from '@/lib/utils';
 import { customerKey } from '@/admin/components/crm/customers';
-import { CHANNELS, pairKey, type Channel, type Consent, type CustomerData, type CustomerNote, type CustomerSource, type ManualCustomer, type Marketing } from './store';
+import { CHANNELS, mergeMarketing, pairKey, type Channel, type Consent, type CustomerData, type CustomerNote, type CustomerSource, type ManualCustomer, type Marketing } from './store';
+
+/** E-mail consent given with the newest order whose customer ticked the checkout opt-in. */
+function checkoutConsent(orders: Order[]): Partial<Marketing> {
+  const o = orders.find((x) => x.customer.marketing);
+  return o ? { email: { status: 'subscribed', at: o.createdAt, source: 'checkout' } } : {};
+}
 
 export interface CustomerAddress {
   address: string;
@@ -191,7 +197,8 @@ export function buildCustomers(input: { orders: Order[]; inquiries: Inquiry[]; b
       tags,
       autoTags,
       notes: profile?.notes ?? [],
-      marketing: { ...emptyMarketing(), ...(profile?.marketing ?? {}) },
+      // a checkout opt-in counts until a newer change (staff, import, unsubscribe) in the profile
+      marketing: { ...emptyMarketing(), ...mergeMarketing(checkoutConsent(sorted), profile?.marketing ?? {}) },
       mergedKeys: [...g.keys].filter((k) => k !== key),
       manual: manual.length > 0,
       inquiries: linked(emails, phones, inqE, inqP).sort((a, b) => b.createdAt.localeCompare(a.createdAt)),

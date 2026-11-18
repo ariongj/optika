@@ -123,3 +123,16 @@ export function unitLabel(unit: Unit, lang: Lang = 'sq') {
 export function perUnit(unit: Unit, lang: Lang = 'sq') {
   return `/ ${unitLabel(unit, lang)}`;
 }
+
+/** Digits for a wa.me link. Local "044 …" numbers are taken as Kosovo (+383); a "+" or "00" prefix is dropped.
+ *  wa.me only accepts the full international number in digits, so "+383 43 …" or "044 …" as typed in the CMS would not work. */
+/** A plausible e-mail address (one @, a dot in the domain, no spaces). */
+export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+export function waDigits(phone?: string | null) {
+  let d = (phone ?? '').replace(/[^\d+]/g, '');
+  if (d.startsWith('+')) d = d.slice(1);
+  else if (d.startsWith('00')) d = d.slice(2);
+  else if (d.startsWith('0')) d = `383${d.slice(1)}`;
+  return d.replace(/\D/g, '');
+}

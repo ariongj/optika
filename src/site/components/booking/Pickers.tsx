@@ -4,10 +4,10 @@ import { Img } from '@/components/ui/misc';
 import { WhatsAppIcon } from '@/components/brand/Social';
 import { useDict, useL, useLang } from '@/i18n';
 import { useSettings } from '@/store/hooks';
-import { date } from '@/lib/format';
+import { date, waDigits } from '@/lib/format';
 import type { Lang, Service } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { addDays, dayKey, fromMin, startOfDay } from '@/admin/components/appointments/dates';
+import { addDays, dayKey, fromMin, inStoreZone, startOfDay, wallDate } from '@/admin/components/appointments/dates';
 import type { DaySlot } from '@/admin/components/appointments/rules';
 import { telHref } from '@/site/components/content/posts';
 import { SERVICE_IMAGE, firstFree, isFree, locationOf, type Ctx, type DayInfo } from './availability';
@@ -21,12 +21,12 @@ export function shortDay(d: Date | string, now: number, lang: Lang, t: T) {
   const k = dayKey(d);
   if (k === dayKey(now)) return t('today');
   if (k === dayKey(addDays(startOfDay(now), 1))) return t('tomorrow');
-  return date(new Date(d), lang, { weekday: 'short', day: 'numeric', month: 'short' });
+  return date(wallDate(d), lang, { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
 /** "E hënë 13 tetor" */
 /** "e hënë 13 tetor" — inside a sentence */
-export const midDay = (d: Date | string, lang: Lang) => date(new Date(d), lang, { weekday: 'long', day: 'numeric', month: 'long' });
+export const midDay = (d: Date | string, lang: Lang) => date(wallDate(d), lang, { weekday: 'long', day: 'numeric', month: 'long' });
 
 /** "E hënë 13 tetor" — standalone */
 export const longDay = (d: Date | string, lang: Lang) => cap(midDay(d, lang));
@@ -232,6 +232,8 @@ export function TimePicker({
           </div>
         ))}
       </div>
+      {/* visitors abroad (diaspora): the times are the shop's, not their own clock */}
+      {!inStoreZone() && <p className="mt-4 text-[12.5px] leading-snug text-muted">{t('tzNote')}</p>}
     </fieldset>
   );
 }
@@ -261,7 +263,7 @@ function SlotButton({ slot, on, onChange }: { slot: DaySlot; on: boolean; onChan
 export function NoSlots({ onNext, canNext }: { onNext: () => void; canNext: boolean }) {
   const t = useDict(bk);
   const settings = useSettings();
-  const wa = (settings.whatsapp ?? '').replace(/\D/g, '');
+  const wa = waDigits(settings.whatsapp);
   return (
     <div className="mt-4 rounded-2xl bg-paper p-5 text-center ring-1 ring-inset ring-line sm:p-6">
       <CalendarX2 className="mx-auto h-7 w-7 text-muted" strokeWidth={1.6} />

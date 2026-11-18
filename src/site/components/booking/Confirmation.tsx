@@ -5,9 +5,9 @@ import { Accent, Badge } from '@/components/ui/misc';
 import { WhatsAppIcon } from '@/components/brand/Social';
 import { useDict, useL, useLang } from '@/i18n';
 import { useSettings } from '@/store/hooks';
-import { date } from '@/lib/format';
+import { date, waDigits } from '@/lib/format';
 import type { Booking, Service } from '@/lib/types';
-import { dayKey, hhmm, timeRange } from '@/admin/components/appointments/dates';
+import { dayKey, hhmm, timeRange, toStoreWall } from '@/admin/components/appointments/dates';
 import { readRules } from '@/admin/components/appointments/rules';
 import { telHref } from '@/site/components/content/posts';
 import { SuccessCheck } from '@/site/components/checkout/Celebrate';
@@ -30,9 +30,10 @@ export function Confirmation({ booking, service, onAnother }: { booking: Booking
   const address = isMain ? `${settings.address}, ${settings.city}` : [loc?.address, loc?.city].filter(Boolean).join(', ');
   const name = booking.customerName.split(/\s+/)[0] || booking.customerName;
   const svc = l(service.name);
-  const start = new Date(booking.start);
+  // the shop's date and time (a wall date), also for a visitor in another time zone
+  const start = toStoreWall(booking.start);
   const when = `${midDay(start, lang)}, ${hhmm(start)}`;
-  const wa = (settings.whatsapp ?? '').replace(/\D/g, '');
+  const wa = waDigits(settings.whatsapp);
   const waText = t('waMsg', { service: svc, when, name: booking.customerName });
   const bring = BRING[service.id] ?? BRING_DEFAULT;
 

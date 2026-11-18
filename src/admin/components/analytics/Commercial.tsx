@@ -552,7 +552,7 @@ function DiscountsCard({ report, returns, discountsById }: { report: DiscountRep
         </>
       )}
       <div className="space-y-1.5 border-t border-line/70 px-5 py-3 text-[12.5px]">
-        <StatusMark state={report.reconciled ? 'on' : 'bad'} className="whitespace-normal">
+        <StatusMark state={report.reconciled ? 'on' : 'bad'} className="whitespace-normal!">
           {t(report.reconciled ? 'dr_ok' : 'dr_bad', { a: m(report.rulesGoods), b: m(report.orderDiscounts), c: m(report.lineAllocations) })}
         </StatusMark>
         <div className="flex flex-col gap-1 pl-[18px] text-muted sm:flex-row sm:gap-4">

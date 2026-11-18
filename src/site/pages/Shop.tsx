@@ -18,6 +18,9 @@ import {
   FAMILY_SWATCH,
   activeCount,
   computeFacets,
+  filtersFromParams,
+  filtersKey,
+  filtersToParams,
   passes,
   productColors,
   sortFromParam,
@@ -31,6 +34,9 @@ import { AllHeader, CategoryBanner, CategoryChips, shopHref } from '@/site/compo
 import { FilterPanel, useShapeLabel } from '@/site/components/shop/FilterPanel';
 import { DensityToggle, FilterButton, FilterPills, SortSelect, type Pill } from '@/site/components/shop/Toolbar';
 import { HelpBand } from '@/site/components/shop/HelpBand';
+import { useHistoryState } from '@/site/components/utility/useHistoryState';
+import { SALE_PATH } from '@/admin/components/menus/links';
+import { useSaleHref } from '@/admin/components/menus/useNav';
 
 const PAGE = 24;
 const DENSITY_KEY = 'optika-shop-cols';
@@ -50,6 +56,7 @@ export default function Shop() {
 }
 
 function ShopView({ slug }: { slug?: string }) {
+  const saleTo = useSaleHref();
   const t = useDict(T);
   const ts = useDict(site);
   const tc = useDict(common);
@@ -66,7 +73,8 @@ function ShopView({ slug }: { slug?: string }) {
 
   usePageTitle(category ? l(category.name) : slug ? t('notFoundTitle') : sale ? ts('sale') : ts('allProducts'));
 
-  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
+  // Filters start from the address (Back from a product page, a reload or a shared link keep them) and are written back below.
+  const [filters, setFilters] = useState<Filters>(() => filtersFromParams(params));
   const [drawer, setDrawer] = useState(false);
   const [density, setDensityState] = useState<3 | 4>(readDensity);
   const setDensity = (v: 3 | 4) => {
@@ -94,6 +102,28 @@ function ShopView({ slug }: { slug?: string }) {
   const setSale = (v: boolean) => patchParams({ akcija: v ? '1' : null });
   const setSort = (v: SortKey) => patchParams({ sort: sortToParam(v) }, true);
 
+  // Keep the address in step with the filters, after a short pause: the price slider reports every step of a drag, and
+  // browsers limit rapid address updates (Safari throws after 100 in 30 s). Replaces the entry, so Back still leaves the list.
+  const fKey = filtersKey(filters);
+  const urlKey = filtersKey(filtersFromParams(params));
+  // The address can also change from outside (Back/Forward, a menu link to the same list with other filters): follow it
+  // instead of writing the old filters back over it. `wrote` is the address just written from here, which is not news
+  // (cleared once seen, so coming back to the same address later still counts).
+  const [sync, setSync] = useState<{ url: string; wrote: string | null }>({ url: urlKey, wrote: null });
+  if (sync.url !== urlKey) {
+    const own = urlKey === sync.wrote;
+    setSync({ url: urlKey, wrote: null });
+    if (!own && urlKey !== fKey) setFilters(filtersFromParams(params));
+  }
+  useEffect(() => {
+    if (fKey === urlKey) return;
+    const id = window.setTimeout(() => {
+      setSync((s) => ({ ...s, wrote: fKey }));
+      patchParams(filtersToParams(filters), true);
+    }, 300);
+    return () => window.clearTimeout(id);
+  }, [fKey, urlKey, filters, patchParams]);
+
   /* ---------------------------- Derived ----------------------------- */
   const scope = useMemo(() => (category ? products.filter((p) => p.categoryId === category.id) : products), [products, category]);
   const ctx: MatchCtx = useMemo(() => ({ sale, colors: new Map(scope.map((p) => [p.id, productColors(p)])) }), [scope, sale]);
@@ -101,9 +131,9 @@ function ShopView({ slug }: { slug?: string }) {
   const facets = useMemo(() => computeFacets(scope, filters, ctx, categories), [scope, filters, ctx, categories]);
   const nActive = activeCount(filters, sale);
 
-  // "Show more" pagination — resets whenever the result set changes
+  // "Show more" pagination — resets whenever the result set changes; Back from a product returns to the same depth
   const sig = `${JSON.stringify(filters)}|${sale}|${sort}`;
-  const [paging, setPaging] = useState({ sig, n: PAGE });
+  const [paging, setPaging] = useHistoryState(`paging:${slug ?? ''}`, { sig, n: PAGE });
   const limit = paging.sig === sig ? paging.n : PAGE;
   const shown = results.slice(0, limit);
 
@@ -263,9 +293,17 @@ function ShopView({ slug }: { slug?: string }) {
                     <Button variant="dark" onClick={() => setSale(false)}>
                       {t('allInCategory')}
                     </Button>
-                    <ButtonLink to={shopHref(null, params, { akcija: '1' })} variant="soft">
-                      {t('allOnSale')}
-                    </ButtonLink>
+                    {/* the site-wide sale list, when it has anything (it is this very page without a category) */}
+                    {slug && saleTo === SALE_PATH && (
+                      <ButtonLink to={shopHref(null, params, { akcija: '1' })} variant="soft">
+                        {t('allOnSale')}
+                      </ButtonLink>
+                    )}
+                    {saleTo && saleTo !== SALE_PATH && (
+                      <ButtonLink to={saleTo} variant="soft">
+                        {t('seeOffer')}
+                      </ButtonLink>
+                    )}
                   </div>
                 }
               />

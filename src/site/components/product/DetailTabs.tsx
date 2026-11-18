@@ -7,7 +7,7 @@ import {
 import type { Category, Product } from '@/lib/types';
 import { Img, Tabs } from '@/components/ui/misc';
 import { useDict, useL, useLang } from '@/i18n';
-import { useSettings } from '@/store/hooks';
+import { useFreeShippingFrom, useSettings } from '@/store/hooks';
 import { money, num, unitLabel } from '@/lib/format';
 import { priceOnRequest } from '@/lib/pricing';
 import { cn } from '@/lib/utils';
@@ -134,7 +134,7 @@ function Specs({ product: p, category }: { product: Product; category?: Category
   const l = useL();
   const lang = useLang();
   const size = frameSize(p);
-  const hasWarranty = p.specs.some((s) => /garanc|warrant/i.test(s.label.me + s.label.en));
+  const hasWarranty = p.specs.some((s) => /garanc|warrant/i.test(`${s.label.sq} ${s.label.me} ${s.label.en}`));
   const hasLead = p.specs.some((s) => /lead time/i.test(s.label.en));
   const unitText =
     p.unit === 'm2' && p.packSize
@@ -240,6 +240,7 @@ function Shipping() {
   const t = useDict(PD);
   const lang = useLang();
   const settings = useSettings();
+  const freeFrom = useFreeShippingFrom();
   const returns = [
     { icon: Wrench, text: t('ret1') },
     { icon: FlaskConical, text: t('ret2') },
@@ -265,13 +266,15 @@ function Shipping() {
             </div>
           ))}
         </div>
-        <div className="mt-4 flex gap-3 rounded-2xl bg-emerald-50 p-4 ring-1 ring-inset ring-emerald-600/15">
-          <CalendarCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700" />
-          <div>
-            <div className="text-[14px] font-bold text-emerald-900">{t('freeOver', { amount: money(settings.freeShippingThreshold, lang, { decimals: false }) })}</div>
-            <p className="mt-0.5 text-[13px] leading-snug text-emerald-800/80">{t('freeOverText')}</p>
+        {freeFrom != null && (
+          <div className="mt-4 flex gap-3 rounded-2xl bg-emerald-50 p-4 ring-1 ring-inset ring-emerald-600/15">
+            <CalendarCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700" />
+            <div>
+              <div className="text-[14px] font-bold text-emerald-900">{t('freeOver', { amount: money(freeFrom, lang, { decimals: false }) })}</div>
+              <p className="mt-0.5 text-[13px] leading-snug text-emerald-800/80">{t('freeOverText')}</p>
+            </div>
           </div>
-        </div>
+        )}
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <div className="flex gap-3 rounded-2xl bg-white p-4 ring-1 ring-line">
             <Store className="mt-0.5 h-5 w-5 shrink-0 text-ink-soft" />

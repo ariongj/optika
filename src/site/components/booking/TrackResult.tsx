@@ -25,7 +25,7 @@ import { useDict, useL, useLang } from '@/i18n';
 import { common } from '@/i18n/common';
 import { useDb } from '@/store/db';
 import { useSettings } from '@/store/hooks';
-import { date, dateTime, money, unitLabel } from '@/lib/format';
+import { date, dateTime, money, unitLabel, waDigits } from '@/lib/format';
 import { fulfillmentOf, paymentOf } from '@/lib/orders';
 import type { Booking, Order, PaymentState, Product } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -405,7 +405,7 @@ function Appointments({ bookings }: { bookings: Booking[] }) {
 function Help({ order }: { order: Order }) {
   const t = useDict(tr);
   const settings = useSettings();
-  const wa = (settings.whatsapp ?? '').replace(/\D/g, '');
+  const wa = waDigits(settings.whatsapp);
   const pickupReady = order.status === 'installation';
   return (
     <section className="relative overflow-hidden rounded-3xl bg-ink p-6 text-paper sm:p-8">

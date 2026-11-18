@@ -10,7 +10,8 @@ import { useSettings } from '@/store/hooks';
 import { allCities } from '@/lib/pricing';
 import type { InquiryType, Service } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { longDate, timeRange } from '@/admin/components/appointments/dates';
+import { dayKey, longDate, timeRange } from '@/admin/components/appointments/dates';
+import { EMAIL_RE } from '@/lib/format';
 import { readRules, webSlot } from '@/admin/components/appointments/rules';
 
 /** Form copy that is specific to the optician (the shared field labels live in `site`). */
@@ -138,7 +139,8 @@ export function MeasureForm({
   const [sent, setSent] = useState<{ name: string; phone: string; slot?: { start: string; durationMin: number } } | null>(null);
   const [busy, setBusy] = useState(false);
   const set = (k: 'name' | 'phone' | 'email' | 'city' | 'company' | 'date' | 'message') => (e: { target: { value: string } }) => setForm((x) => ({ ...x, [k]: e.target.value }));
-  const today = new Date().toISOString().slice(0, 10);
+  // today on the shop's calendar (toISOString is UTC: before 01:00 it still said yesterday)
+  const today = dayKey(Date.now());
   const exam = type === 'measurement';
   const serviceLabel = (v: string) => (isServiceKey(v) ? f(`sv_${v}`) : v);
   const placeholder = exam ? t('f_messagePh') : type === 'contact' ? f('ph_contact') : b2b || !productId ? f('ph_quote') : f('ph_quoteProduct');
@@ -180,6 +182,8 @@ export function MeasureForm({
     if (!form.name.trim()) err.name = t('f_required');
     if (!form.phone.trim()) err.phone = t('f_required');
     else if (form.phone.replace(/\D/g, '').length < 8) err.phone = t('f_invalidPhone');
+    // optional, but a mistyped address would make the reply bounce
+    if (form.email.trim() && !EMAIL_RE.test(form.email.trim())) err.email = t('f_invalidEmail');
     if (type === 'contact' && !form.message.trim()) err.message = t('f_required');
     setErrors(err);
     if (Object.keys(err).length) return;
@@ -250,7 +254,7 @@ export function MeasureForm({
         <Input label={t('f_name')} required value={form.name} onChange={set('name')} error={errors.name} autoComplete="name" />
         <Input label={t('f_phone')} required type="tel" value={form.phone} onChange={set('phone')} error={errors.phone} placeholder="+383 4_ ___ ___" autoComplete="tel" />
         {type === 'contact' ? (
-          <Input label={t('f_email')} type="email" value={form.email} onChange={set('email')} wrapClassName="sm:col-span-2" autoComplete="email" />
+          <Input label={t('f_email')} type="email" value={form.email} onChange={set('email')} error={errors.email} wrapClassName="sm:col-span-2" autoComplete="email" />
         ) : (
           <>
             {b2b && <Input label={f('company')} value={form.company} onChange={set('company')} placeholder={f('companyPh')} autoComplete="organization" />}
@@ -266,7 +270,7 @@ export function MeasureForm({
             {exam ? (
               <Input label={t('f_date')} type="date" min={today} value={form.date} onChange={set('date')} />
             ) : (
-              <Input label={t('f_email')} type="email" value={form.email} onChange={set('email')} autoComplete="email" wrapClassName={b2b ? 'sm:col-span-2' : undefined} />
+              <Input label={t('f_email')} type="email" value={form.email} onChange={set('email')} error={errors.email} autoComplete="email" wrapClassName={b2b ? 'sm:col-span-2' : undefined} />
             )}
             {exam && (
               <div className="sm:col-span-2">

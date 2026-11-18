@@ -1,13 +1,85 @@
 // Calendar date helpers for the appointments module (PDF pp.45–46).
 // All maths is done in LOCAL time with setDate/setHours, so the week that contains the
 // summer/winter-time switch (last Sunday of October / March) still lays out correctly.
+//
+// Opening hours and appointment times are the shop's wall clock (settings.timezone, Europe/Belgrade), not the
+// visitor's. The convention here:
+//   - a Date object is a WALL date: its local fields are read as-is (calendar days, grid days);
+//   - an ISO string with a time, or a number, is an INSTANT: it is read on the shop's clock;
+//   - a "YYYY-MM-DD" string is a calendar day.
+// In the shop's own time zone (the staff, and most visitors) every conversion is the identity.
 import type { Lang } from '@/lib/types';
+
+let STORE_TZ = 'Europe/Belgrade';
+let localIsStore: boolean | null = null;
+const fmt = new Map<string, Intl.DateTimeFormat>();
+
+/** Set from settings.timezone at the app root; an unknown zone name is ignored. */
+export function setStoreZone(tz?: string | null) {
+  if (!tz || tz === STORE_TZ) return;
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: tz });
+  } catch {
+    return;
+  }
+  STORE_TZ = tz;
+  localIsStore = null;
+}
+
+/** True when the browser's clock is the shop's (then nothing needs converting). */
+export function inStoreZone() {
+  if (localIsStore == null) {
+    try {
+      localIsStore = Intl.DateTimeFormat().resolvedOptions().timeZone === STORE_TZ;
+    } catch {
+      localIsStore = true;
+    }
+  }
+  return localIsStore;
+}
+
+function wallParts(t: number) {
+  let f = fmt.get(STORE_TZ);
+  if (!f) {
+    f = new Intl.DateTimeFormat('en-US', { timeZone: STORE_TZ, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' });
+    fmt.set(STORE_TZ, f);
+  }
+  const p: Record<string, number> = {};
+  for (const x of f.formatToParts(t)) if (x.type !== 'literal') p[x.type] = Number(x.value);
+  return { y: p.year, mo: p.month - 1, d: p.day, h: p.hour % 24, mi: p.minute, s: p.second };
+}
+
+/** An instant on the shop's clock, as a wall Date (local fields = the shop's date and time). */
+export function toStoreWall(instant: string | number | Date) {
+  const t = typeof instant === 'number' ? instant : new Date(instant).getTime();
+  if (inStoreZone() || !Number.isFinite(t)) return new Date(t);
+  const w = wallParts(t);
+  return new Date(w.y, w.mo, w.d, w.h, w.mi, w.s);
+}
+
+/** The instant at which the shop's clock shows this wall time. */
+function storeInstant(y: number, mo: number, d: number, h: number, mi: number) {
+  if (inStoreZone()) return new Date(y, mo, d, h, mi).getTime();
+  const utc = Date.UTC(y, mo, d, h, mi);
+  const offset = (t: number) => {
+    const w = wallParts(t);
+    return Date.UTC(w.y, w.mo, w.d, w.h, w.mi, w.s) - Math.floor(t / 1000) * 1000;
+  };
+  return utc - offset(utc - offset(utc));
+}
+
+/** Date → itself (wall); "YYYY-MM-DD" → that day; ISO instant / number → the shop's wall time. */
+export function wallDate(d: Date | number | string): Date {
+  if (d instanceof Date) return new Date(d);
+  if (typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)) return parseDay(d);
+  return toStoreWall(d);
+}
 
 /** Monday = 0 … Sunday = 6 */
 export const weekdayIndex = (d: Date) => (d.getDay() + 6) % 7;
 
-export function startOfDay(d: Date | number | string) {
-  const x = new Date(d);
+export function startOfDay(d: Date | number | string): Date {
+  const x = wallDate(d);
   x.setHours(0, 0, 0, 0);
   return x;
 }
@@ -26,14 +98,15 @@ export function addDays(d: Date, n: number) {
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
-/** Local "YYYY-MM-DD" */
+/** "YYYY-MM-DD" of a wall date, or of an instant on the shop's clock */
 export function dayKey(d: Date | string | number) {
-  const x = new Date(d);
+  if (typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+  const x = wallDate(d);
   return `${x.getFullYear()}-${pad(x.getMonth() + 1)}-${pad(x.getDate())}`;
 }
 
 /** "YYYY-MM-DD" → local midnight (not UTC). */
-export function parseDay(v: string) {
+export function parseDay(v: string): Date {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
   return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : startOfDay(v);
 }
@@ -49,27 +122,25 @@ export function fromMin(min: number) {
   return `${pad(Math.floor(min / 60))}:${pad(min % 60)}`;
 }
 
-/** Minutes after local midnight of an ISO instant */
-export function minutesOf(iso: string | Date) {
-  const d = new Date(iso);
+/** Minutes after midnight on the shop's clock (an instant) or of a wall Date */
+export function minutesOf(iso: string | number | Date) {
+  const d = wallDate(iso);
   return d.getHours() * 60 + d.getMinutes();
 }
 
-/** Local day + minutes → ISO instant */
+/** Shop day + minutes on the shop's clock → ISO instant */
 export function atMinutes(day: string | Date, minutes: number) {
   const d = typeof day === 'string' ? parseDay(day) : startOfDay(day);
-  d.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
-  return d.toISOString();
+  return new Date(storeInstant(d.getFullYear(), d.getMonth(), d.getDate(), Math.floor(minutes / 60), minutes % 60)).toISOString();
 }
 
-export function hhmm(iso: string | Date) {
+export function hhmm(iso: string | number | Date) {
   return fromMin(minutesOf(iso));
 }
 
 export function timeRange(start: string, durationMin: number) {
-  const s = new Date(start);
-  const e = new Date(s.getTime() + durationMin * 60000);
-  return `${hhmm(s)}–${hhmm(e)}`;
+  const s = new Date(start).getTime();
+  return `${hhmm(s)}–${hhmm(s + durationMin * 60000)}`;
 }
 
 export function sameDay(a: Date | string, b: Date | string) {
@@ -118,7 +189,7 @@ export function dayMonth(d: Date, lang: Lang, short = false) {
 
 /** "E mërkurë, 07 tetor 2026" style long date */
 export function longDate(d: Date | string, lang: Lang) {
-  const x = new Date(d);
+  const x = wallDate(d);
   const name = dayName(weekdayIndex(x), lang);
   return `${name}, ${dayMonth(x, lang)} ${x.getFullYear()}`;
 }

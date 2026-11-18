@@ -3,6 +3,7 @@
 import type { ComponentType } from 'react';
 import { Activity, Bell, Building2, CreditCard, Database, Languages, MapPin, Plug, ShieldCheck, ShoppingCart, Truck, Users } from 'lucide-react';
 import type { Lang, Settings } from '@/lib/types';
+import { readLocalDelivery, type LocalDelivery } from '@/lib/pricing';
 import type { SKey } from './strings';
 
 /* ------------------------------------------------------------------ */
@@ -21,7 +22,7 @@ export interface SettingsExt {
   capture: 'auto' | 'manual';
   langDefault: Lang;
   langFallback: Lang;
-  localDelivery: { enabled: boolean; fee: number; area: string };
+  localDelivery: LocalDelivery;
 }
 
 export const EXT_DEFAULTS: SettingsExt = {
@@ -33,7 +34,8 @@ export const EXT_DEFAULTS: SettingsExt = {
   capture: 'auto',
   langDefault: 'sq',
   langFallback: 'sq',
-  localDelivery: { enabled: true, fee: 0, area: 'Mitrovicë' },
+  // off until the shop turns it on: checkout now charges what this says (it used to be ignored)
+  localDelivery: { enabled: false, fee: 0, area: 'Mitrovicë', v: 2 },
 };
 
 /** The draft the settings screens edit: the shared settings + `ext`. */
@@ -41,7 +43,8 @@ export type SettingsX = Settings & { ext: SettingsExt };
 
 export function withExt(s: Settings): SettingsX {
   const ext = (s as Partial<SettingsX>).ext;
-  return { ...s, ext: { ...EXT_DEFAULTS, ...ext, localDelivery: { ...EXT_DEFAULTS.localDelivery, ...ext?.localDelivery } } };
+  // an old saved default (on, free, never chosen) shows as off, as checkout treats it (readLocalDelivery)
+  return { ...s, ext: { ...EXT_DEFAULTS, ...ext, localDelivery: { ...EXT_DEFAULTS.localDelivery, ...readLocalDelivery(s) } } };
 }
 
 export type SetX = <K extends keyof SettingsX>(key: K, value: SettingsX[K]) => void;

@@ -1,6 +1,7 @@
 // Online Store → Tema (PDF pp.32, 37): current theme with a live thumbnail, theme settings for the PUBLIC site
 // (logo, brand colour, fonts, spacing — the CMS stays neutral), preferences (SEO, social image, maintenance mode,
 // languages), domain, and links to Editori + Slideshow & bannerë.
+import { useUnsavedGuard } from '@/admin/components/editorial/hooks';
 import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { toast } from 'sonner';
@@ -61,6 +62,7 @@ export default function OnlineStore() {
     if (JSON.stringify(form) === JSON.stringify(prevSaved)) setForm(saved);
   }
   const dirty = JSON.stringify(form) !== JSON.stringify(saved);
+  useUnsavedGuard(dirty);
   const setTheme = (patch: Partial<StoreTheme>) => setForm((f) => ({ ...f, theme: { ...f.theme, ...patch } }));
   const [hex, setHex] = useState(form.brandColor);
   const hexBad = !isHex(hex.trim().replace(/^#?/, '#'));
@@ -71,6 +73,10 @@ export default function OnlineStore() {
 
   const save = () => {
     updateSettings({ brandColor: isHex(form.brandColor) ? normHex(form.brandColor) : DEFAULT_BRAND, seo: { title: form.seo.title.trim(), description: form.seo.description.trim() }, ...themePatch(form.theme) });
+    // the save tidies the values (trimmed SEO text, normalised colour): show what was stored, so the form is clean again
+    const stored = formOf(useDb.getState().settings);
+    setForm(stored);
+    setHex(stored.brandColor);
     toast.success(t('savedToast'));
   };
   const discard = () => {

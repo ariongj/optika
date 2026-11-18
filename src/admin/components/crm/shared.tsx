@@ -4,6 +4,7 @@ import { defineDict } from '@/i18n';
 import { fold } from '@/lib/search';
 import type { InquiryType, Lang } from '@/lib/types';
 import { cn, initials } from '@/lib/utils';
+import { waDigits } from '@/lib/format';
 
 /* ------------------------------------------------------------------ */
 /* Strings shared by the CRM screens (customers + inquiries)           */
@@ -75,11 +76,7 @@ export function telHref(phone: string) {
 
 /** wa.me link — local "044 …" numbers are assumed to be from Kosovo (+383). */
 export function waHref(phone: string) {
-  let d = phone.replace(/[^\d+]/g, '');
-  if (d.startsWith('+')) d = d.slice(1);
-  else if (d.startsWith('00')) d = d.slice(2);
-  else if (d.startsWith('0')) d = `383${d.slice(1)}`;
-  return `https://wa.me/${d}`;
+  return `https://wa.me/${waDigits(phone)}`;
 }
 
 export function mailHref(email: string, subject?: string) {

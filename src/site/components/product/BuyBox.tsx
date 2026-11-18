@@ -12,9 +12,9 @@ import { Price } from '@/site/components/Price';
 import { useDict, useL, useLang } from '@/i18n';
 import { site } from '@/i18n/site';
 import { useUi } from '@/store/ui';
-import { useSettings } from '@/store/hooks';
+import { useFreeShippingFrom, useSettings } from '@/store/hooks';
 import { basePrice, priceOnRequest } from '@/lib/pricing';
-import { money, num, perUnit, unitLabel } from '@/lib/format';
+import { money, num, perUnit, unitLabel, waDigits } from '@/lib/format';
 import { cn, round2 } from '@/lib/utils';
 import { PD, eur, packWord } from './dict';
 import { OptionPicker } from './OptionPicker';
@@ -526,7 +526,7 @@ function SmartTrustRow() {
 function HelpLine() {
   const t = useDict(PD);
   const settings = useSettings();
-  const wa = settings.whatsapp?.replace(/[^\d]/g, '');
+  const wa = waDigits(settings.whatsapp);
   return (
     <div className="mt-5 flex items-center justify-between gap-3 px-1">
       <span className="min-w-0 text-[13px] leading-snug">
@@ -550,11 +550,12 @@ function HelpLine() {
 function TrustRow({ warrantyYears, onBook }: { warrantyYears?: number; onBook: () => void }) {
   const t = useDict(PD);
   const lang = useLang();
-  const settings = useSettings();
+  const freeFrom = useFreeShippingFrom();
   const items: { icon: typeof Eye; title: string; text: string; onClick?: () => void }[] = [
     { icon: Eye, title: t('trust_exam'), text: t('trust_examText'), onClick: onBook },
     ...(warrantyYears ? [{ icon: ShieldCheck, title: t('trust_warranty', { n: warrantyYears }), text: t('trust_warrantyText') }] : []),
-    { icon: Truck, title: t('trust_delivery'), text: t('trust_deliveryText', { amount: money(settings.freeShippingThreshold, lang, { decimals: false }) }) },
+    // "free from …" only while a free-shipping rule is live
+    { icon: Truck, title: t('trust_delivery'), text: freeFrom != null ? t('trust_deliveryText', { amount: money(freeFrom, lang, { decimals: false }) }) : t('trust_deliveryPlain') },
     { icon: Wrench, title: t('trust_fit'), text: t('trust_fitText') },
   ];
   return (

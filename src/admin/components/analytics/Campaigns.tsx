@@ -143,7 +143,7 @@ export function Campaigns({ rows, analytics }: { rows: CampaignRow[]; analytics?
         </Table>
         </div>
         <div className="border-t border-line/70 px-5 py-3">
-          <StatusMark state={allMatch ? 'on' : 'bad'} className="whitespace-normal text-[12.5px]">
+          <StatusMark state={allMatch ? 'on' : 'bad'} className="whitespace-normal! text-[12.5px]">
             {t(allMatch ? 'match_ok' : 'match_bad')}
           </StatusMark>
         </div>

@@ -1,3 +1,4 @@
+import { useUnsavedGuard } from '@/admin/components/editorial/hooks';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
@@ -346,6 +347,7 @@ function Editor({ stored }: { stored: DraftOrder | null }) {
   const [draft, setDraft] = useState<DraftOrder>(base);
   const [showErrors, setShowErrors] = useState<Problem[]>([]);
   const dirty = JSON.stringify(draft) !== JSON.stringify(base);
+  const allowNav = useUnsavedGuard(dirty);
 
   // follow store updates (status change, another tab) while there are no local edits
   useEffect(() => {
@@ -372,7 +374,10 @@ function Editor({ stored }: { stored: DraftOrder | null }) {
     upsert('drafts', saved);
     setBase(saved);
     setDraft(saved);
-    if (!next.id) navigate(`/admin/nacrti/${saved.id}`, { replace: true });
+    if (!next.id) {
+      allowNav();
+      navigate(`/admin/nacrti/${saved.id}`, { replace: true });
+    }
     return saved;
   };
 
@@ -408,6 +413,7 @@ function Editor({ stored }: { stored: DraftOrder | null }) {
     const created = convertDraft(saved.id);
     if (!created) return;
     toast.success(t('converted', { n: created.number }));
+    allowNav();
     navigate(`/admin/narudzbe/${created.id}`);
   };
 
@@ -416,6 +422,7 @@ function Editor({ stored }: { stored: DraftOrder | null }) {
     if (!ok) return;
     remove('drafts', draft.id);
     toast.success(t('deleted', { n: draft.number }));
+    allowNav();
     navigate('/admin/nacrti');
   };
 

@@ -1,5 +1,6 @@
 // Konfigurimet — a separate settings space (proposal pp.39–42, mock-up p.41):
 // sub-navigation on the left, one section per route (/admin/konfiguracija/:section), one shared draft + SaveBar.
+import { useUnsavedGuard } from '@/admin/components/editorial/hooks';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Navigate, useParams } from 'react-router';
 import { toast } from 'sonner';
@@ -49,6 +50,8 @@ function validate(d: SettingsX, t: (k: 'invalidPrefix' | 'needLocation' | 'subje
   return e;
 }
 
+const inSettings = (path: string) => path === '/admin/konfiguracija' || path.startsWith('/admin/konfiguracija/');
+
 export default function SettingsPage() {
   const t = useDict(S, 'admin');
   const ta = useDict(adm, 'admin');
@@ -68,6 +71,8 @@ export default function SettingsPage() {
 
   // Saved settings changed elsewhere (another tab, import, reset) and nothing is being edited → follow them.
   const dirty = !same(draft, base);
+  // the sections share this one draft: moving between them keeps it, only leaving Settings asks
+  useUnsavedGuard(dirty, inSettings);
   useEffect(() => {
     if (!dirty) setDraft(base);
     // eslint-disable-next-line react-hooks/exhaustive-deps

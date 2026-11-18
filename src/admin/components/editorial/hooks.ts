@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useBlocker } from 'react-router';
+import { useBlocker, useLocation } from 'react-router';
 import { confirmDialog } from '@/admin/components/kit';
 import { useDict } from '@/i18n';
 import { ed } from './i18n';
@@ -39,18 +39,30 @@ export function useSaveShortcut(fn: () => void) {
 /**
  * Ask before leaving an editor with unsaved changes (in-app navigation + tab close).
  * Call `allowNext()` right before a programmatic navigation that should not be blocked.
+ * `within`: addresses that are still this editor (e.g. the sections of Settings, which share one draft) — moving
+ * between them is not leaving.
  */
-export function useUnsavedGuard(dirty: boolean) {
+export function useUnsavedGuard(dirty: boolean, within?: (pathname: string) => boolean) {
   const t = useDict(ed, 'admin');
   const dirtyRef = useRef(dirty);
+  const withinRef = useRef(within);
   const bypass = useRef(false);
   useEffect(() => {
     dirtyRef.current = dirty;
-  }, [dirty]);
+    withinRef.current = within;
+  }, [dirty, within]);
+  // allowNav() lets one navigation through (save → the new record's address); the guard is back on after it
+  const { key } = useLocation();
+  useEffect(() => {
+    bypass.current = false;
+  }, [key]);
 
   const shouldBlock = useCallback(
     ({ currentLocation, nextLocation }: { currentLocation: { pathname: string }; nextLocation: { pathname: string } }) =>
-      !bypass.current && dirtyRef.current && currentLocation.pathname !== nextLocation.pathname,
+      !bypass.current &&
+      dirtyRef.current &&
+      currentLocation.pathname !== nextLocation.pathname &&
+      !withinRef.current?.(nextLocation.pathname),
     [],
   );
   const blocker = useBlocker(shouldBlock);

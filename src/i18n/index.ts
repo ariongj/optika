@@ -49,10 +49,16 @@ export function useDict<T extends Record<string, string>>(
   );
 }
 
-/** Pick the right language from a localized value (falls back to Albanian, then the third slot). */
+let FALLBACK: Lang = 'sq';
+/** Settings → Languages → fallback: shown where a text has no translation (set at the app root). */
+export function setFallbackLang(lang?: Lang | null) {
+  if (lang === 'sq' || lang === 'en' || lang === 'me') FALLBACK = lang;
+}
+
+/** Pick the right language from a localized value (falls back to the fallback language, then Albanian, then the third slot). */
 export function lt(v: L10n | null | undefined, lang: Lang): string {
   if (!v) return '';
-  return v[lang]?.trim() ? v[lang] : v.sq?.trim() ? v.sq : v.me;
+  return v[lang]?.trim() ? v[lang] : v[FALLBACK]?.trim() ? v[FALLBACK] : v.sq?.trim() ? v.sq : v.en?.trim() ? v.en : v.me;
 }
 
 export function useL(scope: Scope = 'site') {

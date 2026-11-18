@@ -1,8 +1,9 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDb } from './db';
 import { useUi } from './ui';
-import { priceCart } from '@/lib/pricing';
+import { activeShippingRule, freeShippingFrom, priceCart } from '@/lib/pricing';
+import { maxOrderQty } from '@/lib/inventory';
 import { activePlacements } from '@/lib/offers';
 import { collectionProducts } from '@/lib/collections';
 import { can, type Action, type Module } from '@/lib/permissions';
@@ -38,10 +39,34 @@ export function useCart(opts: { delivery?: DeliveryMethod; city?: string } = {})
   const { products, settings, discounts, collections } = useDb(
     useShallow((s) => ({ products: s.products, settings: s.settings, discounts: s.discounts, collections: s.collections })),
   );
+  // only products on sale: a line for a product archived since it was added is not priced or ordered (tidyCart drops it)
+  const live = useMemo(() => products.filter((p) => p.status === 'active'), [products]);
   return useMemo(
-    () => priceCart(cart, products, settings, { lang, codes, discounts, collections, delivery: opts.delivery, city: opts.city }),
-    [cart, products, settings, lang, codes, discounts, collections, opts.delivery, opts.city],
+    () => priceCart(cart, live, settings, { lang, codes, discounts, collections, delivery: opts.delivery, city: opts.city }),
+    [cart, live, settings, lang, codes, discounts, collections, opts.delivery, opts.city],
   );
+}
+
+/**
+ * Keeps the saved bag honest: lines for a product deleted or taken off sale since it was added are dropped (they could
+ * not be seen, cleared or ordered, but still counted in the header), and quantities are trimmed to what can be ordered.
+ */
+export function useTidyCart() {
+  const products = useDb((s) => s.products);
+  const cart = useUi((s) => s.cart);
+  const tidyCart = useUi((s) => s.tidyCart);
+  useEffect(() => {
+    if (!products.length || !cart.length) return; // never judge the bag before the catalogue is there
+    tidyCart(new Map(products.filter((p) => p.status === 'active').map((p) => [p.id, maxOrderQty(p)])));
+  }, [products, cart, tidyCart]);
+}
+
+/** Order amount from which delivery is free under the live free-shipping rule; null when no such rule is live (0 = always). */
+export function useFreeShippingFrom() {
+  const discounts = useDb((s) => s.discounts);
+  return useMemo(() => {
+    return freeShippingFrom(activeShippingRule(discounts));
+  }, [discounts]);
 }
 
 /** Live placements (slides / banners / announcement bar) for a storefront position. */

@@ -4,11 +4,18 @@ import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDb } from '@/store/db';
 import type { Menu } from '@/lib/types';
-import { liveTree, type LinkSources, type NavNode } from './links';
+import { liveTree, saleHref, type LinkSources, type NavNode } from './links';
 
 /** The lists a menu link can point to (stable reference while they don't change). */
 export function useLinkSources(): LinkSources {
   return useDb(useShallow((s) => ({ pages: s.pages, products: s.products, collections: s.collections, categories: s.categories, offers: s.offers })));
+}
+
+/** Where "Ofertat" leads now (sale listing or the live campaign); null while nothing is on offer. */
+export function useSaleHref(): string | null {
+  const products = useDb((s) => s.products);
+  const offers = useDb((s) => s.offers);
+  return useMemo(() => saleHref({ products, offers }), [products, offers]);
 }
 
 /**

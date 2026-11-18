@@ -4,7 +4,8 @@ import type { Post } from '@/lib/types';
 import { slugify } from '@/lib/utils';
 
 /** Language-independent key for a post's tag (used in ?tag= filters). */
-export const tagKey = (p: Post) => slugify(p.tag.me);
+// Serbian first so the keys of existing ?tag= links stay the same; posts without a Serbian tag fall back to sq, then en
+export const tagKey = (p: Post) => slugify(p.tag.me?.trim() || p.tag.sq?.trim() || p.tag.en?.trim() || '');
 
 export const postHref = (p: Post) => `/keshilla/${p.slug}`;
 

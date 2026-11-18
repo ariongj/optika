@@ -18,6 +18,7 @@ const ISSUE: Record<LinkIssue, { icon: ComponentType<{ className?: string }>; to
   expired: { icon: CalendarX, tone: 'muted' },
   paused: { icon: CirclePause, tone: 'muted' },
   archived: { icon: Archive, tone: 'muted' },
+  empty: { icon: EyeOff, tone: 'muted' },
 };
 
 /** Why a link is not on the storefront — text + symbol. */

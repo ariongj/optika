@@ -35,10 +35,12 @@ export default function OfferPage() {
 
   const value = valueText(discount, lang, { free: t('v_free'), bxgy: t('v_bxgy') });
   const cta = () => !preview && bumpOfferMetric(offer.id, 'ctaClicks');
-  const shown = products.slice(0, SHOWN);
+  // the discount's own products have no listing elsewhere (they carry no sale price): show them all here
+  const listAll = !collectionSlug && scope === 'offer';
+  const shown = listAll ? products : products.slice(0, SHOWN);
   const n = products.length;
   const count = t((lang === 'me' ? n % 10 === 1 && n % 100 !== 11 : n === 1) ? 'prod_one' : 'prod_many', { n });
-  const viewAllTo = collectionSlug ? `/koleksioni/${collectionSlug}` : scope === 'all' ? '/produktet' : '/produktet?akcija=1';
+  const viewAllTo = collectionSlug ? `/koleksioni/${collectionSlug}` : '/produktet';
   const titleKey: OTKey = scope === 'all' ? 'prod_title_all' : scope === 'collection' ? 'prod_title_ed' : 'prod_title';
 
   return (
@@ -68,7 +70,7 @@ export default function OfferPage() {
               subtitle={scope === 'all' ? t('prod_sub_all') : count}
               action={
                 <ButtonLink to={viewAllTo} variant="outline" iconRight={<ArrowRight className="h-4 w-4" />} onClick={cta}>
-                  {products.length > SHOWN ? t('viewAll', { n: products.length }) : collectionSlug ? t('e1_t') : t('allProducts')}
+                  {products.length > shown.length ? t('viewAll', { n: products.length }) : collectionSlug ? t('e1_t') : t('allProducts')}
                 </ButtonLink>
               }
             />

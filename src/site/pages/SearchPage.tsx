@@ -1,5 +1,6 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
+import { useHistoryState } from '@/site/components/utility/useHistoryState';
 import { ArrowRight, ArrowUpRight, CalendarCheck, ChevronDown, Phone, Search, SearchX, Sparkles, X } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import { Accent, Img } from '@/components/ui/misc';
@@ -183,8 +184,9 @@ export default function SearchPage() {
   const cats = useCategories();
   const { value, setValue, urlQ } = useQueryParam();
   const input = useRef<HTMLInputElement>(null);
-  const [sort, setSort] = useState<Sort>('relevance');
-  const [catFilter, setCatFilter] = useState<string | null>(null);
+  // kept with the history entry, so Back from a product finds the list as it was left
+  const [sort, setSort] = useHistoryState<Sort>('search-sort', 'relevance');
+  const [catFilter, setCatFilter] = useHistoryState<string | null>('search-cat', null);
 
   usePageTitle(urlQ ? `${t('title')}: ${urlQ}` : t('title'));
 

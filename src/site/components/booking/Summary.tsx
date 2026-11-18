@@ -11,6 +11,7 @@ import { telHref } from '@/site/components/content/posts';
 import { SERVICE_IMAGE, locationOf } from './availability';
 import { bk } from './dict';
 import { longDay } from './Pickers';
+import { waDigits } from '@/lib/format';
 
 function Row({ icon: Icon, label, children, muted }: { icon: ComponentType<{ className?: string }>; label: string; children: ReactNode; muted?: boolean }) {
   return (
@@ -101,7 +102,7 @@ export function PhoneCard({ className }: { className?: string }) {
   const t = useDict(bk);
   const l = useL();
   const settings = useSettings();
-  const wa = (settings.whatsapp ?? '').replace(/\D/g, '');
+  const wa = waDigits(settings.whatsapp);
   const hours = l(settings.hours).split(/\s*·\s*/)[0];
   return (
     <div className={cn('relative overflow-hidden rounded-3xl bg-ink p-5 text-paper sm:p-6', className)}>

@@ -149,10 +149,11 @@ function PostEditor({ id }: { id: string }) {
   const [showErrors, setShowErrors] = useState(false);
   const allowNav = useUnsavedGuard(dirty && !readOnly);
 
-  const slugTaken = useMemo(() => !!draft.slug && posts.some((p) => p.id !== draft.id && p.slug === draft.slug), [posts, draft.slug, draft.id]);
+  // compared as it will be saved (Ctrl+S can save before the field is tidied on blur)
+  const slugTaken = useMemo(() => !!slugify(draft.slug) && posts.some((p) => p.id !== draft.id && p.slug === slugify(draft.slug)), [posts, draft.slug, draft.id]);
   const errors = {
     title: !draft.title.sq.trim() ? te('titleRequired') : undefined,
-    slug: !draft.slug.trim() ? te('slugRequired') : slugTaken ? te('slugTaken') : undefined,
+    slug: !slugify(draft.slug) ? te('slugRequired') : slugTaken ? te('slugTaken') : undefined,
   };
 
   /** Categories already used by other articles — one-click reuse keeps them consistent. */

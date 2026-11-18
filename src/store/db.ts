@@ -9,10 +9,29 @@ import { createSeed, DB_VERSION } from '@/data/seed';
 import { priceCart } from '@/lib/pricing';
 import { refundForLines } from '@/lib/orders';
 import { checkBooking, type BookingConflict } from '@/lib/bookings';
-import { isTracked } from '@/lib/inventory';
+import { isTracked, UNTRACKED_STOCK } from '@/lib/inventory';
+
+/** A counted product never reaches the "made to order" sentinel (999) by adding stock, or it would stop being counted. */
+const capStock = (n: number) => Math.min(UNTRACKED_STOCK - 1, n);
 import { lt } from '@/i18n';
 import { round2, uid } from '@/lib/utils';
 import { safeStorage } from './storage';
+import type { StateStorage } from 'zustand/middleware';
+import { BACKEND } from '@/lib/backend/api';
+import { PUBLIC_KEYS, useBackend } from '@/lib/backend/mode';
+
+/**
+ * Server-backed build: this browser keeps only the public catalogue (for a fast first screen on the next visit), and
+ * only once it came from the server — never the bundled demo data, never staff data (orders, customers…).
+ */
+const backendStorage: StateStorage = {
+  getItem: (name) => safeStorage.getItem(name),
+  setItem: (name, value) => {
+    const b = useBackend.getState();
+    if (b.mode === 'visitor' && b.loaded && b.ready) safeStorage.setItem(name, value);
+  },
+  removeItem: (name) => safeStorage.removeItem(name),
+};
 import { useUi } from './ui';
 
 export interface PlaceOrderInput {
@@ -183,7 +202,11 @@ function labelOf(item: unknown): string | undefined {
   for (const k of ['number', 'code', 'title', 'name', 'customerName']) {
     const v = o?.[k];
     if (typeof v === 'string' && v) return v;
-    if (v && typeof v === 'object' && typeof (v as L10n).me === 'string') return (v as L10n).me;
+    if (v && typeof v === 'object') {
+      const t = v as L10n;
+      const text = [t.sq, t.me, t.en].find((x) => typeof x === 'string' && x.trim());
+      if (text) return text;
+    }
   }
   return undefined;
 }
@@ -232,7 +255,12 @@ function buildOrder(s: Db, input: PlaceOrderInput, extra: { customLines?: DraftO
   });
   const prefix = s.settings.orderPrefix || 'SC-';
   // sequential numbers only (web orders carry a letter code — see webOrderCode)
-  const maxNum = s.orders.reduce((m, o) => Math.max(m, Number(/^\D*(\d+)$/.exec(o.number)?.[1] ?? 0)), 1000);
+  // the running number after the prefix — a prefix with digits ("MV2026-") must not hide it, or every order gets the same number
+  const seq = (n: string) => {
+    const rest = n.startsWith(prefix) ? n.slice(prefix.length) : n;
+    return Number(/^\d+$/.exec(rest)?.[0] ?? /^\D*(\d+)$/.exec(n)?.[1] ?? 0);
+  };
+  const maxNum = s.orders.reduce((m, o) => Math.max(m, seq(o.number)), 1000);
   const now = new Date().toISOString();
   const by = extra.by ?? 'web';
   const items: OrderLine[] = totals.lines.map((l) => ({
@@ -245,7 +273,8 @@ function buildOrder(s: Db, input: PlaceOrderInput, extra: { customLines?: DraftO
     qty: l.item.qty,
     options: l.optionsLabel,
     unitPrice: l.unitPrice,
-    installation: l.item.installation,
+    // Care+ only when the product still offers it (it may have been switched off after it went into the bag)
+    installation: !!l.item.installation && !!l.product.installation?.available,
     installationPrice: l.installationUnitPrice,
     lineTotal: l.lineTotal,
     discount: l.discount,
@@ -286,12 +315,18 @@ function buildOrder(s: Db, input: PlaceOrderInput, extra: { customLines?: DraftO
 
   /* stock, sold counters and 'sale' movements */
   const moves: InventoryMovement[] = [];
+  const stockTaken: Record<string, number> = {};
   const products = s.products.map((p) => {
     const qty = input.items.filter((i) => i.productId === p.id).reduce((n, i) => n + i.qty, 0);
     if (!qty) return p;
-    if (isTracked(p)) moves.push(movement(p.id, -Math.min(qty, p.stock), 'sale', by, undefined, order.number));
+    if (isTracked(p)) {
+      const taken = Math.min(qty, Math.max(0, p.stock));
+      stockTaken[p.id] = taken;
+      if (taken) moves.push(movement(p.id, -taken, 'sale', by, undefined, order.number));
+    }
     return { ...p, sold: p.sold + qty, stock: isTracked(p) ? Math.max(0, p.stock - qty) : p.stock };
   });
+  order.stockTaken = stockTaken;
 
   /* discount uses + live offer metrics */
   const usedIds = new Set(totals.applied.map((a) => a.id));
@@ -347,28 +382,43 @@ export const useDb = create<DbStore>()(
           const action: AuditAction = !prev ? 'create' : prev.status !== 'archived' && p.status === 'archived' ? 'archive' : prev.status !== 'active' && p.status === 'active' ? 'publish' : 'update';
           return {
             products: upsertIn(s.products, { ...p, updatedAt: new Date().toISOString() }),
-            audit: pushAudit(s, { action, object: 'product', objectId: p.id, detail: p.name.me }),
+            audit: pushAudit(s, { action, object: 'product', objectId: p.id, detail: p.name.sq || p.name.me }),
           };
         }),
       deleteProduct: (id) =>
         set((s) => {
           const p = s.products.find((x) => x.id === id);
-          return { products: s.products.filter((x) => x.id !== id), audit: p ? pushAudit(s, { action: 'delete', object: 'product', objectId: id, detail: p.name.me }) : s.audit };
+          return { products: s.products.filter((x) => x.id !== id), audit: p ? pushAudit(s, { action: 'delete', object: 'product', objectId: id, detail: p.name.sq || p.name.me }) : s.audit };
         }),
       duplicateProduct: (id) => {
         const src = get().products.find((p) => p.id === id);
         if (!src) return null;
+        // a second copy must not reuse the first copy's address or SKUs (variant SKUs included), or it cannot be saved
+        type Vx = { variants?: { id: string; sku: string }[] };
+        const all = get().products as (Product & Vx)[];
+        const srcV = (src as Product & Vx).variants ?? [];
+        const skus = new Set(all.flatMap((p) => [p.sku, ...(p.variants ?? []).map((v) => v.sku)]).filter(Boolean).map((x) => x.toUpperCase()));
+        let n = 1;
+        const suffix = () => (n === 1 ? '-K' : `-K${n}`);
+        while (skus.has(`${src.sku}${suffix()}`.toUpperCase()) || srcV.some((v) => v.sku && skus.has(`${v.sku}${suffix()}`.toUpperCase()))) n++;
+        let slug = `${src.slug}-kopija`;
+        for (let k = 2; all.some((p) => p.slug === slug); k++) slug = `${src.slug}-kopija-${k}`;
+        const named = (v: string, tag: string) => (v.trim() ? `${v} (${tag})` : '');
+        const clone = structuredClone(src) as Product & Vx;
         const copy: Product = {
-          ...structuredClone(src),
+          ...clone,
           id: uid('p'),
-          slug: `${src.slug}-kopija`,
-          sku: `${src.sku}-K`,
-          name: { me: `${src.name.me} (kopija)`, sq: `${src.name.sq} (kopje)`, en: `${src.name.en} (copy)` },
+          slug,
+          sku: `${src.sku}${suffix()}`,
+          ...(clone.variants ? { variants: clone.variants.map((v) => ({ ...v, id: uid('var'), sku: v.sku ? `${v.sku}${suffix()}` : v.sku })) } : {}),
+          name: { me: named(src.name.me, 'kopija'), sq: named(src.name.sq, 'kopje'), en: named(src.name.en, 'copy') },
           status: 'draft',
           sold: 0,
           createdAt: new Date().toISOString(),
         };
-        set((s) => ({ products: [copy, ...s.products], audit: pushAudit(s, { action: 'create', object: 'product', objectId: copy.id, detail: copy.name.me }) }));
+        // the original's old addresses stay the original's (otherwise an old link could open the copy)
+        delete (copy as Product & { redirects?: string[] }).redirects;
+        set((s) => ({ products: [copy, ...s.products], audit: pushAudit(s, { action: 'create', object: 'product', objectId: copy.id, detail: copy.name.sq || copy.name.me }) }));
         return copy.id;
       },
 
@@ -407,10 +457,11 @@ export const useDb = create<DbStore>()(
           if (status === 'cancelled' && (o.status === 'new' || o.status === 'confirmed' || o.status === 'processing')) {
             const moves: InventoryMovement[] = [];
             products = s.products.map((p) => {
-              const qty = o.items.filter((l) => l.productId === p.id).reduce((n, l) => n + l.qty, 0);
+              // what the order took from stock (older orders without the record: their quantity, as before)
+              const qty = o.stockTaken ? (o.stockTaken[p.id] ?? 0) : o.items.filter((l) => l.productId === p.id).reduce((n, l) => n + l.qty, 0);
               if (!qty || !isTracked(p)) return p;
               moves.push(movement(p.id, qty, 'correction', by, `Otkazana narudžba / Porosi e anuluar`, o.number));
-              return { ...p, stock: p.stock + qty };
+              return { ...p, stock: capStock(p.stock + qty) };
             });
             movements = [...moves, ...s.movements].slice(0, MOVEMENTS_MAX);
           }
@@ -564,7 +615,9 @@ export const useDb = create<DbStore>()(
         const p = s.products.find((x) => x.id === productId);
         if (!p || !delta) return null;
         const by = actorId(s);
-        const applied = Math.max(-p.stock, Math.round(delta));
+        // a counted product stops at 998 (999 means "made to order"); the movement records what was really added
+        const applied = Math.min(isTracked(p) ? UNTRACKED_STOCK - 1 - p.stock : Infinity, Math.max(-p.stock, Math.round(delta)));
+        if (!applied) return null;
         const mv = movement(productId, applied, reason, by, note, ref);
         set({
           products: s.products.map((x) => (x.id === productId ? { ...x, stock: Math.max(0, x.stock + applied), updatedAt: mv.at } : x)),
@@ -599,7 +652,7 @@ export const useDb = create<DbStore>()(
             const q = added.get(p.id);
             if (!q) return p;
             const line = nextLines.find((l) => l.productId === p.id)!;
-            return { ...p, stock: isTracked(p) ? p.stock + q : p.stock, incoming: Math.max(0, line.ordered - line.received - line.rejected), updatedAt: new Date().toISOString() };
+            return { ...p, stock: isTracked(p) ? capStock(p.stock + q) : p.stock, incoming: Math.max(0, line.ordered - line.received - line.rejected), updatedAt: new Date().toISOString() };
           }),
           movements: moves.length ? [...moves, ...s.movements].slice(0, MOVEMENTS_MAX) : s.movements,
           audit: total ? pushAudit(s, { action: 'receive', object: 'purchaseOrder', objectId: id, detail: `${po.number}: +${total}` }) : s.audit,
@@ -732,10 +785,10 @@ export const useDb = create<DbStore>()(
       },
     }),
     {
-      name: 'optika-db',
+      name: BACKEND ? 'mv-db' : 'optika-db',
       version: DB_VERSION,
-      storage: createJSONStorage(() => safeStorage),
-      partialize: (s) => Object.fromEntries(DATA_KEYS.map((k) => [k, s[k]])) as unknown as DbStore,
+      storage: createJSONStorage(() => (BACKEND ? backendStorage : safeStorage)),
+      partialize: (s) => Object.fromEntries((BACKEND ? PUBLIC_KEYS : DATA_KEYS).map((k) => [k, s[k]])) as unknown as DbStore,
       // Any schema change → start from fresh demo data.
       migrate: () => createSeed() as unknown as DbStore,
     },

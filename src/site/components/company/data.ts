@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import type { HomeSection, HomeSectionType } from '@/lib/types';
 import { scrollToSection } from '@/lib/utils';
 import { useDb } from '@/store/db';
+import { waDigits } from '@/lib/format';
 
 export type SectionData<T extends HomeSectionType> = Extract<HomeSection, { type: T }>['data'];
 
@@ -28,4 +29,4 @@ export const pad2 = (n: number) => String(n).padStart(2, '0');
 
 export const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, '')}`;
 
-export const waHref = (phone: string) => `https://wa.me/${phone.replace(/\D/g, '')}`;
+export const waHref = (phone: string) => `https://wa.me/${waDigits(phone)}`;

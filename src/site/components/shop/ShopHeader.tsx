@@ -176,22 +176,27 @@ export function AllHeader({ products, categories, sale, params }: { products: Pr
             <h1 className="display mt-3 text-[46px] leading-[1] text-ink sm:text-[68px]">
               <Accent text={sale ? t('saleTitle') : t('allTitle')} />
             </h1>
-            <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-muted sm:text-[17px]">{sale ? t('saleSubtitle', { pct: maxPct }) : t('allSubtitle')}</p>
+            <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-muted sm:text-[17px]">{sale ? (maxPct > 0 ? t('saleSubtitle', { pct: maxPct }) : t('saleSubtitleNone')) : t('allSubtitle')}</p>
           </div>
           {sale ? (
+            maxPct > 0 && (
             <div className="hidden h-36 w-36 rotate-[-8deg] place-items-center rounded-full bg-brand-600 text-center text-white shadow-[0_24px_50px_-20px_var(--color-brand-700)] lg:grid">
               <div>
                 <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-brand-100">{t('upTo')}</div>
                 <div className="display text-[44px] leading-none">−{maxPct}%</div>
               </div>
             </div>
+            )
           ) : (
             <dl className="hidden gap-10 lg:flex">
               {[
                 [products.length, t('statProducts')],
                 [categories.length, t('statCategories')],
                 [onSale.length, t('statSale')],
-              ].map(([v, label]) => (
+              ]
+                // "0 on sale" is not worth a headline
+                .filter(([v]) => (v as number) > 0)
+                .map(([v, label]) => (
                 <div key={label as string} className="text-right">
                   <dt className="sr-only">{label}</dt>
                   <dd className="display text-[44px] leading-none text-ink">{v}</dd>

@@ -10,11 +10,12 @@ import { common } from '@/i18n/common';
 import { useCategories, useSettings } from '@/store/hooks';
 import { useDb } from '@/store/db';
 import { isPromo, type NavNode } from '@/admin/components/menus/links';
-import { useNavMenu } from '@/admin/components/menus/useNav';
+import { useNavMenu, useSaleHref } from '@/admin/components/menus/useNav';
 import { cn, isFilled, scrollMotion } from '@/lib/utils';
 import { notifyNewsletter } from '@/lib/leads';
 import { CARD_PAYMENTS } from '@/lib/launch';
 import { isBookingHref, openBooking } from '@/site/components/utility/Booking';
+import { waDigits } from '@/lib/format';
 
 /** Footer-only copy (the shared footer strings live in `site`). */
 const F = defineDict({
@@ -39,7 +40,7 @@ export function Footer({ dark = false }: { dark?: boolean }) {
   const [email, setEmail] = useState('');
   const year = new Date().getFullYear();
   const ig = (settings.instagram ?? '').trim().replace(/^@/, '');
-  const wa = (settings.whatsapp ?? '').replace(/\D/g, '');
+  const wa = waDigits(settings.whatsapp);
   const pays = [
     ...(settings.payments.card && CARD_PAYMENTS ? ['VISA', 'Mastercard', 'Maestro'] : []),
     ...(settings.payments.bank ? [f('bank')] : []),
@@ -353,6 +354,7 @@ function useWide() {
 function DefaultColumns() {
   const t = useDict(site);
   const l = useL();
+  const saleTo = useSaleHref();
   const cats = useCategories();
   const allPages = useDb((s) => s.pages);
   const pages = useMemo(() => allPages.filter((p) => p.published && p.showInFooter), [allPages]);
@@ -368,11 +370,13 @@ function DefaultColumns() {
               </Link>
             </li>
           ))}
-          <li>
-            <Link to="/produktet?akcija=1" className="link-u font-semibold text-brand-200 hover:text-white">
-              {t('sale')}
-            </Link>
-          </li>
+          {saleTo && (
+            <li>
+              <Link to={saleTo} className="link-u font-semibold text-brand-200 hover:text-white">
+                {t('sale')}
+              </Link>
+            </li>
+          )}
           <li>
             <Link to="/provo-virtualisht" className={linkCls}>
               <TryOnLabel label={t('nav_tryon')} />

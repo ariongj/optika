@@ -123,7 +123,8 @@ export function DetailsForm({ askRx, summary, onSubmit }: { askRx: boolean; summ
               }}
               label={<span className="font-medium text-ink-soft">{t('consent')}</span>}
             />
-            <Link to="/faqe/privatesia" className="ml-8 mt-1 inline-block text-[12.5px] font-semibold text-muted underline-offset-2 hover:text-ink hover:underline">
+            {/* a new tab: following it here would throw away the chosen slot and the details typed so far */}
+            <Link to="/faqe/privatesia" target="_blank" rel="noopener" className="ml-8 mt-1 inline-block text-[12.5px] font-semibold text-muted underline-offset-2 hover:text-ink hover:underline">
               {t('privacy')}
             </Link>
           </div>

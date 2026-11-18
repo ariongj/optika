@@ -1,6 +1,7 @@
 // /koleksioni/:slug — public collection page (CMS proposal p.14). Only ACTIVE products of a PUBLISHED collection show;
 // staff can preview an unpublished one with ?preview=1 while logged into the CMS.
 import { useMemo } from 'react';
+import { useSaleHref } from '@/admin/components/menus/useNav';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { ArrowDown, ArrowRight, ArrowUpDown, ChevronDown, Compass, Eye, LayoutGrid, Percent, ShieldPlus, Tag } from 'lucide-react';
 import { ProductCard } from '@/site/components/ProductCard';
@@ -294,6 +295,7 @@ function OtherCollections({ current }: { current: string }) {
 /* Unknown / unpublished slug                                           */
 /* ================================================================== */
 function NotFoundCollection({ current }: { current?: string }) {
+  const saleTo = useSaleHref();
   const t = useDict(CT);
   const ts = useDict(site);
   const list = usePublishedCollections(current);
@@ -315,9 +317,11 @@ function NotFoundCollection({ current }: { current?: string }) {
             <ButtonLink to="/produktet" variant="dark" size="lg" iconRight={<ArrowRight className="h-4 w-4" />}>
               {ts('allProducts')}
             </ButtonLink>
-            <ButtonLink to="/produktet?akcija=1" variant="outline" size="lg" icon={<Percent className="h-4 w-4" />}>
-              {ts('sale')}
-            </ButtonLink>
+            {saleTo && (
+              <ButtonLink to={saleTo} variant="outline" size="lg" icon={<Percent className="h-4 w-4" />}>
+                {ts('sale')}
+              </ButtonLink>
+            )}
           </div>
         </div>
       </section>

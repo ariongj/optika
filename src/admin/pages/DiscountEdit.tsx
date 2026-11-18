@@ -1,6 +1,7 @@
 // Zbritja — rule editor (CMS proposal pp.21–27, mock-up p.27): method, value, scope, minimum with its explicit base,
 // BXGY / shipping specifics, audience, mutual combinations, usage limits, schedule in the store time zone and status.
 // Right column: "Përmbledhja" in plain language + "Provo me shportë shembull" (the real engine on the unsaved form).
+import { useUnsavedGuard } from '@/admin/components/editorial/hooks';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { toast } from 'sonner';
@@ -143,6 +144,8 @@ function Editor({ initial, isNew }: { initial: Discount; isNew: boolean }) {
   const setB = (patch: Partial<NonNullable<Discount['bxgy']>>) => setD((p) => ({ ...p, bxgy: { ...(p.bxgy ?? newDiscount('bxgy').bxgy!), ...patch } }));
 
   const dirty = isNew || JSON.stringify(d) !== JSON.stringify(saved);
+  // leaving with unsaved edits asks first (a new, untouched form leaves freely)
+  const allowNav = useUnsavedGuard(JSON.stringify(d) !== JSON.stringify(saved));
   const others = useMemo(() => discounts.filter((o) => o.id !== d.id), [discounts, d.id]);
   const allErrors = useMemo(() => {
     const e = validate(d, discounts, t);
@@ -207,11 +210,15 @@ function Editor({ initial, isNew }: { initial: Discount; isNew: boolean }) {
     setShowErrors(false);
     if (isNew) {
       toast.success(canPublish ? t('savedNew') : t('savedPending'), { description: out.method === 'code' ? out.code : out.title });
+      allowNav();
       navigate(`/admin/popusti/${out.id}`, { replace: true });
     } else toast.success(ta('saved'), { description: out.method === 'code' ? out.code : out.title });
   };
   const discard = () => {
-    if (isNew) return navigate('/admin/popusti');
+    if (isNew) {
+      allowNav();
+      return navigate('/admin/popusti');
+    }
     setD(saved);
     setZonesSome(zonesMode(saved) === 'some');
     setShowErrors(false);
@@ -221,12 +228,14 @@ function Editor({ initial, isNew }: { initial: Discount; isNew: boolean }) {
     const copy: Discount = { ...structuredClone(saved), id, title: `${saved.title}${t('copySuffix')}`, code: saved.method === 'code' ? generateCode({ ...saved, id }, discounts, saved.code) : undefined, status: 'draft', uses: 0, createdAt: new Date().toISOString() };
     upsert('discounts', copy);
     toast.success(t('duplicated'), { description: copy.method === 'code' ? copy.code : copy.title });
+    allowNav();
     navigate(`/admin/popusti/${id}`);
   };
   const remove = async () => {
     if (!(await confirmDialog({ title: t('deleteTitle', { name: saved.method === 'code' ? normalizeCode(saved.code) : saved.title }), text: t('deleteText'), confirmLabel: ta('delete'), danger: true }))) return;
     removeItem('discounts', saved.id);
     toast.success(t('deletedToast'), { description: saved.title });
+    allowNav();
     navigate('/admin/popusti');
   };
   const changeType = (k: DiscountKind) => {

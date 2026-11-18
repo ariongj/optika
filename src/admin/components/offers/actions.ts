@@ -63,7 +63,7 @@ export function useOfferActions() {
     [upsert, t, l],
   );
 
-  /** Delete after confirmation; linked slides/banners stay but are unlinked. Resolves true when deleted. */
+  /** Delete after confirmation; linked slides/banners stay but are unlinked and set to draft. Resolves true when deleted. */
   const del = useCallback(
     async (o: Offer) => {
       const ok = await confirmDialog({ title: t('deleteTitle', { name: l(o.name) }), text: t('deleteText'), danger: true });
@@ -71,7 +71,8 @@ export function useOfferActions() {
       const s = useDb.getState();
       for (const p of s.placements) {
         if (p.offerId !== o.id) continue;
-        const copy = { ...p };
+        // unlinked, an "active" slide would lose the offer's dates and go live on its own; keep it off until someone republishes it
+        const copy = { ...p, status: 'draft' as const };
         delete copy.offerId;
         upsert('placements', copy);
       }

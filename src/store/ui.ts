@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { CartItem, Lang, RoleId } from '@/lib/types';
 import { safeStorage } from './storage';
+import { BACKEND } from '@/lib/backend/api';
 
 export function cartKey(productId: string, options: Record<string, string>, installation: boolean) {
   const opts = Object.keys(options)
@@ -16,6 +17,8 @@ const norm = (code: string) => code.trim().replace(/\s+/g, '').toUpperCase();
 
 interface UiState {
   lang: Lang;
+  /** The visitor picked a language themselves (otherwise the shop's default language applies) */
+  langChosen: boolean;
   adminLang: Lang;
   cart: CartItem[];
   wishlist: string[];
@@ -32,7 +35,11 @@ interface UiState {
 
   setLang: (lang: Lang) => void;
   setAdminLang: (lang: Lang) => void;
-  addToCart: (item: Omit<CartItem, 'key'>) => void;
+  /** max: the most this product may have in the bag (maxOrderQty) — adding again never goes past it */
+  /** Returns how many were actually added (0 when the stock is already all in the cart). */
+  addToCart: (item: Omit<CartItem, 'key'>, max?: number) => number;
+  /** Drops lines whose product is gone or no longer on sale and trims quantities to what can be ordered. */
+  tidyCart: (allowed: Map<string, number>) => void;
   setQty: (key: string, qty: number) => void;
   setInstallation: (key: string, on: boolean) => void;
   removeFromCart: (key: string) => void;
@@ -53,12 +60,13 @@ interface UiState {
 
 const withCodes = (codes: string[]) => ({ codes, coupon: codes[0] ?? null });
 
-export const UI_VERSION = 2;
+export const UI_VERSION = 3;
 
 export const useUi = create<UiState>()(
   persist(
     (set) => ({
       lang: 'sq',
+      langChosen: false,
       adminLang: 'sq',
       cart: [],
       wishlist: [],
@@ -70,16 +78,49 @@ export const useUi = create<UiState>()(
       cartOpen: false,
       searchOpen: false,
 
-      setLang: (lang) => set({ lang }),
+      setLang: (lang) => set({ lang, langChosen: true }),
       setAdminLang: (adminLang) => set({ adminLang }),
-      addToCart: (item) =>
+      addToCart: (item, max = Infinity) => {
+        let added = 0;
         set((s) => {
           const key = cartKey(item.productId, item.options, item.installation);
+          // the same product with other options counts too: stock is per product
+          const others = s.cart.filter((c) => c.productId === item.productId && c.key !== key).reduce((n, c) => n + c.qty, 0);
+          const room = Math.max(0, max - others);
           const existing = s.cart.find((c) => c.key === key);
           if (existing) {
-            return { cart: s.cart.map((c) => (c.key === key ? { ...c, qty: c.qty + item.qty } : c)) };
+            const qty = Math.max(1, Math.min(room, existing.qty + item.qty));
+            added = Math.max(0, qty - existing.qty);
+            return qty === existing.qty ? {} : { cart: s.cart.map((c) => (c.key === key ? { ...c, qty } : c)) };
           }
-          return { cart: [...s.cart, { ...item, key }] };
+          if (room < 1) return {};
+          added = Math.min(room, item.qty);
+          return { cart: [...s.cart, { ...item, qty: added, key }] };
+        });
+        return added;
+      },
+      tidyCart: (allowed) =>
+        set((s) => {
+          const used = new Map<string, number>();
+          let changed = false;
+          const cart: CartItem[] = [];
+          for (const c of s.cart) {
+            const max = allowed.get(c.productId);
+            if (max === undefined) {
+              changed = true;
+              continue;
+            }
+            const room = max - (used.get(c.productId) ?? 0);
+            if (room < 1) {
+              changed = true;
+              continue;
+            }
+            const qty = Math.min(c.qty, room);
+            if (qty !== c.qty) changed = true;
+            used.set(c.productId, (used.get(c.productId) ?? 0) + qty);
+            cart.push(qty === c.qty ? c : { ...c, qty });
+          }
+          return changed ? { cart } : {};
         }),
       setQty: (key, qty) =>
         set((s) => ({
@@ -130,23 +171,27 @@ export const useUi = create<UiState>()(
       storage: createJSONStorage(() => safeStorage),
       partialize: (s) => ({
         lang: s.lang,
+        langChosen: s.langChosen,
         adminLang: s.adminLang,
         cart: s.cart,
         wishlist: s.wishlist,
         codes: s.codes,
         coupon: s.coupon,
         recentlyViewed: s.recentlyViewed,
-        adminAuthed: s.adminAuthed,
-        adminRole: s.adminRole,
+        // server-backed build: who is signed in comes from the session cookie, never from this browser's storage
+        ...(BACKEND ? {} : { adminAuthed: s.adminAuthed, adminRole: s.adminRole }),
       }),
       // v1 → v2: keep the shopper's cart, wishlist, history, language and login; the CMS now opens in
       // Albanian (sq) as owner; the single coupon becomes the first entry of `codes`.
       migrate: (persisted, version) => {
         const old = (persisted ?? {}) as Partial<UiState>;
         if (version >= UI_VERSION) return old as UiState;
+        // v2 → v3: a language other than the old fixed default was the visitor's own choice — keep it
+        if (version === 2) return { ...old, langChosen: !!old.lang && old.lang !== 'sq' } as UiState;
         const codes = old.coupon ? [norm(old.coupon)] : [];
         return {
           lang: old.lang ?? 'sq',
+          langChosen: !!old.lang && old.lang !== 'sq',
           adminLang: 'sq',
           cart: Array.isArray(old.cart) ? old.cart : [],
           wishlist: Array.isArray(old.wishlist) ? old.wishlist : [],

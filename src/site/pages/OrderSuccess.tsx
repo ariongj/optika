@@ -9,7 +9,7 @@ import { common } from '@/i18n/common';
 import { useDb } from '@/store/db';
 import { useSettings } from '@/store/hooks';
 import { zoneForCity } from '@/lib/pricing';
-import { dateTime, money, num, unitLabel } from '@/lib/format';
+import { dateTime, money, num, unitLabel, waDigits } from '@/lib/format';
 import type { Order, OrderLine } from '@/lib/types';
 import { cn, isFilled } from '@/lib/utils';
 import { usePageTitle } from '@/site/layout/SiteLayout';
@@ -319,7 +319,7 @@ function RxBox({ order, choice }: { order: Order; choice: RxChoice }) {
   const t = useDict(T);
   const tk = useDict(ck);
   const settings = useSettings();
-  const wa = settings.whatsapp?.replace(/[^\d]/g, '');
+  const wa = waDigits(settings.whatsapp);
   const msg = t('rxMsg', { n: order.number });
   return (
     <section className="rounded-3xl bg-sand/70 p-6 ring-1 ring-inset ring-line sm:p-8">
@@ -524,7 +524,7 @@ function Success({ order }: { order: Order }) {
             {/* the fastest way to reach the shop about this order, with its number filled in */}
             {settings.whatsapp && (
               <a
-                href={`https://wa.me/${settings.whatsapp.replace(/D/g, '')}?text=${encodeURIComponent(t('waOrderMsg', { n: order.number }))}`}
+                href={`https://wa.me/${waDigits(settings.whatsapp)}?text=${encodeURIComponent(t('waOrderMsg', { n: order.number }))}`}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex h-13 items-center gap-2.5 rounded-full bg-[#25d366] px-7 text-[15px] font-semibold text-[#04210f] transition hover:brightness-95"

@@ -12,8 +12,8 @@ import { site } from '@/i18n/site';
 import { useDb } from '@/store/db';
 import { useUi } from '@/store/ui';
 import { useActiveProducts, useCart, useSettings } from '@/store/hooks';
-import { allCities, zoneForCity } from '@/lib/pricing';
-import { money } from '@/lib/format';
+import { allCities, localDeliveryFor, zoneForCity } from '@/lib/pricing';
+import { EMAIL_RE, money } from '@/lib/format';
 import type { Customer, DeliveryMethod, Lang, PaymentMethod } from '@/lib/types';
 import { cn, scrollMotion } from '@/lib/utils';
 import { usePageTitle } from '@/site/layout/SiteLayout';
@@ -80,6 +80,8 @@ const T = defineDict({
     termsPre: 'Prihvatam ',
     termsLink: 'uslove korišćenja',
     termsDesc: 'Vaše podatke koristimo isključivo za obradu narudžbe, recept i dostavu.',
+    newsOptIn: 'Šaljite mi novosti i ponude e-poštom',
+    newsOptInDesc: 'Neobavezno. Odjava je moguća u svakom trenutku.',
     placeOrder: 'Potvrdi narudžbu',
     payNow: 'Plati {amount}',
     afterNote: 'Nakon narudžbe dobijate njen broj, a optičar vas zove da je potvrdi.',
@@ -142,6 +144,8 @@ const T = defineDict({
     termsPre: 'Pranoj ',
     termsLink: 'kushtet e përdorimit',
     termsDesc: 'Të dhënat tuaja i përdorim vetëm për përpunimin e porosisë, recetën dhe dërgesën.',
+    newsOptIn: 'Më dërgoni të reja dhe oferta me e-mail',
+    newsOptInDesc: 'Jo e detyrueshme. Mund të çregjistroheni kurdo.',
     placeOrder: 'Konfirmo porosinë',
     payNow: 'Paguaj {amount}',
     afterNote: 'Pas porosisë merrni numrin e saj, dhe optiku ju telefonon për ta konfirmuar.',
@@ -204,6 +208,8 @@ const T = defineDict({
     termsPre: 'I accept the ',
     termsLink: 'terms of use',
     termsDesc: 'We use your details only to process your order, your prescription and delivery.',
+    newsOptIn: 'Send me news and offers by e-mail',
+    newsOptInDesc: 'Optional. You can unsubscribe at any time.',
     placeOrder: 'Place order',
     payNow: 'Pay {amount}',
     afterNote: 'You get your order number right away, and our optician calls you to confirm it.',
@@ -265,8 +271,6 @@ function saveDraft(d: Draft | null) {
     /* storage unavailable — draft is a convenience only */
   }
 }
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 /* ------------------------------------------------------------------ */
 /* Small building blocks                                               */
@@ -341,9 +345,17 @@ export default function Checkout() {
   const [draft] = useState(loadDraft);
   const [form, setForm] = useState<FormState>(() => ({ ...EMPTY, ...draft.form }));
   const [delivery, setDelivery] = useState<DeliveryMethod>(draft.delivery ?? 'delivery');
+  // pickup only while a location offers it (Settings → Locations)
+  const pickupOn = settings.locations.some((x) => x.pickup);
+  useEffect(() => {
+    if (!pickupOn && delivery === 'pickup') setDelivery('delivery');
+  }, [pickupOn, delivery]);
+  const co = settings.checkout ?? { guest: true, phoneRequired: true, companyField: 'optional', marketingOptIn: false };
+  const companyOn = co.companyField === 'required' || (co.companyField !== 'hidden' && form.isCompany);
   const [payment, setPayment] = useState<PaymentMethod>(() => (draft.payment && methods.includes(draft.payment) ? draft.payment : methods[0]));
   const [rx, setRx] = useState<RxChoice>(() => (draft.rx && RX_CHOICES.includes(draft.rx) ? draft.rx : 'send'));
   const [terms, setTerms] = useState(false);
+  const [news, setNews] = useState(false);
   const [touched, setTouched] = useState<Partial<Record<FieldKey, boolean>>>({});
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -374,19 +386,22 @@ export default function Checkout() {
     const e: Partial<Record<FieldKey, string>> = {};
     if (!form.firstName.trim()) e.firstName = t('err_required');
     if (!form.lastName.trim()) e.lastName = t('err_required');
-    if (!form.phone.trim()) e.phone = t('err_required');
-    else if (form.phone.replace(/\D/g, '').length < 8) e.phone = t('err_phone');
+    // Settings → Checkout: the phone can be optional, the company block hidden or required
+    if (!form.phone.trim()) {
+      if (co.phoneRequired) e.phone = t('err_required');
+    } else if (form.phone.replace(/\D/g, '').length < 8) e.phone = t('err_phone');
     if (!form.email.trim()) e.email = t('err_required');
     else if (!EMAIL_RE.test(form.email.trim())) e.email = t('err_email');
-    if (!form.city) e.city = t('err_city');
+    // the city picks the delivery zone; for pickup in the shop it is not needed (and the list only has delivery cities)
+    if (addressRequired && !form.city) e.city = t('err_city');
     if (addressRequired && !form.address.trim()) e.address = t('err_required');
-    if (form.isCompany) {
+    if (companyOn) {
       if (!form.company.trim()) e.company = t('err_required');
       if (!/^\d{9}$/.test(form.pib.replace(/\s/g, ''))) e.pib = form.pib.trim() ? t('err_pib') : t('err_required');
     }
     if (!terms) e.terms = t('err_terms');
     return e;
-  }, [form, terms, addressRequired, t]);
+  }, [form, terms, addressRequired, t, co.phoneRequired, companyOn]);
 
   const err = (k: FieldKey) => (submitted || touched[k] ? errors[k] : undefined);
   const touch = (k: FieldKey) => () => setTouched((s) => (s[k] ? s : { ...s, [k]: true }));
@@ -414,8 +429,9 @@ export default function Checkout() {
       phone: form.phone.trim(),
       city: form.city,
       address: form.address.trim(),
-      ...(form.isCompany ? { company: form.company.trim(), pib: form.pib.replace(/\s/g, '') } : {}),
+      ...(companyOn ? { company: form.company.trim(), pib: form.pib.replace(/\s/g, '') } : {}),
       ...(note ? { note } : {}),
+      ...(co.marketingOptIn && news ? { marketing: true } : {}),
     };
     const order = placeOrder({ customer, items: cart, delivery, payment, codes, lang });
     notifyOrder(order); // e-mail to the shop (no-op until a form key is configured)
@@ -454,8 +470,12 @@ export default function Checkout() {
   /* ---------- delivery card copy ---------- */
   const minFee = Math.min(...settings.shippingZones.map((z) => z.fee));
   const homeFree = homeTotals.freeShippingReason;
-  const homeAside = homeFree ? (
+  // the shop's own town may have its own fee (Settings → Shipping → local delivery) — the total charges that one
+  const local = localDeliveryFor(settings, form.city);
+  const homeAside = homeFree || local?.fee === 0 ? (
     <span className="text-emerald-700">{tk('free')}</span>
+  ) : local ? (
+    <span className="tabular-nums">{money(local.fee, lang)}</span>
   ) : zone ? (
     <span className="tabular-nums">{money(zone.fee, lang)}</span>
   ) : (
@@ -557,8 +577,13 @@ export default function Checkout() {
                     id="f-phone"
                     type="tel"
                     inputMode="tel"
-                    label={t('phone')}
-                    required
+                    label={
+                      <>
+                        {t('phone')}
+                        {!co.phoneRequired && <span className="ml-1 font-medium text-muted">({t('optional')})</span>}
+                      </>
+                    }
+                    required={co.phoneRequired}
                     autoComplete="tel"
                     placeholder="+383 4_ ___ ___"
                     hint={t('phoneHint')}
@@ -581,7 +606,21 @@ export default function Checkout() {
                     onBlur={touch('email')}
                     error={err('email')}
                   />
-                  <Select id="f-city" label={t('city')} required autoComplete="address-level2" value={form.city} onChange={set('city')} onBlur={touch('city')} error={err('city')}>
+                  <Select
+                    id="f-city"
+                    label={
+                      <>
+                        {t('city')}
+                        {!addressRequired && <span className="ml-1 font-medium text-muted">({t('optional')})</span>}
+                      </>
+                    }
+                    required={addressRequired}
+                    autoComplete="address-level2"
+                    value={form.city}
+                    onChange={set('city')}
+                    onBlur={touch('city')}
+                    error={err('city')}
+                  >
                     <option value="">{t('chooseCity')}</option>
                     {cities.map((c) => (
                       <option key={c} value={c}>
@@ -608,16 +647,17 @@ export default function Checkout() {
                   />
                 </div>
 
-                <div className={cn('mt-6 rounded-2xl p-4 transition-colors', form.isCompany ? 'bg-sand/60' : 'bg-paper')}>
+                {co.companyField !== 'hidden' && (
+                <div className={cn('mt-6 rounded-2xl p-4 transition-colors', companyOn ? 'bg-sand/60' : 'bg-paper')}>
                   <div className="flex items-center justify-between gap-4">
                     <div className="min-w-0">
                       <div className="text-[14px] font-semibold text-ink">{t('asCompany')}</div>
                       <div className="text-[12.5px] text-muted">{t('asCompanyHint')}</div>
                     </div>
-                    <Switch checked={form.isCompany} onChange={(v) => setForm((f) => ({ ...f, isCompany: v }))} />
+                    {co.companyField !== 'required' && <Switch checked={form.isCompany} onChange={(v) => setForm((f) => ({ ...f, isCompany: v }))} />}
                   </div>
                   <AnimatePresence initial={false}>
-                    {form.isCompany && (
+                    {companyOn && (
                       <motion.div {...reveal} className="overflow-hidden">
                         <div className="grid gap-x-4 gap-y-5 pt-4 sm:grid-cols-[minmax(0,1fr)_200px]">
                           <Input id="f-company" label={t('company')} required autoComplete="organization" value={form.company} onChange={set('company')} onBlur={touch('company')} error={err('company')} />
@@ -627,6 +667,7 @@ export default function Checkout() {
                     )}
                   </AnimatePresence>
                 </div>
+                )}
 
                 <Textarea
                   wrapClassName="mt-5"
@@ -693,14 +734,16 @@ export default function Checkout() {
                     description={homeDesc}
                     aside={homeAside}
                   />
-                  <RadioCard
-                    checked={delivery === 'pickup'}
-                    onSelect={() => setDelivery('pickup')}
-                    icon={<Store className="h-5 w-5" />}
-                    title={tc('delivery_pickup')}
-                    description={`${settings.pickupAddress} · ${l(settings.hours)}`}
-                    aside={<span className="text-emerald-700">{tk('free')}</span>}
-                  />
+                  {pickupOn && (
+                    <RadioCard
+                      checked={delivery === 'pickup'}
+                      onSelect={() => setDelivery('pickup')}
+                      icon={<Store className="h-5 w-5" />}
+                      title={tc('delivery_pickup')}
+                      description={`${settings.pickupAddress} · ${l(settings.hours)}`}
+                      aside={<span className="text-emerald-700">{tk('free')}</span>}
+                    />
+                  )}
                 </div>
                 <AnimatePresence initial={false}>
                   {(delivery === 'pickup' || needsRx) && (
@@ -774,6 +817,12 @@ export default function Checkout() {
                   />
                   {err('terms') && <p className="mt-2 pl-8 text-xs font-medium text-red-600">{err('terms')}</p>}
                 </div>
+                {/* Settings → Checkout → marketing opt-in: unticked by default, never required */}
+                {co.marketingOptIn && (
+                  <div className="mt-3 rounded-2xl bg-paper p-4 ring-1 ring-inset ring-line">
+                    <Checkbox checked={news} onChange={setNews} label={t('newsOptIn')} description={t('newsOptInDesc')} />
+                  </div>
+                )}
                 <Button type="submit" size="lg" className="mt-5 w-full" loading={busy} iconRight={busy ? undefined : <ArrowRight className="h-4 w-4" />}>
                   {submitLabel}
                 </Button>

@@ -3,6 +3,7 @@ import { animate } from '@/lib/motion';
 import type { Product } from '@/lib/types';
 import { defaultOptions, packsForArea, qtyUnits, regularUnitPrice, unitPrice, WASTE } from '@/lib/pricing';
 import { round2 } from '@/lib/utils';
+import { maxOrderQty } from '@/lib/inventory';
 
 /** Default amount the pack calculator starts with (unit m2 only — not used by the optical catalogue). */
 const DEFAULT_AREA = 20;
@@ -44,7 +45,7 @@ const parseArea = (v: string) => {
 export function useConfigurator(product: Product): Configurator {
   const isArea = product.unit === 'm2' && !!product.packSize;
   const packSize = product.packSize ?? 1;
-  const maxQty = product.stock > 0 && product.stock < 999 ? Math.max(1, isArea ? Math.floor(product.stock / packSize) || 1 : product.stock) : 999;
+  const maxQty = maxOrderQty(product);
 
   const [options, setOptions] = useState<Record<string, string>>(() => defaultOptions(product));
   const [area, setAreaState] = useState(() => (isArea ? String(DEFAULT_AREA) : ''));

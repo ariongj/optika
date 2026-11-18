@@ -16,6 +16,7 @@ import { tr } from '@/site/components/booking/trackDict';
 import { TrackEmpty, TrackError, TrackResult } from '@/site/components/booking/TrackResult';
 import { useNow } from '@/site/components/booking/parts';
 import { scrollMotion } from '@/lib/utils';
+import { waDigits } from '@/lib/format';
 
 type Result = { kind: 'ok'; orderId: string } | { kind: 'notFound' } | { kind: 'mismatch' };
 
@@ -95,7 +96,7 @@ export default function OrderTracking() {
     numberInput.current?.select();
   };
 
-  const wa = (settings.whatsapp ?? '').replace(/\D/g, '');
+  const wa = waDigits(settings.whatsapp);
 
   return (
     <>

@@ -13,6 +13,8 @@ import { defaultOptions, discountPct, priceOnRequest } from '@/lib/pricing';
 import { cn } from '@/lib/utils';
 import { isLensPackage, labDays, rxReady } from './product/optical';
 import { RenderChip, isRender } from './smart/render';
+import { maxOrderQty } from '@/lib/inventory';
+import { useCartFull } from '@/site/components/product/useCartFull';
 
 const C = defineDict({
   me: { rxReady: 'Moguće sa dioptrijom', labDays: 'Laboratorija: {days} dana', request: 'Proverite dostupnost', tryIn: 'Besplatna proba u optici' },
@@ -41,6 +43,7 @@ export function ProductCard({ product, className, priority }: { product: Product
   const wish = useUi((s) => s.wishlist.includes(product.id));
   const toggleWishlist = useUi((s) => s.toggleWishlist);
   const addToCart = useUi((s) => s.addToCart);
+  const cartFull = useCartFull();
   const setCartOpen = useUi((s) => s.setCartOpen);
   const href = `/produkt/${product.slug}`;
   const simple = !product.quoteOnly && product.options.length === 0 && product.unit !== 'm2' && product.unit !== 'm';
@@ -51,7 +54,7 @@ export function ProductCard({ product, className, priority }: { product: Product
   const rx = !lensPack && !onReq && rxReady(product);
 
   const quickAdd = () => {
-    addToCart({ productId: product.id, qty: 1, options: defaultOptions(product), installation: false });
+    if (cartFull(addToCart({ productId: product.id, qty: 1, options: defaultOptions(product), installation: false }, maxOrderQty(product)), t('viewCart'))) return;
     toast.success(t('added'), { description: l(product.name), action: { label: t('viewCart'), onClick: () => setCartOpen(true) } });
   };
 

@@ -1,14 +1,16 @@
+import { maxOrderQty } from '@/lib/inventory';
+import { useCartFull } from '@/site/components/product/useCartFull';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type DragEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { toast } from 'sonner';
-import { ArrowUpRight, Box, CalendarCheck, Camera, CameraOff, CircleAlert, ImagePlus, Loader2, LockKeyhole, RefreshCw, Ruler, ScanFace, ShoppingBag, SlidersHorizontal, SwitchCamera, Trash2, Video } from 'lucide-react';
+import { ArrowUpRight, Box, CalendarCheck, Camera, CameraOff, CircleAlert, ImagePlus, Loader2, LockKeyhole, MessageSquareText, RefreshCw, Ruler, ScanFace, ShoppingBag, SlidersHorizontal, SwitchCamera, Trash2, Video } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import { Img } from '@/components/ui/misc';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { useDict, useL, useLang } from '@/i18n';
 import { useActiveProducts, useCategories } from '@/store/hooks';
 import { useUi } from '@/store/ui';
-import { defaultOptions, isOnSale, regularUnitPrice, unitPrice } from '@/lib/pricing';
+import { defaultOptions, isOnSale, priceOnRequest, regularUnitPrice, unitPrice } from '@/lib/pricing';
 import { money } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { TRY } from './dict';
@@ -144,6 +146,7 @@ export function TryOnStudio() {
   const l = useL();
   const lang = useLang();
   const addToCart = useUi((s) => s.addToCart);
+  const cartFull = useCartFull();
   const setCartOpen = useUi((s) => s.setCartOpen);
   const all = useActiveProducts();
   const categories = useCategories();
@@ -1047,12 +1050,13 @@ export function TryOnStudio() {
   };
 
   /* ---------------------------------------------------------------- cart */
-  const inStock = !!product && product.stock > 0;
+  // same rule as the product page: stock 0 is still sold (made to order); only price-on-request frames cannot go in the bag
+  const inStock = !!product && !priceOnRequest(product);
   const price = product ? unitPrice(product, options) : 0;
   const regular = product ? regularUnitPrice(product, options) : 0;
   const add = () => {
     if (!product || !inStock) return;
-    addToCart({ productId: product.id, qty: 1, options, installation: false });
+    if (cartFull(addToCart({ productId: product.id, qty: 1, options, installation: false }, maxOrderQty(product)), t('viewCart'))) return;
     toast.success(t('added'), {
       description: `${productName}${colorLabel ? ` · ${colorLabel}` : ''} · ${money(price, lang)}`,
       action: { label: t('viewCart'), onClick: () => setCartOpen(true) },
@@ -1426,6 +1430,7 @@ export function TryOnStudio() {
   );
 
   const round = 'grid h-12 w-12 shrink-0 place-items-center rounded-full border border-ink/15 bg-white/60 text-ink transition hover:border-ink/35 hover:bg-white active:scale-95';
+  const buyCls = 'inline-flex h-12 min-w-0 flex-1 select-none items-center justify-center gap-2 whitespace-nowrap rounded-full bg-brand-600 px-4 text-[14.5px] font-semibold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.14),0_10px_24px_-14px_var(--color-brand-700)] transition hover:bg-brand-700 active:scale-[0.98]';
   const disclosureRows: { icon: ReactNode; title: string; sub: string; body: ReactNode }[] = [
     {
       icon: <SlidersHorizontal className="h-4 w-4" />,
@@ -1490,23 +1495,20 @@ export function TryOnStudio() {
       </div>
 
       <div className="mt-3 flex items-center gap-2">
-        <button
-          type="button"
-          disabled={!inStock}
-          onClick={add}
-          className="inline-flex h-12 min-w-0 flex-1 select-none items-center justify-center gap-2 whitespace-nowrap rounded-full bg-brand-600 px-4 text-[14.5px] font-semibold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.14),0_10px_24px_-14px_var(--color-brand-700)] transition hover:bg-brand-700 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
-        >
-          {inStock ? (
-            <>
-              <ShoppingBag className="h-4 w-4 shrink-0 max-[379px]:hidden" />
-              <span className="truncate">
-                {t('addToCart')} <span className="font-medium text-white/70">·</span> <span className="tabular-nums">{priceText}</span>
-              </span>
-            </>
-          ) : (
-            t('outOfStock')
-          )}
-        </button>
+        {inStock ? (
+          <button type="button" onClick={add} className={buyCls}>
+            <ShoppingBag className="h-4 w-4 shrink-0 max-[379px]:hidden" />
+            <span className="truncate">
+              {t('addToCart')} <span className="font-medium text-white/70">·</span> <span className="tabular-nums">{priceText}</span>
+            </span>
+          </button>
+        ) : (
+          // price on request: the product page takes the availability request (the frame cannot go in the bag)
+          <Link to={`/produkt/${product.slug}`} className={buyCls}>
+            <MessageSquareText className="h-4 w-4 shrink-0 max-[379px]:hidden" />
+            <span className="truncate">{t('requestAvail')}</span>
+          </Link>
+        )}
         <Link to={`/produkt/${product.slug}`} aria-label={t('viewProduct')} title={t('viewProduct')} className={round}>
           <ArrowUpRight className="h-[18px] w-[18px]" />
         </Link>
@@ -1595,15 +1597,15 @@ export function TryOnStudio() {
             </div>
 
             <div className="mt-6 space-y-2.5 border-t border-line pt-5">
-              <Button size="lg" className="w-full" icon={<ShoppingBag className="h-4 w-4" />} disabled={!inStock} onClick={add}>
-                {inStock ? (
-                  <>
-                    {t('addToCart')} <span className="font-medium text-white/70">·</span> <span className="tabular-nums">{priceText}</span>
-                  </>
-                ) : (
-                  t('outOfStock')
-                )}
-              </Button>
+              {inStock ? (
+                <Button size="lg" className="w-full" icon={<ShoppingBag className="h-4 w-4" />} onClick={add}>
+                  {t('addToCart')} <span className="font-medium text-white/70">·</span> <span className="tabular-nums">{priceText}</span>
+                </Button>
+              ) : (
+                <ButtonLink to={`/produkt/${product.slug}`} size="lg" className="w-full" icon={<MessageSquareText className="h-4 w-4" />}>
+                  {t('requestAvail')}
+                </ButtonLink>
+              )}
               <div className="grid grid-cols-2 gap-2.5">
                 <Button variant="outline" icon={<Camera className="h-4 w-4" />} disabled={!canCapture} onClick={capture} className="px-3">
                   {t('capture')}

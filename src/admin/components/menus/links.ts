@@ -3,6 +3,7 @@
 // no admin UI imports here, so the storefront bundle stays light.
 import type { Category, CmsPage, Collection, L10n, Menu, MenuItem, MenuItemType, Offer, Product } from '@/lib/types';
 import { offerState } from '@/lib/offers';
+import { isOnSale } from '@/lib/pricing';
 import { contentState, type PageX } from '@/admin/components/editorial/meta';
 
 export interface LinkSources {
@@ -14,7 +15,7 @@ export interface LinkSources {
 }
 
 /** Why a link is not shown on the storefront. */
-export type LinkIssue = 'missing' | 'draft' | 'hidden' | 'scheduled' | 'expired' | 'paused' | 'archived' | 'invalid';
+export type LinkIssue = 'missing' | 'draft' | 'hidden' | 'scheduled' | 'expired' | 'paused' | 'archived' | 'invalid' | 'empty';
 
 export interface LinkEntity {
   title: L10n;
@@ -35,6 +36,23 @@ export interface ResolvedLink {
 export const LINK_TYPES: MenuItemType[] = ['page', 'product', 'collection', 'category', 'offer', 'url'];
 
 const EXTERNAL = /^(?:https?:|mailto:|tel:|\/\/)/i;
+
+/** The marked-down products listing ("Ofertat"). */
+export const SALE_PATH = '/produktet?akcija=1';
+/** The plain "all offers" link: it follows what is on offer now. A sale link with other filters is kept as written. */
+export const isSaleHref = (to: string) => /^\/produktet\/?\?akcija=1$/.test(to.trim());
+/** Any product listing narrowed to marked-down products ("/produktet?akcija=1&…", "/produktet/<category>?akcija=1"). */
+const SALE_FILTER = /^\/produktet(?:\/[^?#]*)?\?(?:[^#]*&)?akcija=1(?:[&#]|$)/;
+
+/**
+ * Where an "Ofertat" link leads right now: the marked-down products, else the live campaign page (offers discount at
+ * the till, so their products carry no sale price); null while nothing is on offer — the link is then not shown.
+ */
+export function saleHref(src: Pick<LinkSources, 'products' | 'offers'>, now = Date.now()): string | null {
+  if (src.products.some((p) => p.status === 'active' && isOnSale(p))) return SALE_PATH;
+  const live = src.offers.find((o) => offerState(o, now) === 'active');
+  return live ? `/oferta/${live.slug}` : null;
+}
 
 /** Validate a free URL target: in-app path ("/kontakt", "/produktet?akcija=1", "#rezervo") or http(s)/mailto/tel. */
 export function validUrl(target: string) {
@@ -82,6 +100,12 @@ export function resolveLink(item: Pick<MenuItem, 'type' | 'target'>, src: LinkSo
     case 'url':
     default: {
       if (!validUrl(key)) return { to: key, external: EXTERNAL.test(key), live: false, issue: 'invalid' };
+      if (isSaleHref(key)) {
+        const to = saleHref(src, now);
+        return to ? { to, external: false, live: true } : { to: key, external: false, live: false, issue: 'empty' };
+      }
+      // a filtered sale listing keeps its filters; with nothing marked down it would be an empty page
+      if (SALE_FILTER.test(key.trim()) && !src.products.some((p) => p.status === 'active' && isOnSale(p))) return { to: key, external: false, live: false, issue: 'empty' };
       return { to: key, external: EXTERNAL.test(key), live: true };
     }
   }
@@ -121,7 +145,7 @@ export function liveTree(items: MenuItem[], src: LinkSources, now = Date.now()):
 export const isVisual = (n: NavNode) => !!n.entity?.image && (n.type === 'category' || n.type === 'collection' || n.type === 'product' || n.type === 'offer');
 
 /** Sale / campaign links get the accent treatment. */
-export const isPromo = (n: Pick<NavNode, 'type' | 'to'>) => n.type === 'offer' || /[?&]akcija=1/.test(n.to);
+export const isPromo = (n: Pick<NavNode, 'type' | 'to'>) => n.type === 'offer' || /[?&]akcija=1/.test(n.to) || n.to.startsWith('/oferta/');
 
 /* ------------------------------------------------------------------ */
 /* Where an entity is linked from (pages list, page editor…)           */

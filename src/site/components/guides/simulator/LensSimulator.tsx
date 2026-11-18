@@ -25,6 +25,8 @@ import { SIM } from './dict';
 import type { LabelId, LabelMap, LensKind, ProgressiveLevel, Simulator, SimState } from './engine';
 import { bandOf, crossSection, lensStats, MATERIALS, materialOf, rightEye, solveLens, strongestPower, type LensFit } from './lensMath';
 import type { SceneId } from './plates';
+import { maxOrderQty } from '@/lib/inventory';
+import { useCartFull } from '@/site/components/product/useCartFull';
 
 const KINDS: { id: string; kind: LensKind }[] = [
   { id: 'p-lens-single', kind: 'single' },
@@ -94,6 +96,7 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
   const lang = useLang();
   const reduce = useReducedMotion();
   const addToCart = useUi((s) => s.addToCart);
+  const cartFull = useCartFull();
   const setCartOpen = useUi((s) => s.setCartOpen);
 
   const [mode, setMode] = useState<'lens' | 'view'>('view');
@@ -325,7 +328,7 @@ export function LensSimulator({ strength, onStrength, lenses }: { strength: Stre
 
   const add = () => {
     if (!offer) return;
-    addToCart({ productId: offer.product.id, qty: 1, options: offer.options, installation: false });
+    if (cartFull(addToCart({ productId: offer.product.id, qty: 1, options: offer.options, installation: false }, maxOrderQty(offer.product)), tl('viewCart'))) return;
     const opts = optionsLabel(offer.product, offer.options, lang);
     toast.success(tl('added'), {
       description: `${l(offer.product.name)}${opts ? ` · ${opts}` : ''} · ${fmt(unitPrice(offer.product, offer.options))}`,

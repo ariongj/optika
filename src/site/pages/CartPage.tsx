@@ -8,7 +8,7 @@ import { cartNeedsRx } from '@/site/components/product/optical';
 import { Accent } from '@/components/ui/misc';
 import { defineDict, useDict, useLang } from '@/i18n';
 import { useUi } from '@/store/ui';
-import { useActiveProducts, useCart, useSettings } from '@/store/hooks';
+import { useActiveProducts, useCart } from '@/store/hooks';
 import { money } from '@/lib/format';
 import type { Product } from '@/lib/types';
 import { CartLine, FreeShippingBar } from '@/site/layout/CartDrawer';
@@ -109,7 +109,6 @@ export default function CartPage() {
   const lang = useLang();
   const items = useItemsLabel();
   const navigate = useNavigate();
-  const settings = useSettings();
   const totals = useCart();
   const view = useTotalsView(totals, { showEstimateHint: true });
   const cart = useUi((s) => s.cart);
@@ -181,7 +180,7 @@ export default function CartPage() {
             <div className="mt-8 grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_420px] xl:gap-14">
               {/* Lines */}
               <section className="min-w-0">
-                <FreeShippingBar remaining={totals.freeShippingRemaining} threshold={totals.freeShippingThreshold ?? settings.freeShippingThreshold} reason={totals.freeShippingReason} />
+                <FreeShippingBar remaining={totals.freeShippingRemaining} threshold={totals.freeShippingThreshold} reason={totals.freeShippingReason} />
                 <div className="mt-4 rounded-3xl bg-white px-4 ring-1 ring-line sm:px-6">
                   <div className="divide-y divide-line">
                     {totals.lines.map((line) => (

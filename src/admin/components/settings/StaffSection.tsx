@@ -49,6 +49,7 @@ const ST = defineDict({
     removed: 'Član je uklonjen',
     cantSelf: 'Ne možete ukloniti sopstveni nalog',
     lastOwner: 'Mora postojati bar jedan aktivan vlasnik',
+    hasBookings: 'Ima zakazane termine ({n}) — prvo ih dodelite drugom članu tima u kalendaru',
     nameReq: 'Unesite ime',
     emailBad: 'Neispravna e-mail adresa',
     emailTaken: 'Ovaj e-mail već koristi drugi član',
@@ -112,6 +113,7 @@ const ST = defineDict({
     removed: 'Anëtari u hoq',
     cantSelf: 'Nuk mund ta hiqni llogarinë tuaj',
     lastOwner: 'Duhet të ketë të paktën një Pronar aktiv',
+    hasBookings: 'Ka termine të ardhshme ({n}) — në kalendar caktojini fillimisht një anëtari tjetër',
     nameReq: 'Shkruani emrin',
     emailBad: 'Adresë e-maili e pavlefshme',
     emailTaken: 'Ky email përdoret nga një anëtar tjetër',
@@ -175,6 +177,7 @@ const ST = defineDict({
     removed: 'Member removed',
     cantSelf: 'You can’t remove your own account',
     lastOwner: 'There must be at least one active owner',
+    hasBookings: 'Has upcoming appointments ({n}) — reassign them to someone else in the calendar first',
     nameReq: 'Enter a name',
     emailBad: 'Invalid e-mail address',
     emailTaken: 'Another member already uses this e-mail',
@@ -414,6 +417,7 @@ export function StaffSection() {
   const me = useCurrentStaff();
   const staff = useDb((s) => s.staff);
   const audit = useDb((s) => s.audit);
+  const bookings = useDb((s) => s.bookings);
   const remove = useDb((s) => s.remove);
   const [editing, setEditing] = useState<{ member: Staff | null; key: number } | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -435,6 +439,10 @@ export function StaffSection() {
   const del = async (m: Staff) => {
     if (m.id === me?.id) return toast.error(t('cantSelf'));
     if (m.role === 'owner' && m.active && staff.filter((x) => x.role === 'owner' && x.active).length <= 1) return toast.error(t('lastOwner'));
+    // their upcoming appointments would lose their column in the calendar (and nobody would see them)
+    const now = Date.now();
+    const upcoming = bookings.filter((b) => b.staffId === m.id && (b.status === 'pending' || b.status === 'confirmed') && Date.parse(b.start) > now).length;
+    if (upcoming) return toast.error(t('hasBookings', { n: upcoming }));
     const ok = await confirmDialog({ title: t('removeTitle', { name: m.name }), text: t('removeText'), confirmLabel: ta('delete'), danger: true });
     if (!ok) return;
     remove('staff', m.id);

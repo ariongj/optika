@@ -1,3 +1,4 @@
+import { useUnsavedGuard } from '@/admin/components/editorial/hooks';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { toast } from 'sonner';
@@ -235,6 +236,7 @@ export default function AppointmentServices() {
     setDraft(structuredClone(saved));
   }
   const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
+  useUnsavedGuard(dirty);
   const [editing, setEditing] = useState<Service | null>(null);
   const [exForm, setExForm] = useState({ date: '', dateTo: '', label: '', closed: true, from: '10:00', to: '14:00' });
   const [exError, setExError] = useState('');

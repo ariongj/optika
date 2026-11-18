@@ -14,6 +14,7 @@ import type { PricedLine } from '@/lib/pricing';
 import { cn } from '@/lib/utils';
 import { LineDiscounts } from '@/site/components/checkout/parts';
 import { needsRx } from '@/site/components/product/optical';
+import { maxOrderQty } from '@/lib/inventory';
 
 const D = defineDict({
   me: { carePer: '/ okvir', careHint: '12 meseci zaštite od loma i besplatna podešavanja', rxNote: 'Recept potvrđujemo nakon narudžbe', qty: 'Količina' },
@@ -21,12 +22,15 @@ const D = defineDict({
   en: { carePer: '/ frame', careHint: '12-month breakage cover and free adjustments', rxNote: 'We confirm your prescription after you order', qty: 'Quantity' },
 });
 
-export function FreeShippingBar({ remaining, threshold, reason, className }: { remaining: number; threshold: number; reason: string | null; className?: string }) {
+export function FreeShippingBar({ remaining, threshold, reason, className }: { remaining: number; threshold: number | null; reason: string | null; className?: string }) {
   const t = useDict(site);
   const lang = useLang();
-  const pct = reason ? 100 : Math.min(100, ((threshold - remaining) / threshold) * 100);
+  // no live free-shipping rule (paused or deleted in the CMS) and no other reason: nothing to promise
+  if (threshold == null && !reason) return null;
+  const reached = !!reason || !threshold || remaining <= 0;
+  const pct = reached ? 100 : Math.min(100, ((threshold - remaining) / threshold) * 100);
   // Care+ also makes delivery free — but once the threshold is met that is the clearer message
-  const text = reason === 'installation' && remaining > 0 ? t('freeWithInstallation') : reason ? t('freeShippingReached') : t('freeShippingLeft', { amount: money(remaining, lang) });
+  const text = reason === 'installation' && remaining > 0 ? t('freeWithInstallation') : reached ? t('freeShippingReached') : t('freeShippingLeft', { amount: money(remaining, lang) });
   return (
     <div className={cn('rounded-2xl bg-white p-4 ring-1 ring-line', className)}>
       <div className="flex items-center gap-2.5 text-[13px] font-semibold text-ink">
@@ -51,6 +55,9 @@ export function CartLine({ line, compact }: { line: PricedLine; compact?: boolea
   const setInstallation = useUi((s) => s.setInstallation);
   const setCartOpen = useUi((s) => s.setCartOpen);
   const p = line.product;
+  // stock is per product: the same frame on another line (other options) takes from it too
+  const others = useUi((s) => s.cart.reduce((n, c) => (c.productId === line.item.productId && c.key !== line.item.key ? n + c.qty : n), 0));
+  const maxQty = Math.max(1, maxOrderQty(p) - others);
   const isPack = p.unit === 'm2' && p.packSize;
   const rx = needsRx(p, line.item.options);
   return (
@@ -77,7 +84,7 @@ export function CartLine({ line, compact }: { line: PricedLine; compact?: boolea
         </div>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <QtyStepper size="sm" value={line.item.qty} onChange={(v) => setQty(line.item.key, v)} label={`${td('qty')} — ${l(p.name)}`} />
+            <QtyStepper size="sm" value={line.item.qty} onChange={(v) => setQty(line.item.key, v)} max={maxQty} label={`${td('qty')} — ${l(p.name)}`} />
             <span className="text-[12px] text-muted">{isPack ? `${tc('packs')} · ${num(line.units, lang)} ${unitLabel('m2', lang)}` : unitLabel(p.unit, lang)}</span>
           </div>
           <span className="text-[15px] font-bold tabular-nums text-ink">{money(line.lineTotal, lang)}</span>
@@ -203,7 +210,7 @@ export function CartDrawer() {
         />
       ) : (
         <div className="px-5 pb-4 pt-5 sm:px-6">
-          <FreeShippingBar remaining={totals.freeShippingRemaining} threshold={totals.freeShippingThreshold ?? settings.freeShippingThreshold} reason={totals.freeShippingReason} />
+          <FreeShippingBar remaining={totals.freeShippingRemaining} threshold={totals.freeShippingThreshold} reason={totals.freeShippingReason} />
           <div className="divide-y divide-line">
             {totals.lines.map((line) => (
               <CartLine key={line.item.key} line={line} />

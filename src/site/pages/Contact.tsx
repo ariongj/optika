@@ -14,6 +14,7 @@ import { defineDict, useDict, useL } from '@/i18n';
 import { useDb } from '@/store/db';
 import { useSettings } from '@/store/hooks';
 import { cn } from '@/lib/utils';
+import { waDigits } from '@/lib/format';
 
 const T = defineDict({
   me: {
@@ -143,7 +144,7 @@ export default function Contact() {
     .replace(/^@/, '')
     .replace(/\/.*$/, '');
   const instagram = `https://www.instagram.com/${igHandle}/`;
-  const waDigits = (settings.whatsapp ?? '').replace(/\D/g, '');
+  const waNumber = waDigits(settings.whatsapp);
   const hours = l(settings.hours)
     .split(/\s*·\s*/)
     .filter(Boolean);
@@ -204,7 +205,7 @@ export default function Contact() {
           </div>
 
           {/* Social strip */}
-          {(igHandle || waDigits) && (
+          {(igHandle || waNumber) && (
           <Reveal className="mt-5">
             <div className="relative flex flex-col gap-6 overflow-hidden rounded-3xl bg-ink p-6 text-white sm:p-8 lg:flex-row lg:items-center lg:justify-between">
               <div className="bg-grain pointer-events-none absolute inset-0" />
@@ -231,13 +232,13 @@ export default function Contact() {
                     <InstagramIcon className="h-4 w-4" />@{igHandle}
                   </a>
                 )}
-                {waDigits && (
+                {waNumber && (
                   <>
-                    <a href={`https://wa.me/${waDigits}`} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center gap-2 rounded-full border border-white/25 px-5 text-sm font-semibold text-white transition hover:bg-white/10">
+                    <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center gap-2 rounded-full border border-white/25 px-5 text-sm font-semibold text-white transition hover:bg-white/10">
                       <WhatsAppIcon className="h-4 w-4" />
                       {t('whatsapp')}
                     </a>
-                    <a href={`viber://chat?number=%2B${waDigits}`} className="inline-flex h-11 items-center gap-2 rounded-full border border-white/25 px-5 text-sm font-semibold text-white transition hover:bg-white/10">
+                    <a href={`viber://chat?number=%2B${waNumber}`} className="inline-flex h-11 items-center gap-2 rounded-full border border-white/25 px-5 text-sm font-semibold text-white transition hover:bg-white/10">
                       <ViberIcon className="h-4 w-4" />
                       {t('viber')}
                     </a>

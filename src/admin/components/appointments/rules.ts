@@ -54,6 +54,8 @@ export const GRID_TO = 20 * 60;
 
 export function defaultRules(now = new Date()): BookingRules {
   const y = now.getFullYear();
+  // the New Year closure runs 31 Dec – 2 Jan: on 1–2 January it is last year's one that is still on
+  const ny = now.getMonth() === 0 && now.getDate() <= 2 ? y - 1 : y;
   const nextFriday = addDays(now, ((4 - weekdayIndex(now) + 7) % 7) + 7);
   // 17 February — the next one still ahead
   const indepYear = now.getMonth() > 1 || (now.getMonth() === 1 && now.getDate() > 17) ? y + 1 : y;
@@ -71,7 +73,7 @@ export function defaultRules(now = new Date()): BookingRules {
     exceptions: [
       { id: 'ex-trajnim', date: dayKey(nextFriday), label: { me: 'Obuka osoblja — Optical Lab', sq: 'Trajnim i stafit — Optical Lab', en: 'Staff training — Optical Lab' }, closed: false, from: '10:00', to: '15:00' },
       { id: 'ex-pavaresia', date: `${indepYear}-02-17`, label: { me: 'Dan nezavisnosti', sq: 'Dita e Pavarësisë', en: 'Independence Day' }, closed: true },
-      { id: 'ex-nova', date: `${y}-12-31`, dateTo: `${y + 1}-01-02`, label: { me: 'Nova godina', sq: 'Viti i Ri', en: 'New Year' }, closed: true },
+      { id: 'ex-nova', date: `${ny}-12-31`, dateTo: `${ny + 1}-01-02`, label: { me: 'Nova godina', sq: 'Viti i Ri', en: 'New Year' }, closed: true },
     ],
     minNoticeHours: 12,
     cancelNoticeHours: 24,

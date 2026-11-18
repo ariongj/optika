@@ -10,6 +10,14 @@ import { isOpenOrder } from './orders';
 export const UNTRACKED_STOCK = 999;
 export const isTracked = (p: Pick<Product, 'stock'>) => p.stock < UNTRACKED_STOCK;
 
+/** Most a shopper can put in the bag: the stock on hand while there is some (in packs for area products); 999 when the
+ *  frame is made to order (stock 0) or not tracked. The product page, the bag steppers and every add-to-bag use this. */
+export function maxOrderQty(p: Pick<Product, 'stock' | 'unit' | 'packSize'>) {
+  if (!(p.stock > 0 && p.stock < UNTRACKED_STOCK)) return UNTRACKED_STOCK;
+  const isArea = p.unit === 'm2' && !!p.packSize;
+  return Math.max(1, isArea ? Math.floor(p.stock / (p.packSize ?? 1)) || 1 : p.stock);
+}
+
 export interface StockLevels {
   onHand: number;
   committed: number;

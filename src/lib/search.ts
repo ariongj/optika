@@ -18,8 +18,9 @@ export function searchProducts(products: Product[], categories: Category[], quer
   const scored: { p: Product; score: number }[] = [];
   for (const p of products) {
     const cat = categories.find((c) => c.id === p.categoryId);
-    const name = fold(`${p.name[lang]} ${p.name.me}`);
-    const hay = fold(`${p.name[lang]} ${p.name.me} ${p.name.en} ${p.short[lang]} ${p.sku} ${cat ? `${cat.name[lang]} ${cat.name.me}` : ''}`);
+    // every language's name counts ("dielli" on the English site, "sunglasses" on the Albanian one)
+    const name = fold(`${p.name[lang]} ${p.name.sq} ${p.name.en} ${p.name.me}`);
+    const hay = fold(`${name} ${p.short[lang]} ${p.sku} ${cat ? `${cat.name.sq} ${cat.name.en} ${cat.name.me}` : ''}`);
     let score = 0;
     let all = true;
     for (const term of terms) {

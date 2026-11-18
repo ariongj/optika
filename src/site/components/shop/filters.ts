@@ -189,6 +189,42 @@ export interface Filters {
 
 export const EMPTY_FILTERS: Filters = { cats: [], price: null, avail: [], feats: [], badges: [], colors: [], shapes: [] };
 
+/* Filters live in the address too (?forma=square,aviator&ngjyra=black&cmimi=49-120…), so Back from a product, a reload and a
+   shared link all show the same list. Values that are not known are dropped when reading. */
+const FILTER_KEYS = { cats: 'kat', price: 'cmimi', avail: 'gjendja', feats: 'veti', badges: 'etiketa', colors: 'ngjyra', shapes: 'forma' } as const;
+
+export function filtersToParams(f: Filters): Record<string, string | null> {
+  const list = (a: string[]) => (a.length ? a.join(',') : null);
+  return {
+    [FILTER_KEYS.cats]: list(f.cats),
+    [FILTER_KEYS.price]: f.price ? `${f.price[0]}-${f.price[1]}` : null,
+    [FILTER_KEYS.avail]: list(f.avail),
+    [FILTER_KEYS.feats]: list(f.feats),
+    [FILTER_KEYS.badges]: list(f.badges),
+    [FILTER_KEYS.colors]: list(f.colors),
+    [FILTER_KEYS.shapes]: list(f.shapes),
+  };
+}
+
+export function filtersFromParams(p: URLSearchParams): Filters {
+  const list = (k: string) => [...new Set((p.get(k) ?? '').split(',').map((v) => v.trim()).filter((v) => /^[\w-]{1,60}$/.test(v)))];
+  const only = <T extends string>(k: string, allowed: readonly T[]) => list(k).filter((v): v is T => (allowed as readonly string[]).includes(v));
+  const m = /^(\d{1,6}(?:\.\d{1,2})?)-(\d{1,6}(?:\.\d{1,2})?)$/.exec(p.get(FILTER_KEYS.price) ?? '');
+  const price: [number, number] | null = m && +m[1] <= +m[2] ? [+m[1], +m[2]] : null;
+  return {
+    cats: list(FILTER_KEYS.cats),
+    price,
+    avail: only(FILTER_KEYS.avail, AVAILS),
+    feats: only(FILTER_KEYS.feats, FEATURES),
+    badges: only(FILTER_KEYS.badges, BADGES),
+    colors: only(FILTER_KEYS.colors, FAMILY_ORDER),
+    shapes: list(FILTER_KEYS.shapes),
+  };
+}
+
+/** Same filters ⇔ same key (order inside each list is kept as chosen). */
+export const filtersKey = (f: Filters) => JSON.stringify(filtersToParams(f));
+
 export type Facet = 'cats' | 'price' | 'avail' | 'sale' | 'feats' | 'badges' | 'colors' | 'shapes';
 
 export interface MatchCtx {

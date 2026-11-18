@@ -76,6 +76,8 @@ export const common = defineDict({
     badge_bestseller: 'Najprodavanije',
     badge_premium: 'Premium',
     demoNotice: 'Demo verzija — narudžbe i plaćanja su simulirani.',
+    cartFull: 'Sve dostupne komade ovog proizvoda već imate u korpi.',
+    cartPartial: 'Dodato je samo {n} — ostatak zaliha je već u korpi.',
   },
   sq: {
     save: 'Ruaj',
@@ -151,6 +153,8 @@ export const common = defineDict({
     badge_bestseller: 'Më e shitura',
     badge_premium: 'Premium',
     demoNotice: 'Version demo — porositë dhe pagesat janë të simuluara.',
+    cartFull: 'Të gjitha copët në dispozicion të këtij produkti janë tashmë në shportë.',
+    cartPartial: 'U shtuan vetëm {n} — pjesa tjetër e stokut është tashmë në shportë.',
   },
   en: {
     save: 'Save',
@@ -226,5 +230,7 @@ export const common = defineDict({
     badge_bestseller: 'Bestseller',
     badge_premium: 'Premium',
     demoNotice: 'Demo version — orders and payments are simulated.',
+    cartFull: 'All the pieces we have of this product are already in your bag.',
+    cartPartial: 'Only {n} added — the rest of the stock is already in your bag.',
   },
 });

@@ -103,7 +103,9 @@ const when = (iso?: string) => (iso ? dateTime(iso, 'sq') : '');
 
 export function notifyOrder(o: Order) {
   const c = o.customer;
-  const lines = o.items.map((l) => `${l.qty} × ${l.name}${l.options ? ` (${l.options})` : ''} — ${eur(l.lineTotal)}`).join('\n');
+  const lines = o.items
+    .map((l) => `${l.qty} × ${l.name}${l.options ? ` (${l.options})` : ''} — ${eur(l.lineTotal)}${l.installation ? ` + Care+ ${eur(l.installationPrice * l.qty)}` : ''}`)
+    .join('\n');
   send({
     subject: `Porosi e re ${o.number} — ${eur(o.total)}`,
     from: `${c.firstName} ${c.lastName}`.trim() || 'Porosi nga uebi',
@@ -121,6 +123,7 @@ export function notifyOrder(o: Order) {
       ['Pagesa', PAYMENT[o.payment.method] ?? o.payment.method],
       ['Artikujt', lines],
       ['Nëntotali', eur(o.subtotal)],
+      ['Care+', o.installationTotal ? eur(o.installationTotal) : ''],
       ['Zbritja', o.discount ? `−${eur(o.discount)}` : ''],
       ['Transporti', eur(o.shipping)],
       ['Totali', eur(o.total)],

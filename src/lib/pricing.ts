@@ -151,6 +151,35 @@ function couponView(d: Discount, applied: AppliedDiscount): Coupon {
   };
 }
 
+const foldCity = (v: string) => v.normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase();
+
+/** Settings → Shipping → local delivery. `v: 2` = saved since checkout honours it. */
+export interface LocalDelivery {
+  enabled: boolean;
+  fee: number;
+  area: string;
+  v?: number;
+}
+
+/**
+ * The local-delivery setting as checkout uses it. Settings screens used to save `{enabled: true, fee: 0}` as their
+ * default while checkout ignored it; such an old, never-chosen value (no `v`, free) counts as off, so it cannot
+ * suddenly make delivery free.
+ */
+export function readLocalDelivery(settings: Settings): LocalDelivery | undefined {
+  const local = (settings as Settings & { ext?: { localDelivery?: Partial<LocalDelivery> } }).ext?.localDelivery;
+  if (!local) return undefined;
+  const legacyDefault = local.v === undefined && local.enabled === true && !(Number(local.fee) > 0);
+  return { enabled: !!local.enabled && !legacyDefault, fee: Number(local.fee) || 0, area: typeof local.area === 'string' ? local.area : '', ...(local.v !== undefined ? { v: local.v } : {}) };
+}
+
+/** Settings → Shipping → local delivery (the shop's own town), when it is on and this is that town. */
+export function localDeliveryFor(settings: Settings, city?: string): { fee: number } | null {
+  const local = readLocalDelivery(settings);
+  if (!local?.enabled || !city || !local.area.trim() || foldCity(local.area) !== foldCity(city)) return null;
+  return { fee: Math.max(0, local.fee) };
+}
+
 export function zoneForCity(settings: Settings, city?: string) {
   if (!city) return null;
   return settings.shippingZones.find((z) => z.cities.some((c) => c.toLowerCase() === city.toLowerCase())) ?? null;
@@ -160,11 +189,18 @@ export function allCities(settings: Settings) {
   return settings.shippingZones.flatMap((z) => z.cities).sort((a, b) => a.localeCompare(b, 'sr'));
 }
 
-/** The live automatic free-shipping rule (lowest amount threshold wins), if any. */
+/** The live automatic free-shipping rule (no minimum, then the lowest amount; item-count rules last), if any. */
 export function activeShippingRule(discounts: Discount[] | undefined, now?: Date | string | number): Discount | null {
   const list = (discounts ?? []).filter((d) => d.kind === 'shipping' && d.method === 'auto' && d.audience?.type !== 'segment' && discountState(d, now) === 'active');
-  list.sort((a, b) => (a.minimum.type === 'amount' ? a.minimum.value : 0) - (b.minimum.type === 'amount' ? b.minimum.value : 0));
+  const rank = (d: Discount) => (d.minimum.type === 'amount' ? d.minimum.value : d.minimum.type === 'qty' ? Infinity : 0);
+  list.sort((a, b) => rank(a) - rank(b));
   return list[0] ?? null;
+}
+
+/** Order amount from which a free-shipping rule applies: 0 = always, null = not an amount (none, or an item count). */
+export function freeShippingFrom(rule: Discount | null): number | null {
+  if (!rule) return null;
+  return rule.minimum.type === 'amount' ? rule.minimum.value : rule.minimum.type === 'qty' ? null : 0;
 }
 
 export interface Totals {
@@ -252,8 +288,10 @@ export function priceCart(cart: CartItem[], products: Product[], settings: Setti
   let fee = 0;
   let shippingEstimate = false;
   const zone = zoneForCity(settings, opts.city);
+  const local = localDeliveryFor(settings, opts.city);
   if (lines.length && opts.delivery !== 'pickup' && !hasInstallation) {
-    if (zone) fee = zone.fee;
+    if (local) fee = local.fee;
+    else if (zone) fee = zone.fee;
     else {
       fee = settings.shippingZones.length ? Math.min(...settings.shippingZones.map((z) => z.fee)) : 0;
       shippingEstimate = true;
@@ -292,7 +330,8 @@ export function priceCart(cart: CartItem[], products: Product[], settings: Setti
     else if (fee > 0 && shipping === 0 && res.applied.some((a) => a.kind === 'shipping')) freeShippingReason = 'threshold';
   }
   const rule = activeShippingRule(discounts, opts.now);
-  const freeShippingThreshold = rule && rule.minimum.type === 'amount' ? rule.minimum.value : rule ? 0 : null;
+  // an item-count rule has no amount to show progress towards (the engine still applies it)
+  const freeShippingThreshold = freeShippingFrom(rule);
   // threshold base = subtotal after product discounts (same as the engine)
   const freeShippingRemaining = freeShippingThreshold != null ? Math.max(0, round2(freeShippingThreshold - (subtotal - res.productDiscount))) : 0;
 

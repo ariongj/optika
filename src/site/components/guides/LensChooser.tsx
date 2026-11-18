@@ -1,3 +1,5 @@
+import { maxOrderQty } from '@/lib/inventory';
+import { useCartFull } from '@/site/components/product/useCartFull';
 import { memo, useEffect, useMemo, useRef, type ComponentType } from 'react';
 import { Link } from 'react-router';
 import { toast } from 'sonner';
@@ -225,6 +227,7 @@ function Recommendation({ rec, use, strength }: { rec: LensRec; use: LensUse; st
   const l = useL();
   const lang = useLang();
   const addToCart = useUi((s) => s.addToCart);
+  const cartFull = useCartFull();
   const setCartOpen = useUi((s) => s.setCartOpen);
   const { product: p, options } = rec;
   const price = unitPrice(p, options);
@@ -235,7 +238,7 @@ function Recommendation({ rec, use, strength }: { rec: LensRec; use: LensUse; st
   const indexLabel = rec.index != null ? rec.index.toFixed(2) : null;
 
   const add = () => {
-    addToCart({ productId: p.id, qty: 1, options, installation: false });
+    if (cartFull(addToCart({ productId: p.id, qty: 1, options, installation: false }, maxOrderQty(p)), t('viewCart'))) return;
     const opts = optionsLabel(p, options, lang);
     toast.success(t('added'), {
       description: `${l(p.name)}${opts ? ` · ${opts}` : ''} · ${fmt(price)}`,

@@ -1,6 +1,7 @@
 // Offer landing — hero: badge, serif title with *accent*, text, countdown to endsAt, CTA + code, photo with the
 // offer value disc and a note on how the discount is applied.
 import { ArrowDown, CalendarCheck, CalendarDays, Eye, Percent, Sparkles, Ticket } from 'lucide-react';
+import { useSaleHref } from '@/admin/components/menus/useNav';
 import { Accent, Badge, Img } from '@/components/ui/misc';
 import { Button, buttonClass } from '@/components/ui/Button';
 import { openBooking } from '@/site/components/utility/Booking';
@@ -13,6 +14,7 @@ import { longDate } from './model';
 import { useOT } from './i18n';
 
 export function OfferHero({ offer, discount, value, onCta }: { offer: Offer; discount?: Discount; value: string | null; onCta: () => void }) {
+  const saleTo = useSaleHref();
   const t = useOT();
   const l = useL();
   const lang = useLang();
@@ -36,7 +38,7 @@ export function OfferHero({ offer, discount, value, onCta }: { offer: Offer; dis
       <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(60%_70%_at_12%_0%,var(--color-sand)_0%,transparent_72%)]" />
       <div className="container-x grid items-center gap-10 pb-14 pt-8 sm:pt-10 lg:grid-cols-[1fr_1.02fr] lg:gap-16 lg:pb-20 lg:pt-12">
         <div className="min-w-0 animate-fade-up">
-          <Breadcrumbs items={[{ label: t('crumb'), to: '/produktet?akcija=1' }, { label: l(offer.name) }]} />
+          <Breadcrumbs items={[{ label: t('crumb'), to: saleTo && saleTo !== `/oferta/${offer.slug}` ? saleTo : '/produktet' }, { label: l(offer.name) }]} />
           <div className="mt-7 flex flex-wrap items-center gap-x-3 gap-y-2">
             {badge && (
               <Badge tone="brand" className="text-[12px]">

@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react';
+import { isSaleHref } from '@/admin/components/menus/links';
+import { useSaleHref } from '@/admin/components/menus/useNav';
 import { create } from 'zustand';
 import { Button, ButtonLink, buttonClass, type ButtonSize, type ButtonVariant } from '@/components/ui/Button';
 
@@ -55,7 +57,9 @@ export function CtaLink({
   onClick?: () => void;
   children: ReactNode;
 }) {
-  const href = to.trim();
+  // an "all offers" button follows what is on offer now (the sale listing can be empty while a campaign runs)
+  const saleTo = useSaleHref();
+  const href = isSaleHref(to) ? (saleTo ?? '/produktet') : to.trim();
   if (isBookingHref(href)) {
     return (
       <Button

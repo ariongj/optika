@@ -7,6 +7,11 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { safeStorage } from '@/store/storage';
+import type { StateStorage } from 'zustand/middleware';
+import { BACKEND } from '@/lib/backend/api';
+
+/** Server-backed build: customer profiles live on the server (synced), never in this browser's storage. */
+const noStorage: StateStorage = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
 import type { Lang } from '@/lib/types';
 import { uid } from '@/lib/utils';
 
@@ -198,7 +203,7 @@ export const useCustomerStore = create<State & Actions>()(
     {
       name: 'optika-customers',
       version: 1,
-      storage: createJSONStorage(() => safeStorage),
+      storage: createJSONStorage(() => (BACKEND ? noStorage : safeStorage)),
       partialize: (s) => ({ seed: s.seed, profiles: s.profiles, manual: s.manual, merges: s.merges, dismissed: s.dismissed }),
     },
   ),
