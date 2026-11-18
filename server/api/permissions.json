@@ -1,0 +1,343 @@
+{
+  "note": "Generated from src/lib/permissions.ts by scripts/export-permissions.mjs — do not edit by hand.",
+  "modules": [
+    "overview",
+    "orders",
+    "drafts",
+    "returns",
+    "products",
+    "collections",
+    "inventory",
+    "purchasing",
+    "customers",
+    "segments",
+    "offers",
+    "discounts",
+    "content",
+    "onlineStore",
+    "markets",
+    "analytics",
+    "contacts",
+    "quotes",
+    "appointments",
+    "integrations",
+    "settings",
+    "staff"
+  ],
+  "actions": [
+    "view",
+    "edit",
+    "publish",
+    "archive",
+    "delete",
+    "import",
+    "export",
+    "viewCost",
+    "refund",
+    "cancel"
+  ],
+  "roles": [
+    "owner",
+    "manager",
+    "catalog",
+    "orders",
+    "editor",
+    "marketing",
+    "reception"
+  ],
+  "matrix": {
+    "manager": {
+      "overview": [
+        "view"
+      ],
+      "orders": [
+        "view",
+        "edit",
+        "export",
+        "refund",
+        "cancel",
+        "archive"
+      ],
+      "drafts": [
+        "view",
+        "edit",
+        "delete",
+        "export"
+      ],
+      "returns": [
+        "view",
+        "edit",
+        "refund"
+      ],
+      "products": [
+        "view",
+        "edit",
+        "publish",
+        "archive",
+        "import",
+        "export",
+        "viewCost"
+      ],
+      "collections": [
+        "view",
+        "edit",
+        "publish",
+        "archive",
+        "export"
+      ],
+      "inventory": [
+        "view",
+        "edit",
+        "export",
+        "viewCost"
+      ],
+      "purchasing": [
+        "view",
+        "edit",
+        "export",
+        "viewCost"
+      ],
+      "customers": [
+        "view",
+        "edit",
+        "export"
+      ],
+      "segments": [
+        "view",
+        "edit"
+      ],
+      "offers": [
+        "view",
+        "edit",
+        "publish",
+        "archive",
+        "export",
+        "delete"
+      ],
+      "discounts": [
+        "view",
+        "edit",
+        "publish",
+        "archive",
+        "export",
+        "delete"
+      ],
+      "content": [
+        "view",
+        "edit",
+        "publish",
+        "archive",
+        "export"
+      ],
+      "onlineStore": [
+        "view",
+        "edit",
+        "publish",
+        "archive",
+        "export"
+      ],
+      "markets": [
+        "view"
+      ],
+      "analytics": [
+        "view",
+        "export"
+      ],
+      "contacts": [
+        "view",
+        "edit",
+        "archive",
+        "export"
+      ],
+      "quotes": [
+        "view",
+        "edit",
+        "publish",
+        "export"
+      ],
+      "appointments": [
+        "view",
+        "edit",
+        "cancel"
+      ],
+      "integrations": [
+        "view"
+      ],
+      "settings": [
+        "view"
+      ],
+      "staff": [
+        "view"
+      ]
+    },
+    "catalog": {
+      "overview": [
+        "view"
+      ],
+      "products": [
+        "view",
+        "edit",
+        "publish",
+        "archive",
+        "import",
+        "export",
+        "viewCost"
+      ],
+      "collections": [
+        "view",
+        "edit",
+        "publish",
+        "archive",
+        "export"
+      ],
+      "inventory": [
+        "view",
+        "edit",
+        "export",
+        "viewCost"
+      ],
+      "purchasing": [
+        "view",
+        "edit",
+        "viewCost"
+      ],
+      "content": [
+        "view"
+      ],
+      "onlineStore": [
+        "view"
+      ],
+      "analytics": [
+        "view"
+      ]
+    },
+    "orders": {
+      "overview": [
+        "view"
+      ],
+      "orders": [
+        "view",
+        "edit",
+        "export",
+        "cancel"
+      ],
+      "drafts": [
+        "view",
+        "edit"
+      ],
+      "returns": [
+        "view",
+        "edit"
+      ],
+      "products": [
+        "view"
+      ],
+      "inventory": [
+        "view",
+        "edit"
+      ],
+      "customers": [
+        "view",
+        "edit"
+      ],
+      "contacts": [
+        "view",
+        "edit"
+      ],
+      "quotes": [
+        "view"
+      ],
+      "appointments": [
+        "view",
+        "edit"
+      ]
+    },
+    "editor": {
+      "overview": [
+        "view"
+      ],
+      "products": [
+        "view"
+      ],
+      "collections": [
+        "view",
+        "edit"
+      ],
+      "content": [
+        "view",
+        "edit",
+        "publish",
+        "archive",
+        "delete"
+      ],
+      "onlineStore": [
+        "view",
+        "edit",
+        "publish"
+      ]
+    },
+    "marketing": {
+      "overview": [
+        "view"
+      ],
+      "products": [
+        "view"
+      ],
+      "collections": [
+        "view",
+        "edit"
+      ],
+      "customers": [
+        "view"
+      ],
+      "segments": [
+        "view",
+        "edit"
+      ],
+      "offers": [
+        "view",
+        "edit",
+        "archive",
+        "export"
+      ],
+      "discounts": [
+        "view",
+        "edit",
+        "archive",
+        "export"
+      ],
+      "content": [
+        "view",
+        "edit"
+      ],
+      "onlineStore": [
+        "view",
+        "edit"
+      ],
+      "analytics": [
+        "view",
+        "export"
+      ]
+    },
+    "reception": {
+      "overview": [
+        "view"
+      ],
+      "customers": [
+        "view"
+      ],
+      "contacts": [
+        "view",
+        "edit"
+      ],
+      "quotes": [
+        "view"
+      ],
+      "appointments": [
+        "view",
+        "edit",
+        "cancel"
+      ]
+    }
+  }
+}

@@ -1,0 +1,26 @@
+# Miftari Vision — pictures uploaded from the CMS. Nothing in this folder ever runs as code: only image files are
+# served, as plain files, with their real type. (No rewrite rules here, so the web root's HTTPS redirect still applies.)
+Options -Indexes -ExecCGI
+DirectoryIndex disabled
+<IfModule mod_php.c>
+  php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+  php_flag engine off
+</IfModule>
+<IfModule mod_php8.c>
+  php_flag engine off
+</IfModule>
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8 .phar .pl .py .cgi .asp .aspx .jsp .shtml
+RemoveType .php .phtml .php3 .php4 .php5 .php7 .php8 .phar
+<FilesMatch ".">
+  Require all denied
+</FilesMatch>
+<FilesMatch "^[a-z0-9_-]+\.(?:jpe?g|png|webp|gif|avif)$">
+  Require all granted
+</FilesMatch>
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Content-Security-Policy "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox"
+  Header set Content-Disposition "inline"
+</IfModule>
