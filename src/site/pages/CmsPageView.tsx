@@ -14,6 +14,7 @@ import { useSettings } from '@/store/hooks';
 import { date } from '@/lib/format';
 import { leadsLive } from '@/lib/leads';
 import { cn } from '@/lib/utils';
+import { BACKEND } from '@/lib/backend/api';
 
 const T = defineDict({
   me: {
@@ -147,7 +148,8 @@ export default function CmsPageView() {
           <article className="min-w-0 max-w-[740px] animate-fade-up">
             <Markdown source={l(page.body)} className={PROSE} />
             {/* the privacy notice says whether forms are actually delivered (a Web3Forms key in the build) */}
-            {page.slug === 'privatesia' && (
+            {/* (the server-backed shop receives its forms itself: its notice says so in the text) */}
+            {page.slug === 'privatesia' && !BACKEND && (
               <p className="mt-12 flex gap-3 rounded-2xl bg-white p-5 text-[15px] leading-relaxed text-ink-soft ring-1 ring-line">
                 <Send className="mt-1 h-4 w-4 shrink-0 text-brand-600" />
                 <span>{t(leadsLive ? 'forms_on' : 'forms_off')}</span>

@@ -6,7 +6,7 @@
 //    written to this browser's storage); edits go back through the sync engine (./sync).
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import type { Booking, Db, Inquiry, Order } from '@/lib/types';
+import type { Booking, Db, Discount, Inquiry, Order } from '@/lib/types';
 import { useDb } from '@/store/db';
 import { safeStorage } from '@/store/storage';
 import { DB_VERSION } from '@/data/seed';
@@ -51,9 +51,30 @@ export const useMine = create<MineState>()(
   ),
 );
 
-/** Put an order the visitor just placed (or looked up) into the shop data the pages read. */
+/** Put an order the visitor just placed into the shop data the pages read, and keep it on this device. */
 export function showOwnOrder(o: Order) {
-  useMine.getState().addOrder(o);
+  if (dataMode() === 'visitor') {
+    useMine.getState().addOrder(o);
+    useDb.setState((s) => ({ orders: upsert(s.orders, o) }));
+  } else {
+    // staff trying the shop while signed in: the order reaches the CMS data through the change feed
+    void import('./sync').then((m) => m.pull()).catch(() => {});
+  }
+}
+
+/* Rules of discount codes the shopper typed (the public snapshot only lists advertised codes): kept across refreshes. */
+const typedCodes = new Map<string, Discount>();
+export function rememberDiscount(d: Discount) {
+  typedCodes.set(d.id, d);
+}
+export function forgetDiscounts() {
+  typedCodes.clear();
+}
+/**
+ * An order looked up on the tracking page: shown for this visit only. Unlike an order placed here it is not kept on
+ * the device — the look-up may have been made on someone else's computer.
+ */
+export function showLookedUpOrder(o: Order) {
   if (dataMode() === 'visitor') useDb.setState((s) => ({ orders: upsert(s.orders, o) }));
 }
 export function showOwnInquiry(q: Inquiry) {
@@ -99,7 +120,12 @@ function applyPublic(pub: PublicSnapshot) {
       (next as Record<string, unknown>)[k] = v;
     }
     // settings: the server leaves out staff-only keys — keep the app defaults for those
-    if (pub.settings) next.settings = { ...s.settings, ...pub.settings };
+    if (pub.settings) next.settings = { ...s.settings, ...pub.settings, demoBanner: false };
+    // a code the shopper typed stays applied when the catalogue is fetched again
+    if (pub.discounts && typedCodes.size) {
+      const listed = new Set(pub.discounts.map((d) => d.id));
+      next.discounts = [...pub.discounts, ...[...typedCodes.values()].filter((d) => !listed.has(d.id))];
+    }
     // booked times arrive without names; this device's own bookings keep theirs
     if (pub.bookings) {
       const own = new Map(mine.bookings.map((b) => [b.id, b]));
@@ -155,8 +181,13 @@ export async function bootData(path: string): Promise<void> {
   if (cms || staffHint()) {
     const user = await checkSession();
     if (user) {
-      const { startStaffData } = await import('./sync');
-      await startStaffData();
+      try {
+        const { startStaffData } = await import('./sync');
+        await startStaffData();
+      } catch {
+        // signed in, but the shop could not be loaded (connection, server): the CMS shows "try again", never sample data
+        useBackend.setState({ mode: 'staff', loaded: false, failed: true });
+      }
       return;
     }
   }

@@ -14,6 +14,8 @@ import { S } from './strings';
 import { ToggleRow } from './fields';
 import type { SecProps } from './model';
 import { Block, Gate, Panel } from './ui';
+import { BACKEND } from '@/lib/backend/api';
+import { ServerDataSection } from './ServerDataSection';
 
 /** Lists every export must contain (v1 shape — older backups stay importable; v2 lists are filled from fresh demo data). */
 const ARRAY_KEYS = ['categories', 'products', 'orders', 'inquiries', 'coupons', 'pages', 'posts', 'projects', 'media', 'home'] as const;
@@ -74,7 +76,12 @@ function ActionRow({ icon, title, text, action, danger }: { icon: ReactNode; tit
   );
 }
 
-export function DemoDataSection({ s, set, readOnly, onReplaced }: SecProps & { onReplaced: (settings: Settings) => void }) {
+/** Settings → Data: the demo's browser storage here; the server-backed build shows backups of the server's data. */
+export function DemoDataSection(props: SecProps & { onReplaced: (settings: Settings) => void }) {
+  return BACKEND ? <ServerDataSection onReplaced={props.onReplaced} /> : <DemoData {...props} />;
+}
+
+function DemoData({ s, set, readOnly, onReplaced }: SecProps & { onReplaced: (settings: Settings) => void }) {
   const t = useDict(T, 'admin');
   const ts = useDict(S, 'admin');
   const lang = useLang('admin');

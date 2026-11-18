@@ -1,7 +1,7 @@
 // Konfigurimet — a separate settings space (proposal pp.39–42, mock-up p.41):
 // sub-navigation on the left, one section per route (/admin/konfiguracija/:section), one shared draft + SaveBar.
 import { useUnsavedGuard } from '@/admin/components/editorial/hooks';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import { Navigate, useParams } from 'react-router';
 import { toast } from 'sonner';
 import { Lock } from 'lucide-react';
@@ -31,6 +31,9 @@ import { NotificationsSection } from '@/admin/components/settings/NotificationsS
 import { PrivacySection } from '@/admin/components/settings/PrivacySection';
 import { ActivitySection } from '@/admin/components/settings/ActivitySection';
 import { DemoDataSection } from '@/admin/components/settings/DemoDataSection';
+
+// server-backed build only (the section is not registered in the demo): loaded when first opened
+const AccessSection = lazy(() => import('@/admin/components/settings/AccessSection').then((m) => ({ default: m.AccessSection })));
 
 const P = defineDict({
   me: { invalidEmail: 'E-mail adresa nije ispravna' },
@@ -130,6 +133,7 @@ export default function SettingsPage() {
     switch (def.id) {
       case 'general': return <GeneralSection {...props} />;
       case 'staff': return <StaffSection />;
+      case 'access': return <Suspense fallback={null}><AccessSection /></Suspense>;
       case 'payments': return <PaymentsSection {...props} />;
       case 'checkout': return <CheckoutSection {...props} />;
       case 'shipping': return <ShippingSection {...props} />;

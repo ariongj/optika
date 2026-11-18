@@ -36,6 +36,12 @@ export const tr = defineDict({
     mmText: 'Za ovaj broj narudžbe uneti e-mail ili telefon nije isti kao u narudžbi. Upotrebite kontakt koji ste ostavili pri kupovini.',
     mm1: 'Pokušajte sa e-mailom umesto telefona (ili obrnuto).',
     mm2: 'Telefon možete upisati sa ili bez +383.',
+    // server-backed build: the shop's server gives one answer for an unknown number and for a wrong contact
+    nmTitle: 'Nismo pronašli narudžbu sa ovim podacima',
+    nmText: 'Broj narudžbe i e-mail ili telefon moraju oba da se poklapaju sa narudžbom. Proverite ih i pokušajte ponovo.',
+    failTitle: 'Nismo uspeli da proverimo narudžbu',
+    failNetwork: 'Nismo uspeli da kontaktiramo prodavnicu. Pokušajte ponovo za koji trenutak.',
+    failRate: 'Previše pretraga za kratko vreme. Sačekajte nekoliko minuta i pokušajte ponovo, ili nas pozovite.',
     tryAgain: 'Pokušajte ponovo',
 
     orderNo: 'Narudžba {n}',
@@ -144,6 +150,11 @@ export const tr = defineDict({
     mmText: 'Për këtë numër porosie, e-maili ose telefoni i shkruar nuk është i njëjtë me atë të porosisë. Përdorni kontaktin që vendosët gjatë blerjes.',
     mm1: 'Provoni me e-mailin në vend të telefonit (ose anasjelltas).',
     mm2: 'Telefonin mund ta shkruani me ose pa +383.',
+    nmTitle: 'Nuk gjetëm porosi me këto të dhëna',
+    nmText: 'Numri i porosisë dhe e-maili ose telefoni duhet të përputhen të dy me porosinë. Kontrollojini dhe provoni sërish.',
+    failTitle: 'Nuk mundëm ta kontrollojmë porosinë',
+    failNetwork: 'Nuk arritëm ta kontaktojmë dyqanin. Ju lutemi provoni sërish pas pak.',
+    failRate: 'Shumë kërkime në pak kohë. Prisni disa minuta dhe provoni sërish, ose na telefononi.',
     tryAgain: 'Provo sërish',
 
     orderNo: 'Porosia {n}',
@@ -252,6 +263,11 @@ export const tr = defineDict({
     mmText: 'For this order number, the e-mail or phone you entered isn’t the one on the order. Use the contact you gave at checkout.',
     mm1: 'Try your e-mail instead of your phone (or the other way round).',
     mm2: 'You can type the phone with or without +383.',
+    nmTitle: 'We found no order with these details',
+    nmText: 'The order number and the e-mail or phone must both match the order. Check them and try again.',
+    failTitle: 'We could not check the order',
+    failNetwork: 'We could not reach the shop. Please try again in a moment.',
+    failRate: 'Too many look-ups in a short time. Wait a few minutes and try again, or call us.',
     tryAgain: 'Try again',
 
     orderNo: 'Order {n}',

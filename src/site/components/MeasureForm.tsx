@@ -5,7 +5,7 @@ import { Input, Select, Textarea } from '@/components/ui/Field';
 import { defineDict, lt, useDict, useLang } from '@/i18n';
 import { notifyInquiry } from '@/lib/leads';
 import { site } from '@/i18n/site';
-import { useDb } from '@/store/db';
+import { useDb, type InquiryInput } from '@/store/db';
 import { useSettings } from '@/store/hooks';
 import { allCities } from '@/lib/pricing';
 import type { InquiryType, Service } from '@/lib/types';
@@ -13,6 +13,9 @@ import { cn } from '@/lib/utils';
 import { dayKey, longDate, timeRange } from '@/admin/components/appointments/dates';
 import { EMAIL_RE } from '@/lib/format';
 import { readRules, webSlot } from '@/admin/components/appointments/rules';
+import { BACKEND } from '@/lib/backend/api';
+import { loadPublic } from '@/lib/backend/data';
+import { formErrorKey, isSlotRefusal, sendBooking, sendInquiry, visitorErrors } from '@/lib/backend/visitor';
 
 /** Form copy that is specific to the optician (the shared field labels live in `site`). */
 const F = defineDict({
@@ -138,6 +141,9 @@ export function MeasureForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sent, setSent] = useState<{ name: string; phone: string; slot?: { start: string; durationMin: number } } | null>(null);
   const [busy, setBusy] = useState(false);
+  // server-backed build: why the request could not be sent (shown above the button until the next attempt)
+  const tv = useDict(visitorErrors);
+  const [sendError, setSendError] = useState('');
   const set = (k: 'name' | 'phone' | 'email' | 'city' | 'company' | 'date' | 'message') => (e: { target: { value: string } }) => setForm((x) => ({ ...x, [k]: e.target.value }));
   // today on the shop's calendar (toISOString is UTC: before 01:00 it still said yesterday)
   const today = dayKey(Date.now());
@@ -176,8 +182,20 @@ export function MeasureForm({
     return { start: res.booking.start, durationMin: res.booking.durationMin };
   };
 
+  /** Server-backed build: the first free slot on the preferred day by this page's calendar (the server checks it again). */
+  const planSlot = (day: string) => {
+    const st = useDb.getState();
+    const service = pickService(st.services, isServiceKey(form.service) ? form.service : '');
+    const slot = service ? webSlot(day, service, { bookings: st.bookings, services: st.services, rules: readRules(st.settings) }) : undefined;
+    if (!service || !slot?.staffId) return undefined;
+    const store = st.settings.locations?.find((x) => x.isDefault)?.id;
+    return { serviceId: service.id, staffId: slot.staffId, start: slot.start, location: service.location ?? store ?? 'onsite' };
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // one request at a time (Enter in a field while the first is still on its way)
+    if (BACKEND && busy) return;
     const err: Record<string, string> = {};
     if (!form.name.trim()) err.name = t('f_required');
     if (!form.phone.trim()) err.phone = t('f_required');
@@ -188,12 +206,13 @@ export function MeasureForm({
     setErrors(err);
     if (Object.keys(err).length) return;
     setBusy(true);
-    await new Promise((r) => setTimeout(r, 650));
+    // the demo imitates the wait for a server; the server-backed build has a real one
+    if (!BACKEND) await new Promise((r) => setTimeout(r, 650));
     const service = form.service ? serviceLabel(form.service) : '';
     // The prescription answer has no field of its own on the inquiry — it travels in the message.
     const rx = exam && form.rx ? `${f('rx_note')}: ${f(form.rx === 'yes' ? 'rx_yes' : 'rx_no')}` : '';
     const message = [rx, form.message.trim()].filter(Boolean).join('\n');
-    const inq = addInquiry({
+    const request: InquiryInput = {
       type,
       name: form.name.trim(),
       phone: form.phone.trim(),
@@ -205,7 +224,39 @@ export function MeasureForm({
       message: message || '—',
       preferredDate: form.date || undefined,
       ...(tags?.length ? { tags } : {}),
-    });
+    };
+    if (BACKEND) {
+      // The request goes to the shop's server. Success is only shown once the server has saved it.
+      setSendError('');
+      try {
+        const plan = exam && form.date ? planSlot(form.date) : undefined;
+        let booked: { start: string; durationMin: number } | undefined;
+        if (plan) {
+          try {
+            const r = await sendBooking(request, { ...plan, note: [service, message].filter(Boolean).join(' — ') || undefined, ...(form.city ? { city: form.city } : {}) });
+            booked = { start: r.booking.start, durationMin: r.booking.durationMin };
+          } catch (e2) {
+            // the slot went meanwhile: the request still goes in without one and the team schedules it by hand
+            // (what a full or closed day does) — the calendar on this page is fetched again
+            if (!isSlotRefusal(e2)) throw e2;
+            void loadPublic();
+            await sendInquiry(request);
+          }
+        } else await sendInquiry(request);
+        setSent({ name: form.name.trim().split(' ')[0], phone: form.phone.trim(), slot: booked });
+        onDone?.();
+      } catch (e1) {
+        const key = formErrorKey(e1);
+        if (key === 'sv_name') setErrors({ name: t('f_required') });
+        else if (key === 'sv_phone') setErrors({ phone: t('f_invalidPhone') });
+        else if (key === 'sv_email') setErrors({ email: t('f_invalidEmail') });
+        else setSendError(tv(key));
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+    const inq = addInquiry(request);
     const slot = exam && form.date ? bookSlot(inq.id, form.date, [service, message].filter(Boolean).join(' — ')) : undefined;
     const product = productId ? useDb.getState().products.find((x) => x.id === productId) : undefined;
     notifyInquiry(inq, { booking: slot, product: product ? lt(product.name, 'sq') : undefined }); // e-mail to the shop
@@ -311,6 +362,11 @@ export function MeasureForm({
         )}
         <Textarea label={t('f_message')} rows={3} value={form.message} onChange={set('message')} placeholder={placeholder} error={errors.message} wrapClassName="sm:col-span-2" />
       </div>
+      {sendError && (
+        <p role="alert" className="mt-5 rounded-xl bg-red-50 px-3.5 py-2.5 text-[13.5px] font-medium leading-snug text-red-700 ring-1 ring-inset ring-red-600/15">
+          {sendError}
+        </p>
+      )}
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-muted sm:max-w-[55%]">{t('f_privacy')}</p>
         <Button type="submit" size="lg" loading={busy} iconRight={<Send className="h-4 w-4" />}>

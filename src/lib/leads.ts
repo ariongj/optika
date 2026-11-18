@@ -4,18 +4,27 @@
 //
 // The key is set at build time: VITE_WEB3FORMS_KEY (e.g. a GitHub Actions variable) or SHOP_FORM_KEY below.
 // It must be in the build, not only in the CMS — CMS settings live in the editor's own browser.
+//
+// Server-backed build (VITE_BACKEND=1): the shop's own server receives every order, booking, request and sign-up
+// (lib/backend/visitor), so nothing here is sent anywhere — the key is ignored even if the build has one, and every
+// notify* call and the outbox are no-ops.
 import type { Booking, Inquiry, Order } from './types';
 import { dateTime, money } from './format';
+import { BACKEND } from './backend/api';
 
 /** Paste the Web3Forms access key the shop received by e-mail here (or set VITE_WEB3FORMS_KEY). */
 const SHOP_FORM_KEY = '';
 
-const KEY = (import.meta.env.VITE_WEB3FORMS_KEY as string | undefined)?.trim() || SHOP_FORM_KEY;
-const ENDPOINT = 'https://api.web3forms.com/submit';
+const KEY = BACKEND ? '' : (import.meta.env.VITE_WEB3FORMS_KEY as string | undefined)?.trim() || SHOP_FORM_KEY;
+// (on the build flag itself, so the server-backed build does not even carry the address)
+const ENDPOINT = import.meta.env.VITE_BACKEND === '1' ? '' : 'https://api.web3forms.com/submit';
 const OUTBOX = 'optika-outbox';
 
-/** True once leads are actually delivered to the shop (a key is configured). */
-export const leadsLive = !!KEY;
+/** How what visitors submit reaches the shop: its own server, e-mail through Web3Forms, or not at all (demo without a key). */
+export const leadsVia: 'server' | 'web3forms' | 'none' = BACKEND ? 'server' : KEY ? 'web3forms' : 'none';
+
+/** True once leads are actually delivered to the shop (a key is configured, or the shop's own server receives them). */
+export const leadsLive = leadsVia !== 'none';
 
 interface Lead {
   subject: string;

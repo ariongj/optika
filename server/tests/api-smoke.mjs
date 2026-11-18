@@ -361,12 +361,35 @@ r = await visitor.post('track', { number: ord.number.toLowerCase(), contact: ord
 ok(r.ok && r.order.number === ord.number && !('notes' in r.order) && !(r.order.timeline ?? []).some((e) => 'by' in e || 'note' in e), 'tracking shows a limited view', r.order && Object.keys(r.order));
 r = await visitor.post('track', { number: ord.number, contact: 'someone@else.test' });
 ok(r.status === 404, 'tracking needs the matching contact', r);
+// the number as people type it: spaces instead of the dash, any case
+r = await visitor.post('track', { number: ` ${ord.number.replace(/[^a-z0-9]+/gi, ' ').toLowerCase()} `, contact: ord.customer.email });
+ok(r.ok && r.order.number === ord.number, 'tracking reads the number loosely', r);
+// the customer's upcoming appointments come with the order: booked with the order's e-mail, listed without names or notes
+const trackStart = new Date(Date.now() + 2 * 86400000);
+trackStart.setUTCHours(2, 0, 0, 0);
+r = await visitor.post('booking', {
+  inquiry: { type: 'measurement', name: 'Track Test', phone: '049 555 222', email: ord.customer.email.toUpperCase(), message: 'x' },
+  booking: { serviceId: svc.id, staffId: svc.staffIds[0], start: trackStart.toISOString(), location: 'onsite', note: 'only for staff' },
+});
+ok(r.ok && r.booking?.status === 'pending', 'booking with the tracked customer’s e-mail', r);
+r = await visitor.post('track', { number: ord.number, contact: ord.customer.email });
+const trackedBooking = (r.bookings ?? []).find((x) => x.start === trackStart.toISOString());
+ok(
+  Array.isArray(r.bookings) && r.bookings.length <= 4 && trackedBooking?.status === 'pending' && trackedBooking.serviceId === svc.id &&
+    ['customerName', 'phone', 'email', 'note', 'staffId', 'inquiryId'].every((k) => !(k in trackedBooking)),
+  'tracking lists the customer’s upcoming appointments (when and what only)',
+  r.bookings,
+);
+r = await visitor.post('track', { number: ord.number, contact: 'someone@else.test' });
+ok(r.status === 404 && !('bookings' in r), 'no appointments without the matching contact', r);
 
 /* ---------- orders (needs the pricing port) ---------- */
 if (health.pricing) {
-  const prod = pub.products.find((p) => p.price > 0 && !p.quoteOnly && (p.stock ?? 0) > 3 && (p.stock ?? 0) < 900 && !(p.options?.length));
-  const item = { productId: prod.id, qty: 1, options: {} };
-  const input = { customer: { firstName: 'Ana', lastName: 'Test', email: 'ana@example.test', phone: '044 987 654', city: 'Mitrovicë', address: 'Rr. 1' }, items: [item], delivery: 'pickup', payment: 'cash', codes: [], lang: 'sq' };
+  const prod = pub.products.find((p) => p.price > 0 && !p.quoteOnly && (p.stock ?? 0) > 3 && (p.stock ?? 0) < 900);
+  // the first value of every option, as the storefront's defaultOptions does
+  const options = Object.fromEntries((prod.options ?? []).filter((o) => o.values?.[0]).map((o) => [o.id, o.values[0].id]));
+  const item = { productId: prod.id, qty: 1, options };
+  const input = { customer: { firstName: 'Ana', lastName: 'Test', email: 'ana@example.test', phone: '044 987 654', city: 'Mitrovicë', address: 'Rr. 1' }, items: [item], delivery: 'pickup', payment: 'cod', codes: [], lang: 'sq' };
   r = await visitor.post('order', { input, total: 1 });
   ok(r.status === 409 && r.error === 'price_changed' && typeof r.total === 'number', 'order with a wrong total → price_changed', r);
   const total = r.total;

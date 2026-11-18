@@ -19,6 +19,8 @@ export interface BackendState {
   ready: boolean;
   /** The last public snapshot could not be fetched (offline / server down) */
   offline: boolean;
+  /** Staff are signed in but the shop's data could not be fetched: the CMS must not open on the bundled sample data */
+  failed: boolean;
 }
-export const useBackend = create<BackendState>(() => ({ mode: 'visitor', loaded: false, ready: true, offline: false }));
+export const useBackend = create<BackendState>(() => ({ mode: 'visitor', loaded: false, ready: true, offline: false, failed: false }));
 export const dataMode = (): DataMode => useBackend.getState().mode;

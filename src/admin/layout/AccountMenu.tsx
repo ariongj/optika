@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { AnimatePresence, motion } from '@/lib/motion';
-import { Check, ChevronDown, ExternalLink, LogOut, Settings } from 'lucide-react';
+import { Check, ChevronDown, ExternalLink, LogOut, Settings, UserCog } from 'lucide-react';
 import { useDict, useL } from '@/i18n';
 import { adm } from '@/admin/i18n';
 import { useUi } from '@/store/ui';
@@ -13,10 +13,14 @@ import { cn, initials } from '@/lib/utils';
 import type { RoleId } from '@/lib/types';
 import { AdminLangToggle } from './AdminLangToggle';
 import { DROPDOWN, useDismiss } from './popover';
+import { BACKEND } from '@/lib/backend/api';
+import { useSession } from '@/lib/backend/session';
 
 /**
  * Account menu (top bar, right): current staff member, the demo ROLE SWITCHER ("Shiko si: Pronar / Menaxher / …",
  * PDF p.42 — the sidebar, routes and buttons follow `can(role, …)`), view site, settings and logout.
+ * In the server-backed build the person and the role come from the signed-in account: no switcher, a link to
+ * "my account" (password, 2-step sign-in), and signing out ends the session on the server.
  */
 export function AccountMenu() {
   const t = useDict(adm, 'admin');
@@ -32,7 +36,20 @@ export function AccountMenu() {
   const close = useCallback(() => setOpen(false), []);
   useDismiss(open, close, ref);
 
-  const name = staff?.name ?? 'Miftari Vision Admin';
+  const account = useSession((s) => s.user);
+  const name = (BACKEND && account?.name) || (staff?.name ?? 'Miftari Vision Admin');
+  const email = BACKEND ? account?.email : staff?.email;
+  const [leaving, setLeaving] = useState(false);
+  const leave = async () => {
+    if (leaving) return;
+    setLeaving(true);
+    // send what is still on its way to the server before the session ends
+    const { flush, hasUnsaved } = await import('@/lib/backend/sync');
+    await flush().catch(() => {});
+    if (hasUnsaved() && !window.confirm(t('unsavedLeave'))) return setLeaving(false);
+    const { signOut } = await import('@/lib/backend/session');
+    await signOut();
+  };
   const switchTo = (r: RoleId) => {
     if (r !== role) {
       setRole(r);
@@ -75,11 +92,12 @@ export function AccountMenu() {
                 <span className="min-w-0 flex-1">
                   <span className="block text-[11px] text-muted">{t('signedInAs')}</span>
                   <span className="block truncate text-[14px] font-semibold text-ink">{name}</span>
-                  {staff?.email && <span className="block truncate text-[12px] text-muted">{staff.email}</span>}
+                  {email && <span className="block truncate text-[12px] text-muted">{email}</span>}
+                  {BACKEND && <span className="mt-0.5 block truncate text-[11.5px] font-semibold text-ink-soft">{l(ROLE_META[role].name)}</span>}
                 </span>
               </div>
 
-              <div className="px-2 pb-2 pt-3">
+              {!BACKEND && <div className="px-2 pb-2 pt-3">
                 <div className="px-2 pb-1.5">
                   <div className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-ink">{t('viewAs')}:</div>
                   <div className="text-[11.5px] text-muted">{t('viewAsHint')}</div>
@@ -108,7 +126,7 @@ export function AccountMenu() {
                     );
                   })}
                 </ul>
-              </div>
+              </div>}
 
               <div className="border-t border-black/[0.08] px-4 py-3 sm:hidden">
                 <div className="mb-2 text-[12px] font-medium text-muted">{t('adminLang')}</div>
@@ -119,6 +137,11 @@ export function AccountMenu() {
                 <a href={href('/')} target="_blank" rel="noreferrer" onClick={close} className="flex h-9 items-center gap-2.5 rounded-lg px-2 text-[13px] font-medium text-ink hover:bg-[#f5f5f5]">
                   <ExternalLink className="h-4 w-4 text-muted" /> {t('viewSite')}
                 </a>
+                {BACKEND && (
+                  <Link to="/admin/llogaria" onClick={close} className="flex h-9 items-center gap-2.5 rounded-lg px-2 text-[13px] font-medium text-ink hover:bg-[#f5f5f5]">
+                    <UserCog className="h-4 w-4 text-muted" /> {t('myAccount')}
+                  </Link>
+                )}
                 {can('settings') && (
                   <Link to="/admin/konfiguracija" onClick={close} className="flex h-9 items-center gap-2.5 rounded-lg px-2 text-[13px] font-medium text-ink hover:bg-[#f5f5f5]">
                     <Settings className="h-4 w-4 text-muted" /> {t('nav_settings')}
@@ -126,7 +149,9 @@ export function AccountMenu() {
                 )}
                 <button
                   type="button"
+                  disabled={leaving}
                   onClick={() => {
+                    if (BACKEND) return void leave();
                     close();
                     logout();
                     navigate('/admin/login');

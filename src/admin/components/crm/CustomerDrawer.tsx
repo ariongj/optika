@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { Suspense, lazy, useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { toast } from 'sonner';
 import {
@@ -20,6 +20,10 @@ import { cx } from '@/admin/components/customers/i18n';
 import type { CustomerRecord, DuplicatePair } from '@/admin/components/customers/model';
 import { ActionMenu, Avatar, CHANNEL_ICON, ConsentState, Gate, KpiStrip, LangChip, SectionTitle, TagEditor } from '@/admin/components/customers/parts';
 import { CHANNELS, useCustomerStore, type Channel, type Consent } from '@/admin/components/customers/store';
+import { BACKEND } from '@/lib/backend/api';
+
+// server-backed build only: the consent record kept by the server (loaded when a profile is first opened)
+const ConsentHistory = lazy(() => import('@/admin/components/access/ConsentHistory').then((m) => ({ default: m.ConsentHistory })));
 
 const T = defineDict({
   me: {
@@ -589,16 +593,26 @@ export function CustomerDrawer({
                     )}
                   </div>
                   <ConsentState consent={cs} className="shrink-0" />
-                  <Gate allowed={canEdit} reason={tx('noPermission')}>
-                    <Button variant="outline" shape="rounded" size="xs" className="w-[92px]" disabled={!canEdit} onClick={() => setConsent(ch, cs.status === 'subscribed' ? 'unsubscribed' : 'subscribed')}>
-                      {cs.status === 'subscribed' ? t('unsubscribe') : t('subscribe')}
-                    </Button>
-                  </Gate>
+                  {/* server-backed build: a change is recorded below, with a note of how it was given */}
+                  {!BACKEND && (
+                    <Gate allowed={canEdit} reason={tx('noPermission')}>
+                      <Button variant="outline" shape="rounded" size="xs" className="w-[92px]" disabled={!canEdit} onClick={() => setConsent(ch, cs.status === 'subscribed' ? 'unsubscribed' : 'subscribed')}>
+                        {cs.status === 'subscribed' ? t('unsubscribe') : t('subscribe')}
+                      </Button>
+                    </Gate>
+                  )}
                 </li>
               );
             })}
           </ul>
         </Section>
+
+        {/* The server's consent record (legal history; entries are only ever added) */}
+        {BACKEND && (
+          <Suspense fallback={null}>
+            <ConsentHistory key={c.key} customer={c} canEdit={canEdit} noPermission={tx('noPermission')} />
+          </Suspense>
+        )}
 
         {/* Orders */}
         <Section title={t('history')} aside={c.count > 0 ? <span className="text-[12px] text-muted">{tx(`orders_${pluralForm(c.count, lang)}`, { n: c.count })}</span> : undefined}>

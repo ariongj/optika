@@ -17,6 +17,7 @@ import { useDb } from '@/store/db';
 import { useCan, useCurrentStaff } from '@/store/hooks';
 import { useUi } from '@/store/ui';
 import { S } from './strings';
+import { BACKEND } from '@/lib/backend/api';
 import { TextField, isEmail } from './fields';
 import { Avatar, Choice, Gate, LinkRow, Panel, StateText } from './ui';
 
@@ -76,6 +77,9 @@ const ST = defineDict({
     security: 'Sigurnost i revizija',
     security_d: 'Prijava, sesije i dnevnik aktivnosti (PDF str. 42).',
     sec1: 'MFA obavezna za privilegovane uloge — vlasnik i menadžer.',
+    sec1b: 'Prijava u dva koraka nije obavezna: svaki nalog je uključuje u „Moj nalog“.',
+    inviteB: 'Dodaje osobu na spisak tima (kalendar, zaduženja). Nalog za prijavu pravi se posebno, u Konfiguracija → Pristup.',
+    memberAddedB: 'Član tima je dodat',
     sec2: 'Sesija ističe nakon 12 sati neaktivnosti.',
     sec3: 'Ograničenje pokušaja: 5 pogrešnih prijava → zaključavanje 15 min.',
     sec4: 'Dozvole za integracije su posebni scope-ovi.',
@@ -140,6 +144,9 @@ const ST = defineDict({
     security: 'Siguria dhe auditimi',
     security_d: 'Hyrja, sesionet dhe ditari i aktivitetit (PDF f. 42).',
     sec1: 'MFA e detyrueshme për role të privilegjuara — Pronar dhe Menaxher.',
+    sec1b: 'Hyrja me dy hapa nuk është e detyrueshme: çdo llogari e aktivizon te „Llogaria ime“.',
+    inviteB: 'E shton personin në listën e ekipit (kalendari, detyrat). Llogaria për hyrje krijohet veçmas, te Konfigurimet → Qasja.',
+    memberAddedB: 'Anëtari i ekipit u shtua',
     sec2: 'Sesioni skadon pas 12 orësh pa aktivitet.',
     sec3: 'Kufizim përpjekjesh: 5 hyrje të gabuara → bllokim 15 min.',
     sec4: 'Lejet për integrime janë scopes të veçanta.',
@@ -204,6 +211,9 @@ const ST = defineDict({
     security: 'Security & audit',
     security_d: 'Sign-in, sessions and the activity log (PDF p. 42).',
     sec1: 'MFA required for privileged roles — owner and manager.',
+    sec1b: '2-step sign-in is optional: each account switches it on under "My account".',
+    inviteB: 'Adds the person to the team list (calendar, assignments). A sign-in is created separately, under Settings → Access.',
+    memberAddedB: 'Team member added',
     sec2: 'Sessions expire after 12 hours of inactivity.',
     sec3: 'Attempt limit: 5 failed sign-ins → 15-minute lock.',
     sec4: 'Integration permissions are separate scopes.',
@@ -247,7 +257,7 @@ function StaffModal({ open, member, onClose }: { open: boolean; member: Staff | 
     setTried(true);
     if (!valid) return;
     upsert('staff', { ...draft, name: draft.name.trim(), email: draft.email.trim().toLowerCase(), phone: draft.phone?.trim() || undefined });
-    toast.success(isNew ? t('memberAdded', { email: draft.email.trim().toLowerCase() }) : t('memberSaved'));
+    toast.success(isNew ? t(BACKEND ? 'memberAddedB' : 'memberAdded', { email: draft.email.trim().toLowerCase() }) : t('memberSaved'));
     onClose();
   };
 
@@ -257,7 +267,7 @@ function StaffModal({ open, member, onClose }: { open: boolean; member: Staff | 
       onClose={onClose}
       size="lg"
       title={isNew ? t('newMember') : t('editMember')}
-      description={isNew ? t('invite') : member?.email}
+      description={isNew ? t(BACKEND ? 'inviteB' : 'invite') : member?.email}
       footer={
         <>
           <Button variant="outline" size="sm" shape="rounded" onClick={onClose}>
@@ -281,7 +291,7 @@ function StaffModal({ open, member, onClose }: { open: boolean; member: Staff | 
             </div>
             <p className="mt-1 text-[12.5px] leading-snug text-muted">{lockOwner ? t('lastOwner') : t('activeHint')}</p>
           </div>
-          {PRIVILEGED.includes(draft.role) && (
+          {PRIVILEGED.includes(draft.role) && !BACKEND && (
             <p className="flex items-start gap-2 text-[12.5px] leading-snug text-muted">
               <KeyRound className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {t('mfaHint', { role: l(ROLE_META[draft.role].name) })}
             </p>
@@ -298,7 +308,7 @@ function StaffModal({ open, member, onClose }: { open: boolean; member: Staff | 
                 onSelect={() => setDraft({ ...draft, role: r })}
                 title={l(ROLE_META[r].name)}
                 description={l(ROLE_META[r].description)}
-                aside={PRIVILEGED.includes(r) ? <span className="mt-0.5 shrink-0 text-[11px] font-semibold text-muted">MFA</span> : undefined}
+                aside={PRIVILEGED.includes(r) && !BACKEND ? <span className="mt-0.5 shrink-0 text-[11px] font-semibold text-muted">MFA</span> : undefined}
               />
             ))}
           </div>
@@ -347,12 +357,12 @@ function RoleMatrix() {
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
               <span className="text-[14px] font-semibold text-ink">{l(ROLE_META[role].name)}</span>
-              {PRIVILEGED.includes(role) && <StateText tone="info">MFA</StateText>}
+              {PRIVILEGED.includes(role) && !BACKEND && <StateText tone="info">MFA</StateText>}
               <span className="text-[12.5px] text-muted">{t('modulesCount', { n: visible, total: MODULES.length })}</span>
             </div>
             <p className="mt-0.5 text-[13px] text-muted">{l(ROLE_META[role].description)}</p>
           </div>
-          {role !== currentRole && (
+          {role !== currentRole && !BACKEND && (
             <Button variant="outline" size="xs" shape="rounded" icon={<Eye className="h-3.5 w-3.5" />} onClick={tryRole} className="self-start sm:self-center">
               {t('tryRole')}
             </Button>
@@ -449,8 +459,9 @@ export function StaffSection() {
     toast.success(t('removed'));
   };
 
+  // (server-backed build: 2-step sign-in is each account's own choice — Settings → Access shows who has it on)
   const access = (m: Staff) =>
-    PRIVILEGED.includes(m.role) ? (
+    PRIVILEGED.includes(m.role) && !BACKEND ? (
       <StateText tone="info">
         <ShieldCheck className="-ml-0.5 h-3.5 w-3.5 text-ink-soft" /> {t('mfa')}
       </StateText>
@@ -554,7 +565,7 @@ export function StaffSection() {
 
       <Panel title={t('security')} description={t('security_d')}>
         <ul className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
-          {(['sec1', 'sec2', 'sec3', 'sec4', 'sec5'] as const).map((k) => (
+          {(BACKEND ? (['sec1b', 'sec2', 'sec3', 'sec5'] as const) : (['sec1', 'sec2', 'sec3', 'sec4', 'sec5'] as const)).map((k) => (
             <li key={k} className="flex items-start gap-2.5 text-[13px] leading-snug text-ink-soft">
               <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink" strokeWidth={2.6} />
               {t(k)}

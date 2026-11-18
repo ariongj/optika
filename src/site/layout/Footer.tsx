@@ -4,7 +4,7 @@ import { ArrowRight, ChevronDown, Clock, Mail, MapPin, Phone, ArrowUp, ScanFace 
 import { toast } from 'sonner';
 import { Logo } from '@/components/brand/Logo';
 import { InstagramIcon, FacebookIcon, WhatsAppIcon } from '@/components/brand/Social';
-import { defineDict, useDict, useL } from '@/i18n';
+import { defineDict, useDict, useL, useLang } from '@/i18n';
 import { site } from '@/i18n/site';
 import { common } from '@/i18n/common';
 import { useCategories, useSettings } from '@/store/hooks';
@@ -14,6 +14,8 @@ import { useNavMenu, useSaleHref } from '@/admin/components/menus/useNav';
 import { cn, isFilled, scrollMotion } from '@/lib/utils';
 import { notifyNewsletter } from '@/lib/leads';
 import { CARD_PAYMENTS } from '@/lib/launch';
+import { BACKEND } from '@/lib/backend/api';
+import { formErrorKey, sendSubscribe, visitorErrors } from '@/lib/backend/visitor';
 import { isBookingHref, openBooking } from '@/site/components/utility/Booking';
 import { waDigits } from '@/lib/format';
 
@@ -38,11 +40,16 @@ export function Footer({ dark = false }: { dark?: boolean }) {
   const settings = useSettings();
   const menu = useNavMenu('footer');
   const [email, setEmail] = useState('');
+  // server-backed build: the newsletter sign-up is on its way to the shop's server
+  const lang = useLang();
+  const tv = useDict(visitorErrors);
+  const [subscribing, setSubscribing] = useState(false);
   const year = new Date().getFullYear();
   const ig = (settings.instagram ?? '').trim().replace(/^@/, '');
   const wa = waDigits(settings.whatsapp);
   const pays = [
-    ...(settings.payments.card && CARD_PAYMENTS ? ['VISA', 'Mastercard', 'Maestro'] : []),
+    // (the server-backed build takes no card payments)
+    ...(settings.payments.card && CARD_PAYMENTS && !BACKEND ? ['VISA', 'Mastercard', 'Maestro'] : []),
     ...(settings.payments.bank ? [f('bank')] : []),
     ...(settings.payments.cod ? [t('payCod')] : []),
   ];
@@ -62,6 +69,22 @@ export function Footer({ dark = false }: { dark?: boolean }) {
             onSubmit={(e) => {
               e.preventDefault();
               if (!/^\S+@\S+\.\S+$/.test(email)) return;
+              if (BACKEND) {
+                // The sign-up goes to the shop's server together with the words shown above the field and on the
+                // button — kept as the record of what the visitor agreed to. "Subscribed" only once it is saved.
+                if (subscribing) return;
+                setSubscribing(true);
+                sendSubscribe(email.trim(), lang, `${t('newsTitle')} — ${t('newsText')} [${t('subscribe')}]`, 'footer')
+                  .then(
+                    () => {
+                      toast.success(t('subscribed'));
+                      setEmail('');
+                    },
+                    (err) => toast.error(tv(formErrorKey(err))),
+                  )
+                  .finally(() => setSubscribing(false));
+                return;
+              }
               notifyNewsletter(email.trim()); // e-mail to the shop
               toast.success(t('subscribed'));
               setEmail('');
@@ -77,7 +100,7 @@ export function Footer({ dark = false }: { dark?: boolean }) {
               aria-label={t('newsPlaceholder')}
               className="min-w-0 flex-1 bg-transparent px-4 text-[15px] text-white outline-none placeholder:text-paper/60"
             />
-            <button type="submit" className="inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-ink transition-colors hover:bg-brand-50">
+            <button type="submit" disabled={subscribing} className="inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-ink transition-colors hover:bg-brand-50 disabled:opacity-60">
               {t('subscribe')} <ArrowRight className="h-4 w-4" />
             </button>
           </form>

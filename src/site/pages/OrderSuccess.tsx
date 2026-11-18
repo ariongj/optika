@@ -1,3 +1,4 @@
+import { BACKEND } from '@/lib/backend/api';
 import { Link, useParams } from 'react-router';
 import { ArrowRight, Banknote, CalendarCheck, Copy, CreditCard, FileText, FlaskConical, Home, Landmark, LayoutDashboard, Mail, PackageSearch, PhoneCall, ShieldCheck, ShieldPlus, Store, Truck } from 'lucide-react';
 import type { ComponentType } from 'react';
@@ -534,7 +535,8 @@ function Success({ order }: { order: Order }) {
             )}
           </div>
 
-          <Link
+          {/* the demo's pointer to the CMS: a real shop does not send its customers there */}
+          {!BACKEND && <Link
             to={`/admin/narudzbe/${order.id}`}
             className="group flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-dashed border-ink/20 px-4 py-3.5 text-[13px] text-muted transition-colors hover:border-ink/40 hover:bg-white/60"
           >
@@ -547,7 +549,7 @@ function Success({ order }: { order: Order }) {
             <span className="inline-flex items-center gap-1 font-semibold text-ink group-hover:text-brand-700">
               {t('demoLink')} <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
             </span>
-          </Link>
+          </Link>}
         </div>
 
         {/* Summary */}

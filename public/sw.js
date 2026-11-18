@@ -104,6 +104,8 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== SCOPE.origin || !url.pathname.startsWith(SCOPE.pathname)) return;
   const path = url.pathname.slice(SCOPE.pathname.length);
   if (path.startsWith('mediapipe/') || path === 'sw.js') return;
+  // the shop server (hosted version): answers are personal or change by the minute, never kept on the device
+  if (path.startsWith('api/')) return;
   if (request.mode === 'navigate') return respond(event, networkFirst);
   if (path.startsWith('assets/')) return respond(event, cacheFirst);
   if (/^(images|og)\//.test(path) || /\.(png|webp|jpg|svg|ico)$/.test(path)) return respond(event, staleWhileRevalidate);

@@ -1,10 +1,11 @@
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import { CalendarCheck, Info } from 'lucide-react';
+import { AlertCircle, CalendarCheck, Info } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Checkbox, FieldError, Input, Textarea } from '@/components/ui/Field';
 import { useDict } from '@/i18n';
 import { cn } from '@/lib/utils';
+import { BACKEND } from '@/lib/backend/api';
 import { validEmail, validPhone } from './availability';
 import { bk } from './dict';
 
@@ -19,9 +20,10 @@ export interface DetailsValues {
 
 /**
  * Step 4 — contact details. `onSubmit` returns false when the slot was taken in the meantime (the page then
- * sends the visitor back to the time step).
+ * sends the visitor back to the time step). `error`: the booking could not be sent for another reason (server-backed
+ * build) — shown above the button until the next attempt.
  */
-export function DetailsForm({ askRx, summary, onSubmit }: { askRx: boolean; summary?: ReactNode; onSubmit: (v: DetailsValues) => Promise<boolean> }) {
+export function DetailsForm({ askRx, summary, error, onSubmit }: { askRx: boolean; summary?: ReactNode; error?: string; onSubmit: (v: DetailsValues) => Promise<boolean> }) {
   const t = useDict(bk);
   const [v, setV] = useState<DetailsValues>({ name: '', phone: '', email: '', rx: '', note: '' });
   const [consent, setConsent] = useState(false);
@@ -34,6 +36,8 @@ export function DetailsForm({ askRx, summary, onSubmit }: { askRx: boolean; summ
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // one request at a time (the demo's submit button is disabled while busy; Enter in a field must not send twice)
+    if (BACKEND && busy) return;
     const err: typeof errors = {};
     if (!v.name.trim()) err.name = t('required');
     if (!v.phone.trim()) err.phone = t('required');
@@ -47,7 +51,8 @@ export function DetailsForm({ askRx, summary, onSubmit }: { askRx: boolean; summ
       return;
     }
     setBusy(true);
-    await new Promise((r) => setTimeout(r, 600));
+    // the demo imitates the wait for a server; the server-backed build has a real one
+    if (!BACKEND) await new Promise((r) => setTimeout(r, 600));
     const ok = await onSubmit({ ...v, rx: askRx ? v.rx : '' });
     if (!ok) setBusy(false);
   };
@@ -133,6 +138,13 @@ export function DetailsForm({ askRx, summary, onSubmit }: { askRx: boolean; summ
       </div>
 
       {summary && <div className="mt-6 lg:hidden">{summary}</div>}
+
+      {error && (
+        <p role="alert" className="mt-6 flex items-start gap-2.5 rounded-xl bg-red-50 px-3.5 py-2.5 text-[13.5px] font-medium text-red-700 ring-1 ring-inset ring-red-600/15">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          {error}
+        </p>
+      )}
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="flex items-start gap-2 text-[12.5px] leading-snug text-muted sm:max-w-[55%]">

@@ -100,7 +100,8 @@ const CSP = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
-  "connect-src 'self' blob: data: https://api.web3forms.com",
+  // the server-backed build (VITE_BACKEND=1) sends forms to its own /api: no outside host at all
+  process.env.VITE_BACKEND === '1' ? "connect-src 'self' blob: data:" : "connect-src 'self' blob: data: https://api.web3forms.com",
   "media-src 'self' blob:",
   "worker-src 'self' blob:",
   "frame-src 'self'",

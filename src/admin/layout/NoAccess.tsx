@@ -7,6 +7,7 @@ import { adm } from '@/admin/i18n';
 import { useUi } from '@/store/ui';
 import { ROLE_META, can, type Module } from '@/lib/permissions';
 import { MODULE_LABEL } from './nav';
+import { BACKEND } from '@/lib/backend/api';
 
 /** Shown by <RequirePerm> when the current role cannot open a screen. */
 export default function NoAccess({ module }: { module: Module }) {
@@ -32,16 +33,19 @@ export default function NoAccess({ module }: { module: Module }) {
               <ArrowLeft className="h-4 w-4" /> {t('backToOverview')}
             </Link>
           )}
-          <Button
-            size="sm"
-            shape="rounded"
-            onClick={() => {
-              setRole('owner');
-              toast(t('roleSwitched', { role: l(ROLE_META.owner.name) }));
-            }}
-          >
-            {t('viewAsOwner')}
-          </Button>
+          {/* demo only: the server-backed build has real accounts, and no way to borrow another role */}
+          {!BACKEND && (
+            <Button
+              size="sm"
+              shape="rounded"
+              onClick={() => {
+                setRole('owner');
+                toast(t('roleSwitched', { role: l(ROLE_META.owner.name) }));
+              }}
+            >
+              {t('viewAsOwner')}
+            </Button>
+          )}
         </div>
       </div>
     </div>

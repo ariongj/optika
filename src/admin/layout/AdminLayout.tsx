@@ -1,5 +1,5 @@
 import '@/admin/admin.css'; // full CMS stylesheet (the storefront sheet leaves admin-only classes out)
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
 import { toast } from 'sonner';
 import { AnimatePresence, motion } from '@/lib/motion';
@@ -19,6 +19,10 @@ import { Notifications, useNewOrderToasts } from './Notifications';
 import { Sidebar } from './Sidebar';
 import { activeNav, navFor } from './nav';
 import { MOD_KEY, useScrollLock } from './popover';
+import { BACKEND } from '@/lib/backend/api';
+
+// server-backed build: "saving… / saved / no connection" beside the account menu
+const SaveStatus = import.meta.env.VITE_BACKEND === '1' ? lazy(() => import('./SaveStatus')) : null;
 
 /** "CMS" + small Miftari Vision mark (top bar, left). */
 function Brand({ onClick }: { onClick?: () => void }) {
@@ -129,7 +133,7 @@ export default function AdminLayout() {
             <button type="button" onClick={() => setPalette(true)} className="grid h-9 w-9 place-items-center rounded-lg text-white/85 hover:bg-white/10 sm:hidden" aria-label={t('searchShort')}>
               <Search className="h-[18px] w-[18px]" />
             </button>
-            {role !== 'owner' && (
+            {role !== 'owner' && !BACKEND && (
               <button
                 type="button"
                 onClick={() => {
@@ -148,6 +152,11 @@ export default function AdminLayout() {
             <span className="mx-1 hidden sm:block">
               <AdminLangToggle />
             </span>
+            {SaveStatus && (
+              <Suspense fallback={null}>
+                <SaveStatus />
+              </Suspense>
+            )}
             <Notifications />
             <AccountMenu />
           </div>

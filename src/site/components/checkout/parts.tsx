@@ -2,7 +2,7 @@ import { Fragment, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { AnimatePresence, motion } from '@/lib/motion';
 import { toast } from 'sonner';
-import { Award, Check, ChevronDown, Eye, ShieldCheck, ShieldPlus, TicketPercent, X } from 'lucide-react';
+import { AlertCircle, Award, Check, ChevronDown, Eye, ShieldCheck, ShieldPlus, TicketPercent, X } from 'lucide-react';
 import { Img } from '@/components/ui/misc';
 import { useDict, useL, useLang } from '@/i18n';
 import { common } from '@/i18n/common';
@@ -14,6 +14,8 @@ import type { PricedLine, Totals } from '@/lib/pricing';
 import type { AppliedDiscount } from '@/lib/types';
 import { discountState } from '@/lib/discounts';
 import { cn } from '@/lib/utils';
+import { BACKEND } from '@/lib/backend/api';
+import { ensureCode, useCodeDiscounts } from '@/lib/backend/visitor';
 import { ck, pluralKey } from './dict';
 
 /* ------------------------------------------------------------------ */
@@ -104,11 +106,27 @@ export function CouponBox({ totals, collapsible, className }: { totals: Totals; 
   const settings = useSettings();
   const [code, setCode] = useState(applied ?? '');
   const [open, setOpen] = useState(!collapsible || !!applied);
+  const [checking, setChecking] = useState(false);
+  // server-backed build: the rules of typed codes are fetched from the shop (no-op in the demo)
+  useCodeDiscounts();
 
   const apply = (value = code) => {
     // same normalising as the store (spaces dropped), so "MIFTARI 10" is the code MIFTARI10 and its error shows
     const v = value.replace(/\s+/g, '').toUpperCase();
     setCode(v);
+    // Server-backed build: this page only knows the codes an offer advertises — ask the shop about the typed one
+    // first, so "no such code" is only said when the shop said so (and not when it could not be asked).
+    if (BACKEND && v) {
+      if (checking) return;
+      setChecking(true);
+      ensureCode(v)
+        .then(
+          () => setCoupon(v),
+          () => toast.error(t('couponCheckFail')),
+        )
+        .finally(() => setChecking(false));
+      return;
+    }
     setCoupon(v || null);
   };
 
@@ -211,7 +229,7 @@ export function CouponBox({ totals, collapsible, className }: { totals: Totals; 
                 <button
                   type="button"
                   onClick={() => apply()}
-                  disabled={!code.trim()}
+                  disabled={!code.trim() || checking}
                   className="h-11 shrink-0 rounded-xl bg-ink px-4 text-[13.5px] font-semibold text-paper transition-colors hover:bg-ink-soft disabled:opacity-40"
                 >
                   {t('couponApply')}
@@ -247,6 +265,29 @@ export function CouponBox({ totals, collapsible, className }: { totals: Totals; 
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Order not taken (server-backed build)                               */
+/* ------------------------------------------------------------------ */
+/**
+ * Why the shop's server did not take the order. Stays next to the confirm button until the next attempt.
+ * `review` = nothing is wrong with the shopper's details: the total, the stock or a method changed — look and confirm again.
+ */
+export function OrderNotice({ text, review, live, className }: { text: string; review?: boolean; /** announce it (one copy per page) */ live?: boolean; className?: string }) {
+  return (
+    <p
+      role={live ? 'alert' : undefined}
+      className={cn(
+        'flex items-start gap-2.5 rounded-2xl px-4 py-3.5 text-[13.5px] font-medium leading-snug ring-1 ring-inset',
+        review ? 'bg-amber-50 text-amber-900 ring-amber-600/20' : 'bg-red-50 text-red-700 ring-red-600/15',
+        className,
+      )}
+    >
+      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+      <span>{text}</span>
+    </p>
   );
 }
 

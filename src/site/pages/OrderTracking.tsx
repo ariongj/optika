@@ -17,8 +17,18 @@ import { TrackEmpty, TrackError, TrackResult } from '@/site/components/booking/T
 import { useNow } from '@/site/components/booking/parts';
 import { scrollMotion } from '@/lib/utils';
 import { waDigits } from '@/lib/format';
+import type { Booking, Order } from '@/lib/types';
+import { BACKEND } from '@/lib/backend/api';
+import { trackFailure, trackOrder } from '@/lib/backend/visitor';
 
-type Result = { kind: 'ok'; orderId: string } | { kind: 'notFound' } | { kind: 'mismatch' };
+type Result =
+  | { kind: 'ok'; orderId: string; /** server-backed build: what the shop's server answered */ order?: Order; bookings?: Booking[] }
+  | { kind: 'notFound' }
+  | { kind: 'mismatch' }
+  // server-backed build: no order for this number + contact (the server does not say which was wrong), or no answer at all
+  | { kind: 'noMatch' }
+  | { kind: 'network' }
+  | { kind: 'rate' };
 
 function lookup(number: string, contact: string): Result {
   const st = useDb.getState();
@@ -42,19 +52,54 @@ export default function OrderTracking() {
   const [number, setNumber] = useState(() => params.get('nr') ?? '');
   const [contact, setContact] = useState(() => params.get('kontakt') ?? '');
   const [errors, setErrors] = useState<{ number?: string; contact?: string }>({});
-  const [checking, setChecking] = useState(false);
+  // server-backed build: a deep link is looked up on the shop's server once the page is open (see the effect below)
+  const [checking, setChecking] = useState(() => BACKEND && !!params.get('nr') && !!params.get('kontakt'));
   const [result, setResult] = useState<Result | null>(() => {
     const n = params.get('nr');
     const c = params.get('kontakt');
-    return n && c ? lookup(n, c) : null;
+    return n && c && !BACKEND ? lookup(n, c) : null;
   });
   const heading = useRef<HTMLHeadingElement>(null);
   const numberInput = useRef<HTMLInputElement>(null);
   const timer = useRef<number | undefined>(undefined);
+  /** Server-backed build: number of the latest look-up — an answer to an older one is dropped. */
+  const asked = useRef(0);
 
   // Kept by id, so status changes made in the CMS meanwhile show up live.
-  const order = result?.kind === 'ok' ? orders.find((o) => o.id === result.orderId) : undefined;
-  const upcoming = useMemo(() => (order ? upcomingFor(order.customer, bookings, now) : []), [order, bookings, now]);
+  const order = result?.kind === 'ok' ? (orders.find((o) => o.id === result.orderId) ?? result.order) : undefined;
+  const upcoming = useMemo(() => {
+    if (!order) return [];
+    // server-backed build: the calendar on this page carries no names — the server sent this customer's appointments
+    if (BACKEND) return (result?.kind === 'ok' ? (result.bookings ?? []) : []).filter((b) => new Date(b.start).getTime() > now);
+    return upcomingFor(order.customer, bookings, now);
+  }, [order, bookings, now, result]);
+
+  /** Server-backed build: ask the shop's server (number + contact must both match there). */
+  const ask = (n: string, c: string) => {
+    const mine = ++asked.current;
+    setChecking(true);
+    setResult(null);
+    trackOrder(n.trim(), c.trim())
+      .then(
+        (r) => {
+          if (mine === asked.current) setResult(r ? { kind: 'ok', orderId: r.order.id, order: r.order, bookings: r.bookings } : { kind: 'noMatch' });
+        },
+        (err) => {
+          if (mine === asked.current) setResult({ kind: trackFailure(err) });
+        },
+      )
+      .finally(() => {
+        if (mine === asked.current) setChecking(false);
+      });
+  };
+  useEffect(() => {
+    if (BACKEND && checking) ask(number, contact);
+    return () => {
+      asked.current++;
+    };
+    // on arrival only: the deep link's number and contact
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Personal data doesn't stay in the address bar / history.
   useEffect(() => {
@@ -81,6 +126,10 @@ export default function OrderTracking() {
     if (!contact.trim()) err.contact = t('required');
     setErrors(err);
     if (err.number || err.contact) return;
+    if (BACKEND) {
+      if (!checking) ask(number, contact);
+      return;
+    }
     setChecking(true);
     setResult(null);
     window.clearTimeout(timer.current);

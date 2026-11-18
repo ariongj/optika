@@ -115,7 +115,8 @@ function mv_clean_items($items, array $byId): array
 function mv_route_order(): never
 {
     mv_same_origin();
-    mv_rate('order', 12, 3600);
+    // refused attempts count too (a changed total costs two), and an office or a mobile carrier shares one address
+    mv_rate('order', 30, 3600);
     $b = mv_body();
     if (mv_str($b['website'] ?? '', 50) !== '') mv_fail(422, 'invalid');
     $in = is_array($b['input'] ?? null) ? $b['input'] : mv_fail(422, 'invalid');
@@ -136,7 +137,18 @@ function mv_route_order(): never
         if ($c !== '') $codes[] = $c;
     }
 
-    $result = mv_tx(function () use ($b, $in, $settings, $delivery, $payment, $lang, $customer, $codes) {
+    // The page sends one random reference per checkout. If its answer was lost on the way back (connection dropped
+    // after the order was saved) the shopper presses the button again: the same reference returns the same order
+    // instead of placing a second one.
+    $ref = mv_str($b['ref'] ?? '', 64);
+    if (!preg_match('/^[A-Za-z0-9_-]{16,64}$/', $ref)) $ref = '';
+
+    $result = mv_tx(function () use ($b, $in, $settings, $delivery, $payment, $lang, $customer, $codes, $ref) {
+        if ($ref !== '') {
+            foreach (mv_docs('orders') as $o) {
+                if (($o['clientRef'] ?? '') === $ref) return ['order' => $o, 'stock' => [], 'repeat' => true];
+            }
+        }
         $products = mv_docs('products');
         $byId = [];
         foreach ($products as $p) $byId[(string) $p['id']] = $p;
@@ -150,16 +162,17 @@ function mv_route_order(): never
             'delivery' => $delivery, 'city' => $customer['city'], 'now' => $now,
         ]);
         if (count($totals['lines']) !== count($items)) mv_fail(409, 'product_unavailable');
-        $client = $b['total'] ?? null;
-        if (!is_int($client) && !is_float($client)) mv_fail(422, 'total_missing');
-        if (abs((float) $client - (float) $totals['total']) > 0.005) mv_fail(409, 'price_changed', ['total' => $totals['total']]);
-
-        // stock: the bag never asks for more than is on hand (made-to-order items are not limited)
+        // stock first: the bag never asks for more than is on hand (made-to-order items are not limited), and
+        // "someone bought the last one" is the more useful answer than a total that no longer matches
         $want = [];
         foreach ($items as $it) $want[$it['productId']] = ($want[$it['productId']] ?? 0) + $it['qty'];
         foreach ($want as $pid => $qty) {
             if ($qty > mv_max_qty($byId[$pid])) mv_fail(409, 'stock', ['productId' => $pid, 'available' => mv_max_qty($byId[$pid])]);
         }
+        $client = $b['total'] ?? null;
+        if (!is_int($client) && !is_float($client)) mv_fail(422, 'total_missing');
+        if (abs((float) $client - (float) $totals['total']) > 0.005) mv_fail(409, 'price_changed', ['total' => $totals['total']]);
+
         // a code meant once per customer
         $phone8 = mv_phone8($customer['phone']);
         $byDiscount = [];
@@ -174,10 +187,12 @@ function mv_route_order(): never
                 foreach ((array) ($o['discounts'] ?? []) as $used) if (isset($once[$used['id'] ?? ''])) mv_fail(409, 'discount_used', ['code' => $once[$used['id']]]);
             }
         }
-        return mv_build_web_order($settings, $totals, $items, $byId, $customer, $delivery, $payment, $lang, $now, $byDiscount);
+        return mv_build_web_order($settings, $totals, $items, $byId, $customer, $delivery, $payment, $lang, $now, $byDiscount, $ref);
     });
 
     $order = $result['order'];
+    unset($order['clientRef']);
+    if (!empty($result['repeat'])) mv_out(['ok' => true, 'order' => $order, 'stock' => [], 'repeat' => true]);
     if (!empty($customer['marketing'])) {
         mv_consent_record([
             'subject' => mv_subject_key($customer['email'], $customer['phone']), 'email' => $customer['email'], 'phone' => $customer['phone'],
@@ -189,7 +204,7 @@ function mv_route_order(): never
 }
 
 /** buildOrder() of src/store/db.ts for a web order: the order, stock, sold counts, movements, code uses, offer figures. */
-function mv_build_web_order(array $settings, array $totals, array $items, array $byId, array $customer, string $delivery, string $payment, string $lang, int $now, array $byDiscount): array
+function mv_build_web_order(array $settings, array $totals, array $items, array $byId, array $customer, string $delivery, string $payment, string $lang, int $now, array $byDiscount, string $ref = ''): array
 {
     $prefix = (string) (($settings['orderPrefix'] ?? '') ?: 'SC-');
     $at = mv_iso($now);
@@ -236,6 +251,7 @@ function mv_build_web_order(array $settings, array $totals, array $items, array 
         'discounts' => $totals['applied'],
         'shippingBeforeDiscount' => $totals['shippingBeforeDiscount'],
     ];
+    if ($ref !== '') $order['clientRef'] = $ref;
     // stock, sold counters and 'sale' movements
     $taken = [];
     $stockOut = [];
@@ -362,6 +378,61 @@ function mv_booking_problem(array $c, array $bookings, array $services): string
 }
 
 /**
+ * The shop's booking rules for a request from the website (checkSlot() of the CMS, `web: true`): opening hours of
+ * that weekday or of an exception day, closed days, the minimum notice, the grid of start times, and the pause kept
+ * around each appointment of the same person. Times are read on the shop's clock (settings.timezone).
+ * Returns '' when it fits, else 'closed' | 'outside' | 'notice' | 'grid' | 'buffer'.
+ * A shop that never saved its booking rules has none on the server: then only overlaps are checked.
+ */
+function mv_booking_rules_problem(array $settings, int $startMs, int $durationMin, array $bookings, string $staffId, int $nowMs): string
+{
+    $rules = $settings['booking'] ?? null;
+    if (!is_array($rules) || !is_array($rules['hours'] ?? null)) return '';
+    try {
+        $tz = new DateTimeZone((string) (($settings['timezone'] ?? '') ?: 'Europe/Belgrade'));
+    } catch (Throwable $e) {
+        $tz = new DateTimeZone('Europe/Belgrade');
+    }
+    $at = (new DateTimeImmutable('@' . intdiv($startMs, 1000)))->setTimezone($tz);
+    $day = $at->format('Y-m-d');
+    $minutes = (int) $at->format('G') * 60 + (int) $at->format('i');
+    $toMin = function ($v): int {
+        return preg_match('/^(\d{1,2}):(\d{2})$/', (string) $v, $m) ? (int) $m[1] * 60 + (int) $m[2] : 0;
+    };
+    $from = $to = null;
+    foreach ((array) ($rules['exceptions'] ?? []) as $ex) {
+        if (!is_array($ex) || !is_string($ex['date'] ?? null)) continue;
+        $last = is_string($ex['dateTo'] ?? null) && $ex['dateTo'] !== '' ? $ex['dateTo'] : $ex['date'];
+        if ($day < $ex['date'] || $day > $last) continue;
+        if (!empty($ex['closed']) || empty($ex['from']) || empty($ex['to'])) return 'closed';
+        $from = $toMin($ex['from']);
+        $to = $toMin($ex['to']);
+        break;
+    }
+    if ($from === null) {
+        $h = $rules['hours'][((int) $at->format('N')) - 1] ?? null; // Monday = 0
+        if (!is_array($h) || empty($h['open'])) return 'closed';
+        $from = $toMin($h['from'] ?? '');
+        $to = $toMin($h['to'] ?? '');
+    }
+    if ($minutes < $from || $minutes + $durationMin > $to) return 'outside';
+    $step = max(5, (int) ($rules['slotStepMin'] ?? 30) ?: 30);
+    if (($minutes - $from) % $step !== 0) return 'grid';
+    if ($startMs < $nowMs + (int) round((float) ($rules['minNoticeHours'] ?? 0) * 3600000)) return 'notice';
+    $buffer = (int) ($rules['bufferMin'] ?? 0) * 60000;
+    if ($buffer > 0) {
+        $end = $startMs + $durationMin * 60000;
+        foreach ($bookings as $b) {
+            if (($b['staffId'] ?? '') !== $staffId || !in_array($b['status'] ?? '', ['pending', 'confirmed', 'done'], true)) continue;
+            $b0 = mv_parse_ms($b['start'] ?? null);
+            if ($b0 === null) continue;
+            if ($startMs < $b0 + (int) ($b['durationMin'] ?? 0) * 60000 + $buffer && $b0 < $end + $buffer) return 'buffer';
+        }
+    }
+    return '';
+}
+
+/**
  * POST booking — {inquiry: InquiryInput, booking: {serviceId, staffId, start, location, note, …}}
  * Saves the request and the pending booking together (or neither, when the slot was just taken).
  */
@@ -376,7 +447,7 @@ function mv_route_booking(): never
     $start = mv_parse_ms($bk['start'] ?? null);
     $now = mv_ms();
     if ($start === null || $start < $now - 5 * 60000 || $start > $now + 400 * 86400000) mv_fail(422, 'time_invalid');
-    $out = mv_tx(function () use ($q, $bk, $start) {
+    $out = mv_tx(function () use ($q, $bk, $start, $now) {
         $services = mv_docs('services');
         $svc = null;
         foreach ($services as $s) if (($s['id'] ?? '') === ($bk['serviceId'] ?? '')) $svc = $s;
@@ -390,8 +461,14 @@ function mv_route_booking(): never
         ];
         if (isset($q['email'])) $booking['email'] = $q['email'];
         $booking += ['start' => mv_iso($start), 'durationMin' => (int) $svc['durationMin']];
-        $problem = mv_booking_problem($booking, mv_docs('bookings'), $services);
+        $all = mv_docs('bookings');
+        $problem = mv_booking_problem($booking, $all, $services);
         if ($problem !== '') mv_fail(409, 'taken', ['reason' => $problem]);
+        // the page only offers times that fit the shop's rules; a request that does not was not made with the page
+        // (or the rules changed while it was open)
+        $why = mv_booking_rules_problem(mv_settings(), $start, (int) $svc['durationMin'], $all, $staffId, $now);
+        if ($why === 'buffer') mv_fail(409, 'taken', ['reason' => 'staffBusy']);
+        if ($why !== '') mv_fail(422, 'time_invalid', ['reason' => $why]);
         $locations = array_map(fn($l) => (string) ($l['id'] ?? ''), (array) (mv_settings()['locations'] ?? []));
         $loc = mv_str($bk['location'] ?? '', 80);
         if ($loc !== 'onsite' && !in_array($loc, $locations, true)) $loc = (string) ($svc['location'] ?? ($locations[0] ?? 'onsite'));
@@ -418,21 +495,31 @@ function mv_route_booking(): never
 /* Order tracking & discount codes                                     */
 /* ------------------------------------------------------------------ */
 
-/** POST track — {number, contact}: the order's progress when the e-mail or phone matches the order. */
+/**
+ * POST track — {number, contact}: the order's progress when the e-mail or phone matches the order, and that
+ * customer's upcoming appointments (time and service only).
+ */
 function mv_route_track(): never
 {
     mv_same_origin();
     mv_rate('track', 20, 900);
     $b = mv_body();
-    $num = strtoupper(preg_replace('/\s+/', '', mv_str($b['number'] ?? '', 40)) ?? '');
+    // As the tracking page reads numbers (findOrder in src/site/components/booking/tracking.ts): letters and digits
+    // only, so "om w7k3qf", "OM-W7K3QF" and "#OM-W7K3QF" are one number, and the shop's prefix may be left out.
+    $canon = fn($s): string => preg_replace('/[^A-Z0-9]/', '', strtoupper((string) $s)) ?? '';
+    $num = $canon(mv_str($b['number'] ?? '', 40));
     $contact = mb_strtolower(mv_str($b['contact'] ?? '', 190));
     if ($num === '' || $contact === '') mv_fail(422, 'invalid');
+    $settings = mv_single('settings');
+    $prefix = $canon((is_array($settings) ? ($settings['orderPrefix'] ?? '') : '') ?: 'SC-');
     $found = null;
     foreach (mv_docs('orders') as $o) {
-        if (strtoupper((string) ($o['number'] ?? '')) !== $num) continue;
+        $on = $canon($o['number'] ?? '');
+        if ($on === '' || ($on !== $num && $on !== $prefix . $num)) continue;
         $email = mb_strtolower((string) ($o['customer']['email'] ?? ''));
         $p8 = mv_phone8((string) ($o['customer']['phone'] ?? ''));
-        if (($email !== '' && $email === $contact) || ($p8 !== '' && mv_phone8($contact) === $p8)) $found = $o;
+        // a contact with an @ is an e-mail address: it is never compared as a phone number
+        if (($email !== '' && $email === $contact) || ($p8 !== '' && !str_contains($contact, '@') && mv_phone8($contact) === $p8)) $found = $o;
     }
     if (!$found) mv_fail(404, 'not_found');
     // what the customer may see: no internal notes, no staff names
@@ -447,7 +534,38 @@ function mv_route_track(): never
         array_filter((array) ($found['timeline'] ?? []), fn($e) => ($e['status'] ?? '') !== 'note')
     ));
     $view['seen'] = true;
-    mv_out(['ok' => true, 'order' => $view]);
+    mv_out(['ok' => true, 'order' => $view, 'bookings' => mv_track_bookings($c)]);
+}
+
+/**
+ * The upcoming appointments of the customer whose order was just found (upcomingFor() of the tracking page): booked
+ * with the order's e-mail or phone, pending or confirmed, in the future — at most four, soonest first. Only what the
+ * page lists: when, which service, where, and whether it is confirmed. No names, contacts, notes or staff.
+ */
+function mv_track_bookings(array $customer): array
+{
+    $email = mb_strtolower(trim((string) ($customer['email'] ?? '')));
+    $p8 = mv_phone8((string) ($customer['phone'] ?? ''));
+    if ($email === '' && $p8 === '') return [];
+    $now = mv_ms();
+    $out = [];
+    foreach (mv_docs('bookings') as $bk) {
+        if (!in_array($bk['status'] ?? '', ['pending', 'confirmed'], true)) continue;
+        $t = mv_parse_ms($bk['start'] ?? null);
+        if ($t === null || $t <= $now) continue;
+        $same = ($email !== '' && mb_strtolower(trim((string) ($bk['email'] ?? ''))) === $email)
+            || ($p8 !== '' && mv_phone8((string) ($bk['phone'] ?? '')) === $p8);
+        if (!$same) continue;
+        $out[] = [
+            't' => $t,
+            'view' => [
+                'id' => (string) ($bk['id'] ?? ''), 'serviceId' => (string) ($bk['serviceId'] ?? ''), 'start' => (string) $bk['start'],
+                'durationMin' => (int) ($bk['durationMin'] ?? 60), 'status' => (string) $bk['status'], 'location' => (string) ($bk['location'] ?? ''),
+            ],
+        ];
+    }
+    usort($out, fn($x, $y) => $x['t'] <=> $y['t']);
+    return array_map(fn($x) => $x['view'], array_slice($out, 0, 4));
 }
 
 /** POST coupon — {code}: the rule behind a discount code, so the shop page can show its effect (or why it does not apply). */

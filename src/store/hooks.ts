@@ -96,7 +96,12 @@ export function useCan() {
 export function useCurrentStaff() {
   const role = useUi((s) => s.adminRole);
   const staff = useDb((s) => s.staff);
-  return useMemo(() => staff.find((m) => m.active && m.role === role) ?? staff.find((m) => m.role === 'owner') ?? null, [staff, role]);
+  // server-backed build: the team entry of the signed-in account (set by the session)
+  const staffId = useUi((s) => s.adminStaffId);
+  return useMemo(
+    () => (staffId && staff.find((m) => m.id === staffId)) || (staff.find((m) => m.active && m.role === role) ?? staff.find((m) => m.role === 'owner') ?? null),
+    [staff, role, staffId],
+  );
 }
 
 export function useCartCount() {

@@ -12,7 +12,10 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { build } from 'vite';
 
-const DIST = 'dist';
+const DIST = process.env.OUT_DIR || 'dist';
+// Server-backed build (VITE_BACKEND=1): prices and stock are edited in the CMS after this build, so the static pages
+// must not state them — a stale price in a search result is worse than none. The page itself shows the live price.
+const LIVE_PRICES = process.env.VITE_BACKEND === '1';
 const raw = (process.env.BASE_PATH ?? '/').trim();
 const BASE = !raw || raw === '/' ? '/' : `/${raw.replace(/^\/+|\/+$/g, '')}/`;
 const ORIGIN = (process.env.SITE_URL ?? 'https://ariongj.github.io').replace(/\/+$/, '');
@@ -179,7 +182,7 @@ for (const p of db.products.filter((x) => x.status === 'active')) {
   if (firstRel && fs.existsSync(path.join(DIST, firstRel))) productPhoto.set(`produkt/${p.slug}`, { rel: firstRel, many: p.images.length > 1 });
   put(`produkt/${p.slug}`, {
     title: p.seo?.title || `${p.name.sq} — ${catName.get(p.categoryId) ?? ''}`,
-    description: p.seo?.description || `${plain(p.short.sq)} ${onRequest ? 'Çmimi sipas kërkesës' : `${price} €`} · ${brand}, Mitrovicë.`,
+    description: p.seo?.description || `${plain(p.short.sq)} ${onRequest ? 'Çmimi sipas kërkesës' : LIVE_PRICES ? '' : `${price} €`} · ${brand}, Mitrovicë.`.replace(/\s+·/, ' ·'),
     image: p.images[0],
     preload: p.images[0] ? openingImage(p.images[0]) : [],
     type: 'product',
@@ -192,7 +195,7 @@ for (const p of db.products.filter((x) => x.status === 'active')) {
       description: plain(p.description.sq),
       image: p.images.map((i) => abs(i)),
       category: catName.get(p.categoryId),
-      ...(onRequest ? {} : { offers: {
+      ...(onRequest || LIVE_PRICES ? {} : { offers: {
         '@type': 'Offer',
         price: String(price),
         priceCurrency: 'EUR',
@@ -279,7 +282,8 @@ function render(route, m, shellFor = route) {
  * sees the page at once instead of a blank screen, and the header doesn't move when React takes over. The words in the
  * header depend on the visitor's language, which this page can't read (no inline script), so they come with React.
  */
-const logoSource = fs.readFileSync(path.join(path.dirname(DIST), 'src/components/brand/Logo.tsx'), 'utf8');
+// (the script runs from the project root; the output folder may be anywhere)
+const logoSource = fs.readFileSync('src/components/brand/Logo.tsx', 'utf8');
 const logoPath = (name) => logoSource.match(new RegExp(`const ${name} = '([^']+)'`))[1];
 const LOGO =
   '<svg class="sh-logo" viewBox="0 -1 978 253">' +
@@ -373,7 +377,7 @@ fs.writeFileSync(
     .map((u) => `  <url><loc>${esc(u)}</loc><lastmod>${today}</lastmod></url>`)
     .join('\n')}\n</urlset>\n`,
 );
-fs.writeFileSync(path.join(DIST, 'robots.txt'), `User-agent: *\nDisallow: ${BASE}admin/\nAllow: /\n\nSitemap: ${abs('sitemap.xml')}\n`);
+fs.writeFileSync(path.join(DIST, 'robots.txt'), `User-agent: *\nDisallow: ${BASE}admin/\n${LIVE_PRICES ? `Disallow: ${BASE}api/\n` : ''}Allow: /\n\nSitemap: ${abs('sitemap.xml')}\n`);
 fs.rmSync(tmp, { recursive: true, force: true });
 fs.rmSync(path.join(DIST, '.vite'), { recursive: true, force: true }); // the build manifest isn't part of the site
 console.log(`prerender-meta: ${n} route shells, ${urls.length} URLs in sitemap.xml, robots.txt, 404.html`);

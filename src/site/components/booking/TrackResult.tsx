@@ -64,28 +64,38 @@ export function TrackEmpty() {
   );
 }
 
-export const TrackError = forwardRef<HTMLHeadingElement, { kind: 'notFound' | 'mismatch'; onRetry: () => void }>(function TrackError({ kind, onRetry }, ref) {
+/**
+ * `notFound` / `mismatch`: the demo's own look-up. Server-backed build: `noMatch` (the shop's server does not say
+ * whether the number or the contact was wrong), `network` / `rate` (the look-up could not be done at all).
+ */
+export type TrackErrorKind = 'notFound' | 'mismatch' | 'noMatch' | 'network' | 'rate';
+
+export const TrackError = forwardRef<HTMLHeadingElement, { kind: TrackErrorKind; onRetry: () => void }>(function TrackError({ kind, onRetry }, ref) {
   const t = useDict(tr);
   const settings = useSettings();
-  const nf = kind === 'notFound';
-  const tips = nf ? [t('nf1'), t('nf2'), t('nf3')] : [t('mm1'), t('mm2')];
+  const nf = kind === 'notFound' || kind === 'noMatch';
+  const tips = kind === 'notFound' ? [t('nf1'), t('nf2'), t('nf3')] : kind === 'mismatch' ? [t('mm1'), t('mm2')] : kind === 'noMatch' ? [t('nf1'), t('mm1'), t('mm2')] : [];
+  const title = kind === 'notFound' ? t('nfTitle') : kind === 'mismatch' ? t('mmTitle') : kind === 'noMatch' ? t('nmTitle') : t('failTitle');
+  const text = kind === 'notFound' ? t('nfText') : kind === 'mismatch' ? t('mmText') : kind === 'noMatch' ? t('nmText') : t(kind === 'rate' ? 'failRate' : 'failNetwork');
   return (
     <div role="alert" className="rounded-3xl bg-white p-7 ring-1 ring-line sm:p-10">
       <span className={cn('grid h-14 w-14 place-items-center rounded-2xl', nf ? 'bg-sand text-ink-soft' : 'bg-amber-50 text-amber-700')}>
         {nf ? <PackageSearch className="h-7 w-7" strokeWidth={1.6} /> : <AlertCircle className="h-7 w-7" strokeWidth={1.6} />}
       </span>
       <h2 ref={ref} tabIndex={-1} className="display mt-6 text-[30px] leading-tight text-ink outline-none sm:text-[34px]">
-        {nf ? t('nfTitle') : t('mmTitle')}
+        {title}
       </h2>
-      <p className="mt-2 max-w-lg text-[15px] leading-relaxed text-muted">{nf ? t('nfText') : t('mmText')}</p>
-      <ul className="mt-6 space-y-2.5">
-        {tips.map((x) => (
-          <li key={x} className="flex items-start gap-2.5 text-[14px] leading-snug text-ink-soft">
-            <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600" />
-            {x}
-          </li>
-        ))}
-      </ul>
+      <p className="mt-2 max-w-lg text-[15px] leading-relaxed text-muted">{text}</p>
+      {tips.length > 0 && (
+        <ul className="mt-6 space-y-2.5">
+          {tips.map((x) => (
+            <li key={x} className="flex items-start gap-2.5 text-[14px] leading-snug text-ink-soft">
+              <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-brand-600" />
+              {x}
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="mt-7 flex flex-wrap gap-2.5">
         <button type="button" onClick={onRetry} className="inline-flex h-11 items-center gap-2 rounded-full bg-ink px-5 text-[14px] font-semibold text-paper transition hover:bg-ink-soft">
           {t('tryAgain')}

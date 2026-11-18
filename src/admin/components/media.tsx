@@ -10,6 +10,7 @@ import { adm } from '@/admin/i18n';
 import { useDb } from '@/store/db';
 import type { MediaItem } from '@/lib/types';
 import { cn, thumb, uid } from '@/lib/utils';
+import { api, BACKEND } from '@/lib/backend/api';
 
 /** Read an image file, downscale to ≤1600px and re-encode as JPEG (keeps localStorage small). */
 export async function compressImage(file: File, max = 1600, quality = 0.82): Promise<{ url: string; width: number; height: number; size: number }> {
@@ -50,6 +51,14 @@ export function useUploader() {
     try {
       for (const f of list) {
         const c = await compressImage(f);
+        if (BACKEND) {
+          // server-backed build: the picture is stored as a file on the server (which checks and re-encodes it); the
+          // library keeps its address instead of the picture itself
+          const fd = new FormData();
+          fd.append('file', await (await fetch(c.url)).blob(), `${f.name.replace(/\.[^.]+$/, '') || 'image'}.jpg`);
+          const r = await api<{ url: string; bytes: number; width: number; height: number }>('admin/upload', { form: fd });
+          Object.assign(c, { url: r.url, size: r.bytes, width: r.width || c.width, height: r.height || c.height });
+        }
         const item: MediaItem = {
           id: uid('m'),
           url: c.url,

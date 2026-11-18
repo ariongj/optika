@@ -12,18 +12,20 @@ import { site } from '@/i18n/site';
 import { useDb } from '@/store/db';
 import { useUi } from '@/store/ui';
 import { useActiveProducts, useCart, useSettings } from '@/store/hooks';
-import { allCities, localDeliveryFor, zoneForCity } from '@/lib/pricing';
+import { allCities, localDeliveryFor, priceCart, zoneForCity } from '@/lib/pricing';
 import { EMAIL_RE, money } from '@/lib/format';
 import type { Customer, DeliveryMethod, Lang, PaymentMethod } from '@/lib/types';
 import { cn, scrollMotion } from '@/lib/utils';
 import { usePageTitle } from '@/site/layout/SiteLayout';
-import { CheckoutSteps, CompactLine, CouponBox, TotalsRows, TrustNotes, useItemsLabel, useTotalsView } from '@/site/components/checkout/parts';
+import { CheckoutSteps, CompactLine, CouponBox, OrderNotice, TotalsRows, TrustNotes, useItemsLabel, useTotalsView } from '@/site/components/checkout/parts';
 import { PaymentSim } from '@/site/components/checkout/PaymentSim';
 import { RX_CHOICES, ck, rxNoteLine, type RxChoice } from '@/site/components/checkout/dict';
 import { cartNeedsRx } from '@/site/components/product/optical';
 import { openBooking } from '@/site/components/utility/Booking';
 import { notifyOrder } from '@/lib/leads';
 import { CARD_PAYMENTS } from '@/lib/launch';
+import { BACKEND } from '@/lib/backend/api';
+import { orderError, refreshShop, sendOrder, type OrderField } from '@/lib/backend/visitor';
 
 const T = defineDict({
   me: {
@@ -337,7 +339,8 @@ export default function Checkout() {
 
   const cities = useMemo(() => allCities(settings), [settings]);
   const methods = useMemo(() => {
-    const m = (['cod', 'bank', 'card'] as const).filter((k) => settings.payments[k] && (k !== 'card' || CARD_PAYMENTS));
+    // the shop's server takes cash on delivery and bank transfer only: no card option in the server-backed build
+    const m = (['cod', 'bank', 'card'] as const).filter((k) => settings.payments[k] && (k !== 'card' || (CARD_PAYMENTS && !BACKEND)));
     return m.length ? m : (['cod'] as PaymentMethod[]);
   }, [settings.payments]);
   const needsRx = useMemo(() => cartNeedsRx(cart, products), [cart, products]);
@@ -363,6 +366,9 @@ export default function Checkout() {
   const [summaryOpen, setSummaryOpen] = useState(false);
   const placed = useRef(false);
   const timers = useRef<number[]>([]);
+  // server-backed build: an order request is on its way (a second press must not send another), and why the last one was not taken
+  const sending = useRef(false);
+  const [refusal, setRefusal] = useState<{ text: string; review: boolean } | null>(null);
 
   const city = form.city || undefined;
   const totals = useCart({ delivery, city });
@@ -433,6 +439,10 @@ export default function Checkout() {
       ...(note ? { note } : {}),
       ...(co.marketingOptIn && news ? { marketing: true } : {}),
     };
+    if (BACKEND) {
+      void sendToServer(customer);
+      return;
+    }
     const order = placeOrder({ customer, items: cart, delivery, payment, codes, lang });
     notifyOrder(order); // e-mail to the shop (no-op until a form key is configured)
     placed.current = true;
@@ -441,9 +451,76 @@ export default function Checkout() {
     navigate('/porosia/' + order.id);
   };
 
+  /**
+   * Server-backed build: the shop's server prices the bag again, checks the stock and saves the order. Nothing is
+   * placed on this page; any refusal leaves the form as it is, says why, and waits for the shopper to press again.
+   */
+  const sendToServer = async (customer: Customer) => {
+    const shown = totals.total;
+    try {
+      // the opt-in wording the shopper ticked is kept with the consent record
+      const consentText = customer.marketing ? `${t('newsOptIn')} — ${t('newsOptInDesc')}` : '';
+      const order = await sendOrder({ customer, items: cart, delivery, payment, codes, lang }, shown, consentText);
+      placed.current = true;
+      saveDraft(null);
+      clearCart();
+      navigate('/porosia/' + order.id);
+    } catch (err) {
+      try {
+        await refused(err, shown);
+      } finally {
+        setBusy(false);
+      }
+    } finally {
+      sending.current = false;
+    }
+  };
+
+  const refused = async (err: unknown, shown: number) => {
+    const e = orderError(err);
+    // read the name before refreshing: a product taken off sale is gone from this page afterwards
+    const product = e.productId ? useDb.getState().products.find((p) => p.id === e.productId) : undefined;
+    const name = product ? l(product.name) : '';
+    // prices, stock or settings changed: fetch them again so the page shows what the shop will accept
+    if (e.stale) await refreshShop();
+    let text = tk(e.key);
+    if (e.key === 'srv_price') {
+      const db = useDb.getState();
+      const ui = useUi.getState();
+      const now = priceCart(ui.cart, db.products.filter((p) => p.status === 'active'), db.settings, { lang, codes: ui.codes, discounts: db.discounts, collections: db.collections, delivery, city }).total;
+      const server = e.total ?? now;
+      // the page could not be brought in line with the shop (e.g. it could not be refreshed): say so instead of
+      // inviting another attempt that would be refused the same way
+      text = Math.abs(server - now) > 0.005 ? tk('srv_priceUnsure', { total: money(server, lang), shown: money(now, lang) }) : tk('srv_price', { total: money(server, lang), old: money(shown, lang) });
+    } else if (e.key === 'srv_stock') {
+      text = name && e.available !== undefined ? tk('srv_stock', { name, n: e.available }) : tk('srv_stockAny');
+    } else if (e.key === 'srv_unavailable') {
+      text = name ? tk('srv_unavailable', { name }) : tk('srv_unavailableAny');
+    } else if (e.key === 'srv_discountUsed') {
+      // an automatic once-per-customer rule has no code the shopper could take off
+      const typed = !!e.code && useUi.getState().codes.includes(e.code.replace(/\s+/g, '').toUpperCase());
+      text = typed ? tk('srv_discountUsed', { code: e.code ?? '' }) : tk('srv_discountUsedAuto');
+    } else if (e.key === 'srv_field' && e.field) {
+      const labels: Record<OrderField, string> = {
+        firstName: `${t('firstName')} / ${t('lastName')}`,
+        email: t('email'),
+        phone: t('phone'),
+        address: `${t('city')} / ${t('address')}`,
+        company: t('company'),
+      };
+      text = tk('srv_field', { field: labels[e.field] });
+      const el = document.getElementById('f-' + e.field);
+      el?.scrollIntoView({ behavior: scrollMotion(), block: 'center' });
+      later(() => el?.focus({ preventScroll: true }), 450);
+    }
+    setRefusal({ text, review: e.stale && e.key !== 'srv_bag' });
+    toast.error(text);
+  };
+
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (busy) return;
+    if (BACKEND && sending.current) return;
     setSubmitted(true);
     const first = FIELD_ORDER.find((k) => errors[k]);
     if (first) {
@@ -454,6 +531,12 @@ export default function Checkout() {
       return;
     }
     setBusy(true);
+    if (BACKEND) {
+      sending.current = true;
+      setRefusal(null);
+      finish();
+      return;
+    }
     if (payment === 'card') {
       setPhase('processing');
       later(() => setPhase('approved'), 1800);
@@ -823,6 +906,7 @@ export default function Checkout() {
                     <Checkbox checked={news} onChange={setNews} label={t('newsOptIn')} description={t('newsOptInDesc')} />
                   </div>
                 )}
+                {refusal && <OrderNotice live text={refusal.text} review={refusal.review} className="mt-5" />}
                 <Button type="submit" size="lg" className="mt-5 w-full" loading={busy} iconRight={busy ? undefined : <ArrowRight className="h-4 w-4" />}>
                   {submitLabel}
                 </Button>
@@ -850,6 +934,7 @@ export default function Checkout() {
                 <CouponBox totals={totals} collapsible />
                 <div className="my-5 h-px bg-line" />
                 <TotalsRows v={view} big />
+                {refusal && <OrderNotice text={refusal.text} review={refusal.review} className="mt-5" />}
                 <Button type="submit" form="checkout-form" size="lg" className="mt-5 w-full" loading={busy} iconRight={busy ? undefined : <ArrowRight className="h-4 w-4" />}>
                   {submitLabel}
                 </Button>

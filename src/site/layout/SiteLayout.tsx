@@ -16,6 +16,8 @@ import type { Lang } from '@/lib/types';
 import { site } from '@/i18n/site';
 import { useSettings, useTidyCart } from '@/store/hooks';
 import { useDb } from '@/store/db';
+import { BACKEND } from '@/lib/backend/api';
+import { useBackend } from '@/lib/backend/mode';
 
 // Overlays are loaded the first time they open, then stay mounted (so their exit animations still run).
 const CartDrawer = lazy(() => import('./CartDrawer').then((m) => ({ default: m.CartDrawer })));
@@ -53,7 +55,8 @@ function DemoBadge() {
   // The lens simulator opens on its stage and scene photos: only the icon there, where it clears them, and the words on hover or focus.
   // The PD measurement has its buttons along the bottom of its stage: the same there.
   const compact = pathname.startsWith('/lentet') || pathname.startsWith('/matja-pd');
-  if (!settings.demoBanner) return null;
+  // never on the server-backed shop, whatever a restored backup says: orders there are real
+  if (!settings.demoBanner || BACKEND) return null;
   return (
     <Link
       to="/admin"
@@ -135,6 +138,8 @@ export function SiteLayout() {
   const settings = useSettings();
   const authed = useUi((s) => s.adminAuthed);
   const maintenance = readTheme(settings).maintenance.on;
+  // server-backed build, before the owner's first import: there is no shop to show yet (always false in the demo)
+  const notSetUp = useBackend((s) => !s.ready);
 
   useEffect(() => listenForLinkIntent(), []);
   // leads that could not be e-mailed (offline submit) go out on the next visit
@@ -194,7 +199,7 @@ export function SiteLayout() {
   }, [location.pathname, location.search, location.hash, location.key, navigate]);
 
   // maintenance mode (CMS → Online Store → Theme): visitors get the notice page, signed-in staff keep the site
-  if (maintenance && !authed) return <MaintenancePage />;
+  if (notSetUp || (maintenance && !authed)) return <MaintenancePage />;
 
   return (
     <div className="flex min-h-screen flex-col">

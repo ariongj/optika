@@ -30,6 +30,8 @@ interface UiState {
   adminAuthed: boolean;
   /** Role the demo admin acts as (Roles & permissions, PDF p.42) */
   adminRole: RoleId;
+  /** Server-backed build: the team-list entry of the signed-in account (not stored in the browser) */
+  adminStaffId: string | null;
   cartOpen: boolean;
   searchOpen: boolean;
 
@@ -75,6 +77,7 @@ export const useUi = create<UiState>()(
       recentlyViewed: [],
       adminAuthed: false,
       adminRole: 'owner',
+      adminStaffId: null,
       cartOpen: false,
       searchOpen: false,
 
@@ -163,7 +166,11 @@ export const useUi = create<UiState>()(
       pushViewed: (id) => set((s) => ({ recentlyViewed: [id, ...s.recentlyViewed.filter((v) => v !== id)].slice(0, 12) })),
       login: () => set({ adminAuthed: true }),
       logout: () => set({ adminAuthed: false }),
-      setAdminRole: (adminRole) => set({ adminRole }),
+      // the demo's "view as" role switcher; in the server-backed build the role is the signed-in account's (set by
+      // the session, never from the page)
+      setAdminRole: (adminRole) => {
+        if (!BACKEND) set({ adminRole });
+      },
     }),
     {
       name: 'optika-ui',

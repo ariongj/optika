@@ -298,6 +298,12 @@ function mv_route_auth(string $path): never
             if (!$u || empty($u['pass_hash']) || !(int) $u['active']) {
                 password_verify($pass, mv_dummy_hash());
                 mv_auth_log('login_failed', $u, $email, !$u ? 'unknown e-mail' : (!(int) $u['active'] ? 'account disabled' : 'no password yet'));
+                // answers like a real account would, lock included, so the reply does not tell whether the address exists
+                $max = max(1, (int) mv_config()['login_max_failures']);
+                $secs = max(60, (int) mv_config()['login_lock_seconds']);
+                if ($email !== '' && !mv_rate('login-none', $max, $secs, true, $email)) {
+                    mv_fail(423, 'locked', ['retryAfter' => $secs - (time() % $secs)]);
+                }
                 mv_fail(401, 'bad_credentials');
             }
             if ((int) $u['locked_until'] > time()) {
@@ -414,11 +420,15 @@ function mv_route_auth(string $path): never
             $u = mv_user((string) $t['user_id']);
             mv_auth_log($t['kind'] === 'invite' ? 'invite_accepted' : 'password_reset', $u);
             if (!(int) $u['active']) mv_out(['ok' => true, 'signedIn' => false]);
+            // a new password does not replace the second step: an account with 2-step sign-in signs in the normal way
+            if (!empty($u['totp_secret'])) mv_out(['ok' => true, 'signedIn' => false, 'needsCode' => true]);
             $s = mv_session_start($u);
             mv_out(mv_me_payload($u, $s['csrf']) + ['signedIn' => true]);
 
         case 'POST auth/totp/begin':
             $u = mv_staff();
+            // moving 2-step to another phone means switching it off first, which asks for the password
+            if (!empty(mv_user((string) $u['id'])['totp_secret'])) mv_fail(409, 'totp_on');
             $secret = mv_b32_encode(random_bytes(20));
             mv_db()->prepare('UPDATE users SET totp_pending = ? WHERE id = ?')->execute([$secret, $u['id']]);
             $label = rawurlencode('Miftari Vision CMS:' . $u['email']);
@@ -426,8 +436,11 @@ function mv_route_auth(string $path): never
 
         case 'POST auth/totp/enable':
             $u = mv_staff();
-            $pending = (string) (mv_user((string) $u['id'])['totp_pending'] ?? '');
+            $row = mv_user((string) $u['id']);
+            if (!empty($row['totp_secret'])) mv_fail(409, 'totp_on');
+            $pending = (string) ($row['totp_pending'] ?? '');
             if ($pending === '') mv_fail(409, 'totp_not_started');
+            mv_rate('totp', 10, 900, false, (string) $u['id']);
             $step = mv_totp_check($pending, mv_str(mv_body()['code'] ?? '', 12));
             if ($step === null) mv_fail(422, 'code_bad');
             mv_db()->prepare('UPDATE users SET totp_secret = ?, totp_pending = NULL, totp_last = ?, updated_at = ? WHERE id = ?')->execute([$pending, $step, mv_iso(), $u['id']]);
@@ -436,8 +449,13 @@ function mv_route_auth(string $path): never
 
         case 'POST auth/totp/disable':
             $u = mv_staff();
+            // the same limit as changing the password: a stolen session must not be able to guess it here
+            mv_rate('password', 10, 900, false, (string) $u['id']);
             $pw = mv_body()['password'] ?? '';
-            if (!is_string($pw) || !password_verify($pw, (string) $u['pass_hash'])) mv_fail(401, 'bad_credentials');
+            if (!is_string($pw) || !password_verify($pw, (string) $u['pass_hash'])) {
+                mv_auth_log('totp_off_failed', $u, '', 'wrong password');
+                mv_fail(401, 'bad_credentials');
+            }
             mv_db()->prepare('UPDATE users SET totp_secret = NULL, totp_pending = NULL, updated_at = ? WHERE id = ?')->execute([mv_iso(), $u['id']]);
             mv_auth_log('totp_off', $u);
             mv_out(['ok' => true]);

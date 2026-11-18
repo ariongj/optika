@@ -56,8 +56,14 @@ if (framedByOtherSite()) {
   link.style.cssText = 'display:block;padding:24px;font:600 16px system-ui,sans-serif;color:#1c1a17';
   root.replaceChildren(link);
 } else {
+  // Server-backed build: the shop's data (and, for staff, the session) is fetched before the first render. The demo
+  // build has no such step — and no such code: the check is on the build flag itself so the import is left out.
+  const boot =
+    import.meta.env.VITE_BACKEND === '1'
+      ? import('./lib/backend/data').then((m) => m.bootData(appPath(location.pathname))).catch(() => {})
+      : Promise.resolve();
   // in a transition, so that React can pause between components instead of holding the phone up for the whole first render
-  void Promise.all([cssReady(), preloadCurrentPage(appPath(location.pathname))]).then(() =>
+  void Promise.all([cssReady(), preloadCurrentPage(appPath(location.pathname)), boot]).then(() =>
     startTransition(() =>
       createRoot(document.getElementById('root')!).render(
         <StrictMode>

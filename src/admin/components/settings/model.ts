@@ -1,7 +1,8 @@
 // Settings space (Konfigurimet) — PDF pp.39–42, mock-up p.41.
 // Section registry, the settings draft type and the few settings the shared `Settings` type does not carry yet.
 import type { ComponentType } from 'react';
-import { Activity, Bell, Building2, CreditCard, Database, Languages, MapPin, Plug, ShieldCheck, ShoppingCart, Truck, Users } from 'lucide-react';
+import { Activity, Bell, Building2, CreditCard, Database, KeyRound, Languages, MapPin, Plug, ShieldCheck, ShoppingCart, Truck, Users } from 'lucide-react';
+import { BACKEND } from '@/lib/backend/api';
 import type { Lang, Settings } from '@/lib/types';
 import { readLocalDelivery, type LocalDelivery } from '@/lib/pricing';
 import type { SKey } from './strings';
@@ -65,7 +66,7 @@ export interface SecProps {
 /* Section registry — drives the sub-navigation and /admin/konfiguracija/:section */
 /* ------------------------------------------------------------------ */
 export type SectionId =
-  | 'general' | 'staff' | 'payments' | 'checkout' | 'shipping' | 'locations' | 'languages' | 'notifications' | 'integrations' | 'privacy' | 'activity' | 'data';
+  | 'general' | 'staff' | 'access' | 'payments' | 'checkout' | 'shipping' | 'locations' | 'languages' | 'notifications' | 'integrations' | 'privacy' | 'activity' | 'data';
 
 export interface SectionDef {
   id: SectionId;
@@ -82,6 +83,8 @@ export interface SectionDef {
 export const SECTIONS: SectionDef[] = [
   { id: 'general', slug: '', icon: Building2, label: 'sec_general', keys: ['companyName', 'legalName', 'tagline', 'about', 'pib', 'pdv', 'email', 'phone', 'phone2', 'whatsapp', 'address', 'city', 'mapUrl', 'hours', 'instagram', 'facebook', 'vatRate', 'timezone', 'orderPrefix', 'seo'] },
   { id: 'staff', slug: 'stafi', icon: Users, label: 'sec_staff', keys: [] },
+  // sign-in accounts live on the shop server: only the server-backed build has this section
+  ...(BACKEND ? [{ id: 'access', slug: 'qasja', icon: KeyRound, label: 'sec_access', keys: [] } satisfies SectionDef] : []),
   { id: 'payments', slug: 'pagesat', icon: CreditCard, label: 'sec_payments', keys: ['payments', 'bankName', 'bankAccount'] },
   { id: 'checkout', slug: 'checkout', icon: ShoppingCart, label: 'sec_checkout', keys: ['checkout'] },
   { id: 'shipping', slug: 'dergesat', icon: Truck, label: 'sec_shipping', keys: ['shippingZones', 'pickupAddress'] },
@@ -91,7 +94,8 @@ export const SECTIONS: SectionDef[] = [
   { id: 'integrations', slug: 'integrimet', icon: Plug, label: 'sec_integrations', keys: [], to: '/admin/integracije' },
   { id: 'privacy', slug: 'privatesia', icon: ShieldCheck, label: 'sec_privacy', keys: ['privacy'] },
   { id: 'activity', slug: 'aktiviteti', icon: Activity, label: 'sec_activity', keys: [] },
-  { id: 'data', slug: 'demo', icon: Database, label: 'sec_data', keys: ['demoBanner'] },
+  // (server-backed build: backups of the server's data — nothing "demo" about it, and nothing to save with the SaveBar)
+  BACKEND ? { id: 'data', slug: 'te-dhenat', icon: Database, label: 'sec_data_b', keys: [] } : { id: 'data', slug: 'demo', icon: Database, label: 'sec_data', keys: ['demoBanner'] },
 ];
 
 export const sectionPath = (d: SectionDef) => d.to ?? (d.slug ? `/admin/konfiguracija/${d.slug}` : '/admin/konfiguracija');
@@ -100,6 +104,7 @@ export const sectionPath = (d: SectionDef) => d.to ?? (d.slug ? `/admin/konfigur
 const ALIASES: Record<string, SectionId> = {
   pergjithshme: 'general', opste: 'general', general: 'general',
   staff: 'staff', osoblje: 'staff', rolet: 'staff',
+  access: 'access', pristup: 'access', llogarite: 'access',
   placanja: 'payments', payments: 'payments',
   dostava: 'shipping', shipping: 'shipping',
   lokacije: 'locations', jezici: 'languages', obavjestenja: 'notifications',

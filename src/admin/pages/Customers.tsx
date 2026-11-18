@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { toast } from 'sonner';
 import { AlertTriangle, ArrowUpDown, ChevronDown, ChevronRight, Download, GitMerge, Info, MapPin, ShieldCheck, Tag, Upload, UserPlus, Users } from 'lucide-react';
@@ -21,6 +21,10 @@ import { useDb } from '@/store/db';
 import { useCan } from '@/store/hooks';
 import { date, money, num, timeAgo } from '@/lib/format';
 import { download } from '@/lib/utils';
+import { BACKEND } from '@/lib/backend/api';
+
+// server-backed build only: the server's subscriber list as CSV
+const SubscribersExport = lazy(() => import('@/admin/components/access/SubscribersExport').then((m) => ({ default: m.SubscribersExport })));
 
 const T = defineDict({
   me: {
@@ -326,6 +330,11 @@ export default function Customers() {
                 {t('export')}
               </Button>
             </Gate>
+            {BACKEND && (
+              <Suspense fallback={null}>
+                <SubscribersExport allowed={canExport} noPermission={tx('noPermission')} />
+              </Suspense>
+            )}
             <Gate allowed={canEdit} reason={tx('noPermission')}>
               <Button shape="rounded" size="sm" icon={<UserPlus className="h-4 w-4" />} disabled={!canEdit} onClick={() => setAddOpen(true)}>
                 {t('add')}

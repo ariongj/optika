@@ -184,6 +184,8 @@ function mv_route_consent(string $path, array $me): never
         $channel = (string) ($b['channel'] ?? '');
         $action = (string) ($b['action'] ?? '');
         if ($key === '' || !in_array($channel, MV_CHANNELS, true) || !in_array($action, ['subscribe', 'unsubscribe'], true)) mv_fail(422, 'invalid');
+        // a consent written down by staff is only worth something with how it was given (in store, by phone…)
+        if (mb_strlen(mv_str($b['note'] ?? '', 300)) < 5) mv_fail(422, 'note_required');
         mv_consent_record([
             'subject' => $key, 'email' => mv_str($b['email'] ?? (str_contains($key, '@') ? $key : ''), 190), 'phone' => mv_str($b['phone'] ?? '', 40),
             'channel' => $channel, 'action' => $action, 'source' => 'staff', 'actor' => (string) ($me['staff_id'] ?: $me['id']), 'note' => mv_str($b['note'] ?? '', 300),

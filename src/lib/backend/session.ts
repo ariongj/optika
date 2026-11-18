@@ -60,14 +60,14 @@ function signedIn(me: MePayload): StaffUser {
   hint(true);
   useSession.setState({ status: 'in', user: me.user, setup: false, recovery: false });
   // the CMS's role checks and "signed in" switches read these
-  useUi.setState({ adminAuthed: true, adminRole: me.user.role });
+  useUi.setState({ adminAuthed: true, adminRole: me.user.role, adminStaffId: me.user.staffId || null });
   return me.user;
 }
 
 function signedOutState(extra: Partial<SessionState> = {}) {
   setCsrf('');
   useSession.setState({ status: 'out', user: null, ...extra });
-  useUi.setState({ adminAuthed: false, adminRole: 'owner' });
+  useUi.setState({ adminAuthed: false, adminRole: 'owner', adminStaffId: null });
 }
 
 let checking: Promise<StaffUser | null> | null = null;
@@ -125,10 +125,13 @@ export function linkInfo(token: string): Promise<LinkInfo> {
   return api<LinkInfo & { ok: true }>('auth/link-info', { body: { token } });
 }
 
-/** Set a password from an invite / reset link. Signs in unless the account is blocked. */
-export async function acceptLink(token: string, password: string): Promise<StaffUser | null> {
-  const r = await api<(MePayload & { signedIn: true }) | { ok: true; signedIn: false }>('auth/link-accept', { body: { token, password } });
-  return r.signedIn ? signedIn(r) : null;
+/**
+ * Set a password from an invite / reset link. Signs in, except: 'code' = the account has 2-step sign-in (sign in the
+ * normal way, with the code), null = the account is switched off.
+ */
+export async function acceptLink(token: string, password: string): Promise<StaffUser | 'code' | null> {
+  const r = await api<(MePayload & { signedIn: true }) | { ok: true; signedIn: false; needsCode?: boolean }>('auth/link-accept', { body: { token, password } });
+  return r.signedIn ? signedIn(r) : r.needsCode ? 'code' : null;
 }
 
 export async function changePassword(current: string, password: string): Promise<void> {

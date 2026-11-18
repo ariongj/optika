@@ -28,7 +28,14 @@ const {
 
 // CMS (lazy — separate bundle)
 const AdminLayout = lazyRetry(() => import('@/admin/layout/AdminLayout'));
-const Login = lazyRetry(() => import('@/admin/pages/Login'));
+// The server-backed build (VITE_BACKEND=1) signs staff in against the shop server; the demo build keeps its demo login.
+// The checks are on the build flag itself, so each build carries only its own sign-in code.
+const BACKEND_BUILD = import.meta.env.VITE_BACKEND === '1';
+const Nothing = () => null;
+const Login = BACKEND_BUILD ? lazyRetry(() => import('@/admin/pages/StaffLogin')) : lazyRetry(() => import('@/admin/pages/Login'));
+const SetPassword = BACKEND_BUILD ? lazyRetry(() => import('@/admin/pages/SetPassword')) : Nothing;
+const BackendGate = BACKEND_BUILD ? lazyRetry(() => import('@/admin/components/auth/BackendGate')) : null;
+const MyAccount = BACKEND_BUILD ? lazyRetry(() => import('@/admin/pages/MyAccount')) : Nothing;
 const Invoice = lazyRetry(() => import('@/admin/pages/Invoice'));
 // Overview, orders
 const Dashboard = lazyRetry(() => import('@/admin/pages/Dashboard'));
@@ -98,6 +105,8 @@ function NavProgress() {
 function RequireAuth({ children }: { children: ReactNode }) {
   const authed = useUi((s) => s.adminAuthed);
   if (!authed) return <Navigate to="/admin/login" replace />;
+  // server-backed build: not before the shop's data is here (and, on the first run, the shop is set up)
+  if (BackendGate) return <BackendGate>{children}</BackendGate>;
   return <>{children}</>;
 }
 
@@ -248,6 +257,8 @@ const adminRoutes: RouteObject[] = [
   screen('konfiguracija', 'settings', <SettingsPage />),
   screen('konfiguracija/:section', 'settings', <SettingsPage />),
   screen('moduli', null, <ModuleMap />),
+  // own password, 2-step sign-in and devices: every signed-in account (server-backed build)
+  ...(BACKEND_BUILD ? [screen('llogaria', null, <MyAccount />)] : []),
   // v1 URLs
   { path: 'upiti', element: <Redirect to="/admin/kontakti" /> },
   { path: 'sadrzaj', element: <Redirect to="/admin/prodavnica/editor" /> },
@@ -295,6 +306,8 @@ const router = createBrowserRouter([
         ],
       },
       { path: 'admin/login', element: <Login /> },
+      // invitation / new-password links (server-backed build)
+      ...(BACKEND_BUILD ? [{ path: 'admin/lozinka', element: <SetPassword /> }] : []),
       {
         // Printable invoice — outside the CMS shell
         path: 'admin/faktura/:id',

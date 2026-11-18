@@ -5,12 +5,14 @@ import { Checkbox, Input, Select, Textarea } from '@/components/ui/Field';
 import { Accent } from '@/components/ui/misc';
 import { defineDict, useDict, useLang } from '@/i18n';
 import { site } from '@/i18n/site';
-import { useDb } from '@/store/db';
+import { useDb, type InquiryInput } from '@/store/db';
 import { useSettings } from '@/store/hooks';
 import { allCities } from '@/lib/pricing';
 import type { Lang } from '@/lib/types';
 import { cn, scrollMotion } from '@/lib/utils';
 import { notifyInquiry } from '@/lib/leads';
+import { BACKEND } from '@/lib/backend/api';
+import { formErrorKey, sendInquiry, visitorErrors } from '@/lib/backend/visitor';
 
 /** Market of a partner application — the B2B tabs on /optical-lab. */
 export type Market = 'xk' | 'eu';
@@ -202,6 +204,9 @@ export function PartnerForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState<{ name: string; company: string; email: string; phone: string; ref: string } | null>(null);
+  // server-backed build: why the application could not be sent (shown above the button until the next attempt)
+  const tv = useDict(visitorErrors);
+  const [sendError, setSendError] = useState('');
   const top = useRef<HTMLDivElement>(null);
   const set = (k: 'company' | 'name' | 'phone' | 'email' | 'cityXk' | 'cityEu' | 'country' | 'message') => (e: { target: { value: string } }) => setForm((x) => ({ ...x, [k]: e.target.value }));
   const cities = allCities(settings);
@@ -216,6 +221,8 @@ export function PartnerForm({
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // one request at a time (Enter in a field while the first is still on its way)
+    if (BACKEND && busy) return;
     const err: Record<string, string> = {};
     if (!form.company.trim()) err.company = ts('f_required');
     if (!form.name.trim()) err.name = ts('f_required');
@@ -228,7 +235,8 @@ export function PartnerForm({
     setErrors(err);
     if (Object.keys(err).length) return;
     setBusy(true);
-    await new Promise((r) => setTimeout(r, 650));
+    // the demo imitates the wait for a server; the server-backed build has a real one
+    if (!BACKEND) await new Promise((r) => setTimeout(r, 650));
 
     const country = market === 'eu' ? countryName(form.country) : '';
     const city = market === 'eu' ? [form.cityEu.trim(), country].filter(Boolean).join(', ') : form.cityXk;
@@ -241,7 +249,7 @@ export function PartnerForm({
     ]
       .filter(Boolean)
       .join('\n');
-    const inq = addInquiry({
+    const request: InquiryInput = {
       type: 'quote',
       source: 'quote',
       name: form.name.trim(),
@@ -251,7 +259,32 @@ export function PartnerForm({
       company: form.company.trim(),
       service: `Optical Lab B2B · ${marketLabel}`,
       message,
-    });
+    };
+    if (BACKEND) {
+      // The application goes to the shop's server (tags included). Success is only shown once the server has saved it.
+      setSendError('');
+      try {
+        const saved = await sendInquiry({ ...request, tags: ['b2b', 'optical-lab', market === 'eu' ? 'eu' : 'kosove'] });
+        setSent({
+          name: form.name.trim().split(' ')[0],
+          company: form.company.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim(),
+          ref: saved.id.replace(/^inq_/, '').slice(0, 6).toUpperCase(),
+        });
+        requestAnimationFrame(() => top.current?.scrollIntoView({ behavior: scrollMotion(), block: 'center' }));
+      } catch (e1) {
+        const key = formErrorKey(e1);
+        if (key === 'sv_name') setErrors({ name: ts('f_required') });
+        else if (key === 'sv_phone') setErrors({ phone: ts('f_invalidPhone') });
+        else if (key === 'sv_email') setErrors({ email: t('invalidEmail') });
+        else setSendError(tv(key));
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+    const inq = addInquiry(request);
     // `InquiryInput` has no tags — set them right after (does not mark the inquiry as seen).
     updateInquiry(inq.id, { tags: ['b2b', 'optical-lab', market === 'eu' ? 'eu' : 'kosove'] });
     notifyInquiry({ ...inq, tags: ['b2b', 'optical-lab', market === 'eu' ? 'eu' : 'kosove'] }, { topic: 'Optical Lab B2B' }); // e-mail to the shop
@@ -366,6 +399,11 @@ export function PartnerForm({
             {errors.consent && <p className="mt-1.5 pl-8 text-xs font-medium text-red-600">{errors.consent}</p>}
           </div>
         </div>
+        {sendError && (
+          <p role="alert" className="mt-5 rounded-xl bg-red-50 px-3.5 py-2.5 text-[13.5px] font-medium leading-snug text-red-700 ring-1 ring-inset ring-red-600/15">
+            {sendError}
+          </p>
+        )}
         <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="flex items-start gap-2 text-xs leading-relaxed text-muted sm:max-w-[55%]">
             <ShieldCheck className="mt-px h-3.5 w-3.5 shrink-0 text-brand-600" /> {t('safety')}

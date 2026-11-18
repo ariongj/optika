@@ -4,7 +4,7 @@ import { AlertCircle, CalendarClock, Clock, PhoneCall, ShieldCheck } from 'lucid
 import { toast } from 'sonner';
 import { Accent, Badge, Img } from '@/components/ui/misc';
 import { useDict, useL, useLang, lt } from '@/i18n';
-import { useDb } from '@/store/db';
+import { useDb, type InquiryInput } from '@/store/db';
 import { useSettings } from '@/store/hooks';
 import type { Booking, Service } from '@/lib/types';
 import { readRules, slotsForDay } from '@/admin/components/appointments/rules';
@@ -19,6 +19,9 @@ import { DetailsForm, type DetailsValues } from '@/site/components/booking/Detai
 import { PhoneCard, SummaryCard } from '@/site/components/booking/Summary';
 import { Confirmation } from '@/site/components/booking/Confirmation';
 import { notifyInquiry } from '@/lib/leads';
+import { BACKEND } from '@/lib/backend/api';
+import { loadPublic } from '@/lib/backend/data';
+import { bookingErrorKey, isSlotRefusal, sendBooking } from '@/lib/backend/visitor';
 
 /** Days shown per page of the day picker, and how far ahead the visitor may page. */
 const WINDOW = 14;
@@ -69,6 +72,8 @@ function BookingFlow({ onDone }: { onDone: (d: { booking: Booking; service: Serv
   const [pickedDay, setPickedDay] = useState('');
   const [pickedTime, setPickedTime] = useState('');
   const [error, setError] = useState('');
+  // server-backed build: the server did not take the booking for a reason other than the time (shown at the details form)
+  const [sendError, setSendError] = useState('');
   const step2 = useRef<HTMLElement>(null);
   const step3 = useRef<HTMLElement>(null);
   const step4 = useRef<HTMLElement>(null);
@@ -127,10 +132,10 @@ function BookingFlow({ onDone }: { onDone: (d: { booking: Booking; service: Serv
     reveal(step4.current);
   };
 
-  const taken = () => {
+  const taken = (message = t('takenError')) => {
     setPickedTime('');
-    setError(t('takenError'));
-    toast.error(t('takenError'));
+    setError(message);
+    toast.error(message);
     reveal(step3.current);
   };
 
@@ -151,7 +156,7 @@ function BookingFlow({ onDone }: { onDone: (d: { booking: Booking; service: Serv
     const email = v.email.trim();
     const rxLine = v.rx ? `${t('rxNote')}: ${t(`rx_${v.rx}`)}` : '';
     const message = [rxLine, v.note.trim()].filter(Boolean).join('\n');
-    const inq = st.addInquiry({
+    const request: InquiryInput = {
       type: 'measurement',
       name,
       phone,
@@ -160,8 +165,37 @@ function BookingFlow({ onDone }: { onDone: (d: { booking: Booking; service: Serv
       message: message || '—',
       preferredDate: dayKey(fresh.start),
       ...(svc.id === 'sv-smart' ? { tags: ['smart-glasses'] } : {}),
-    });
+    };
     const store = st.settings.locations?.find((x) => x.isDefault)?.id;
+    if (BACKEND) {
+      // The shop's server checks the slot against its own calendar and saves the request and the pending
+      // appointment together — or neither.
+      setSendError('');
+      try {
+        const r = await sendBooking(request, {
+          serviceId: svc.id,
+          staffId: fresh.staffId,
+          start: fresh.start,
+          location: svc.location ?? store ?? 'onsite',
+          note: [t('note_web'), rxLine, v.note.trim()].filter(Boolean).join(' — '),
+        });
+        onDone({ booking: r.booking, service: svc });
+        window.scrollTo({ top: 0 });
+        return true;
+      } catch (err) {
+        const text = t(bookingErrorKey(err));
+        if (isSlotRefusal(err)) {
+          // this page's calendar is behind the shop's: fetch it again so the picker shows what is really free
+          await loadPublic();
+          taken(text);
+        } else {
+          setSendError(text);
+          toast.error(text);
+        }
+        return false;
+      }
+    }
+    const inq = st.addInquiry(request);
     const res = st.addBooking({
       serviceId: svc.id,
       staffId: fresh.staffId,
@@ -276,7 +310,7 @@ function BookingFlow({ onDone }: { onDone: (d: { booking: Booking; service: Serv
           </StepCard>
 
           <StepCard ref={step4} n={4} title={t('s4')} hint={t('s4Hint')} locked={!slot && (service ? t('lockedTime') : t('lockedService'))}>
-            <DetailsForm askRx={serviceId !== 'sv-marrja'} summary={<SummaryCard compact service={service} day={day?.date} start={slot?.start} />} onSubmit={submit} />
+            <DetailsForm askRx={serviceId !== 'sv-marrja'} summary={<SummaryCard compact service={service} day={day?.date} start={slot?.start} />} error={sendError} onSubmit={submit} />
           </StepCard>
         </div>
 
