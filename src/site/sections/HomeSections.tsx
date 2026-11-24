@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type ComponentType } from 'react';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { toast } from 'sonner';
 import {
   ArrowRight, ArrowUpRight, Award, BadgeCheck, BadgePercent, CalendarCheck, Check, ChevronLeft, ChevronRight, Clock, Copy,

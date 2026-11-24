@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import {
   Aperture, ArrowUpRight, BookOpen, CalendarCheck, FileText, FlaskConical, Glasses, Images, Layers, MapPin, PackageSearch, Ruler, ScanFace, Sparkles, Stethoscope, Users,
   type LucideIcon,

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { ArrowRight, ArrowUpRight, BookOpen, MessageCircle, Phone, Sparkles } from 'lucide-react';
 import type { Post } from '@/lib/types';
 import { Accent, EmptyState, Img, Reveal, plain } from '@/components/ui/misc';

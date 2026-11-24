@@ -2,7 +2,7 @@ import { useDeferredValue, useEffect, useId, useMemo, useRef, useState, type CSS
 import { AnimatePresence, motion, useReducedMotion } from '@/lib/motion';
 import { CalendarCheck, ChevronDown, EyeOff, Glasses, Minus, Move3d, Plus, ShoppingBag, SlidersHorizontal, Waypoints } from 'lucide-react';
 import { toast } from 'sonner';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import type { Product } from '@/lib/types';
 import { Button } from '@/components/ui/Button';
 import { Reveal } from '@/components/ui/misc';

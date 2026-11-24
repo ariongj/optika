@@ -5,7 +5,7 @@ declare(strict_types=1);
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
 
-foreach (['core', 'store', 'auth', 'perms', 'data', 'users', 'consent', 'visitor', 'uploads'] as $lib) require __DIR__ . "/lib/$lib.php";
+foreach (['core', 'store', 'auth', 'perms', 'data', 'users', 'consent', 'visitor', 'uploads', 'seo'] as $lib) require __DIR__ . "/lib/$lib.php";
 if (is_file(__DIR__ . '/lib/pricing.php')) require __DIR__ . '/lib/pricing.php';
 
 set_exception_handler(function (Throwable $e): void {
@@ -29,6 +29,8 @@ if ($path === 'health' && $m === 'GET') {
     mv_out(['ok' => true, 'version' => MV_API_VERSION, 'php' => PHP_VERSION, 'sqlite' => extension_loaded('pdo_sqlite'), 'pricing' => function_exists('mvp_price_cart'), 'https' => mv_https()]);
 }
 if ($path === 'public' && $m === 'GET') mv_route_public();
+if ($path === 'seo/page' && ($m === 'GET' || $m === 'HEAD')) mv_route_seo_page();
+if ($path === 'seo/sitemap' && ($m === 'GET' || $m === 'HEAD')) mv_route_sitemap();
 if ($path === 'unsubscribe') mv_route_unsubscribe();
 if (str_starts_with($path, 'auth/')) mv_route_auth($path);
 

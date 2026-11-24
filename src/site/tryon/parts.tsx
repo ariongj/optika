@@ -37,7 +37,7 @@ export function StageCard({
       {/* m-auto centres the card but, unlike place-items, never pushes a tall card out of reach above the top */}
       <div className="m-auto w-full max-w-[380px] motion-safe:animate-fade-up rounded-3xl bg-ink/60 p-5 text-center text-white shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)] ring-1 ring-white/12 backdrop-blur-xl sm:p-8">
         <span className={cn('mx-auto grid h-11 w-11 place-items-center rounded-2xl sm:h-14 sm:w-14', tone === 'alert' ? 'bg-amber-400/15 text-amber-200' : 'bg-white/10 text-brand-200')}>{icon}</span>
-        <h3 className="display mt-3 text-[22px] leading-[1.12] sm:mt-5 sm:text-[28px]">{title}</h3>
+        <h2 className="display mt-3 text-[22px] leading-[1.12] sm:mt-5 sm:text-[28px]">{title}</h2>
         {text && <p className="mt-2 text-[13.5px] leading-relaxed text-white/70 sm:mt-2.5 sm:text-[14px]">{text}</p>}
         {detail && (
           <p className="mt-2 break-words font-mono text-[11px] leading-snug text-white/45">

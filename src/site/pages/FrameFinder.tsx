@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { ArrowDown, ArrowUpRight, CalendarCheck, Clock, ScanFace, UserRoundCheck } from 'lucide-react';
 import { Accent, Img, Reveal } from '@/components/ui/misc';
 import { Button, ButtonLink } from '@/components/ui/Button';

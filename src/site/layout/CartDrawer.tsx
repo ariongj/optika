@@ -1,4 +1,5 @@
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { ShoppingBag, Trash2, Truck, ShieldPlus, ArrowRight, FileText } from 'lucide-react';
 import { Drawer } from '@/components/ui/Overlay';
 import { Button } from '@/components/ui/Button';

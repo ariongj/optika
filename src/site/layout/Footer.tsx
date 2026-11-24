@@ -1,5 +1,5 @@
 import { useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { ArrowRight, ChevronDown, Clock, Mail, MapPin, Phone, ArrowUp, ScanFace } from 'lucide-react';
 import { toast } from 'sonner';
 import { Logo } from '@/components/brand/Logo';

@@ -1,7 +1,8 @@
 import { maxOrderQty } from '@/lib/inventory';
 import { useCartFull } from '@/site/components/product/useCartFull';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type DragEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { toast } from 'sonner';
 import { ArrowUpRight, Box, CalendarCheck, Camera, CameraOff, CircleAlert, ImagePlus, Loader2, LockKeyhole, MessageSquareText, RefreshCw, Ruler, ScanFace, ShoppingBag, SlidersHorizontal, SwitchCamera, Trash2, Video } from 'lucide-react';
 import type { Product } from '@/lib/types';

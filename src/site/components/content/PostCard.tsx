@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { ArrowRight, Clock } from 'lucide-react';
 import type { Post } from '@/lib/types';
 import { Img, plain } from '@/components/ui/misc';

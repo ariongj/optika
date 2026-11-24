@@ -1,5 +1,5 @@
 import { BACKEND } from '@/lib/backend/api';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { ArrowRight, CalendarPlus, Check, Clock, Home, LayoutDashboard, MapPin, Phone, RotateCcw } from 'lucide-react';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Accent, Badge } from '@/components/ui/misc';

@@ -151,7 +151,7 @@ export function CardAdjust({ still, reading, guess, edges, bad, onUse, onRetake 
     <div className="absolute inset-0 z-10 bg-ink text-white" data-pd-adjust>
       <div className="mx-auto flex h-full w-full max-w-[600px] flex-col p-3 sm:p-6">
       <div className="shrink-0 px-1 text-center">
-        <h3 className="display text-[21px] leading-[1.12] sm:text-[26px]">{t('adjustTitle')}</h3>
+        <h2 className="display text-[21px] leading-[1.12] sm:text-[26px]">{t('adjustTitle')}</h2>
         <p className={cn('mx-auto mt-1.5 max-w-md text-[13px] leading-snug sm:text-[14px]', bad ? 'text-amber-200' : 'text-white/70')} role={bad ? 'alert' : undefined}>
           {bad && <CircleAlert className="-mt-0.5 mr-1.5 inline h-4 w-4" />}
           {bad ? t('cardBad') : edges.found ? t('adjustFound') : t('adjustText')}

@@ -1,5 +1,5 @@
 import { ArrowRight, ArrowUpRight, Clock, FlaskConical, HeartHandshake, Mail, MapPin, Phone, ScanFace, Users } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { Accent, Img, Reveal } from '@/components/ui/misc';
 import { ButtonLink, buttonClass } from '@/components/ui/Button';
 import { LogoMark } from '@/components/brand/Logo';

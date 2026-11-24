@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { ArrowDown, CalendarCheck, Move3d } from 'lucide-react';
 import { useDict } from '@/i18n';
 import { cn } from '@/lib/utils';

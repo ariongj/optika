@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { ChevronRight } from 'lucide-react';
 import { Accent, Img } from '@/components/ui/misc';
 import { useDict } from '@/i18n';

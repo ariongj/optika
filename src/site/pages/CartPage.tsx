@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { toast } from 'sonner';
 import { ArrowLeft, ArrowRight, CalendarCheck, Eye, Lock, ShoppingBag, Trash2 } from 'lucide-react';
 import { Button, ButtonLink } from '@/components/ui/Button';

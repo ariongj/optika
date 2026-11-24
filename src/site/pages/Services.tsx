@@ -1,5 +1,5 @@
 import { useMemo, type CSSProperties } from 'react';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { ArrowRight, ArrowUpRight, CalendarCheck, Check, Eye, FlaskConical, Globe2, Phone, ShieldCheck, Sparkles } from 'lucide-react';
 import type { Category, L10n } from '@/lib/types';
 import { Accent, Accordion, Img, Reveal } from '@/components/ui/misc';

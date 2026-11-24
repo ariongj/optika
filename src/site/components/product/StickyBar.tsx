@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from '@/lib/motion';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { FileText, ScanFace, Send, ShoppingBag } from 'lucide-react';
 import { Img } from '@/components/ui/misc';
 import { useDict, useL, useLang } from '@/i18n';

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { AnimatePresence, motion } from '@/lib/motion';
 import { ArrowRight, ChevronLeft, ChevronRight, Eye, ScanFace } from 'lucide-react';
 import type { HeroSlide } from '@/lib/types';

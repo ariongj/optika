@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { ArrowRight, ArrowUpRight, Phone } from 'lucide-react';
 import { Accordion, Img, Reveal } from '@/components/ui/misc';
 import { WhatsAppIcon } from '@/components/brand/Social';

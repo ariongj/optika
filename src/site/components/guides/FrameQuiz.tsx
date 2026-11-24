@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { toast } from 'sonner';
 import { AnimatePresence, motion, useReducedMotion } from '@/lib/motion';
 import { ArrowLeft, ArrowRight, ArrowUpRight, CalendarCheck, Check, Link2, Pencil, RotateCcw, Ruler, ScanFace } from 'lucide-react';

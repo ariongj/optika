@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { toast } from 'sonner';
 import { ArrowRight, CalendarCheck, Camera, CameraOff, Check, CircleAlert, Copy, CreditCard, Eye, Glasses, Layers, Loader2, LockKeyhole, RefreshCw, Ruler, ScanFace, Smartphone } from 'lucide-react';
 import { Img } from '@/components/ui/misc';
@@ -760,7 +760,7 @@ export function PdStudio() {
         <div className="no-scrollbar absolute inset-0 z-10 flex overflow-y-auto p-3 sm:p-5" data-pd-guide>
           <div className="m-auto w-full max-w-[400px] motion-safe:animate-fade-up rounded-3xl bg-ink/60 p-5 text-center text-white shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)] ring-1 ring-white/12 backdrop-blur-xl sm:p-6">
             <CardPicture />
-            <h3 className="display mt-3 text-[22px] leading-[1.12] sm:text-[26px]">{t('cardTitle')}</h3>
+            <h2 className="display mt-3 text-[22px] leading-[1.12] sm:text-[26px]">{t('cardTitle')}</h2>
             <p className={cn('mt-2 text-[13.5px] leading-relaxed', cardFailed ? 'text-amber-200' : 'text-white/70')} role={cardFailed ? 'alert' : undefined}>
               {cardFailed ? t('cardFail') : t('cardText')}
             </p>

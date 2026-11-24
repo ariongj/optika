@@ -1,5 +1,5 @@
 import { Fragment, type ReactNode } from 'react';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { cn } from '@/lib/utils';
 
 /**

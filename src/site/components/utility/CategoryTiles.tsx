@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { Img } from '@/components/ui/misc';
 import { defineDict, useDict, useL, useLang } from '@/i18n';

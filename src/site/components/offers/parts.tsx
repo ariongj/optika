@@ -1,5 +1,5 @@
 // Small pieces of the offer landing page: countdown, discount code (copy / apply in the cart), offer card.
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { toast } from 'sonner';
 import { ArrowRight, Check, Clock, Copy, ShoppingBag } from 'lucide-react';
 import { Accent, Badge, Img, useCountdown } from '@/components/ui/misc';

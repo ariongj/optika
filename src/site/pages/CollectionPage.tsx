@@ -2,7 +2,8 @@
 // staff can preview an unpublished one with ?preview=1 while logged into the CMS.
 import { useMemo } from 'react';
 import { useSaleHref } from '@/admin/components/menus/useNav';
-import { Link, useParams, useSearchParams } from 'react-router';
+import { useParams, useSearchParams } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { ArrowDown, ArrowRight, ArrowUpDown, ChevronDown, Compass, Eye, LayoutGrid, Percent, ShieldPlus, Tag } from 'lucide-react';
 import { ProductCard } from '@/site/components/ProductCard';
 import { Breadcrumbs } from '@/site/components/SectionHeading';
@@ -178,6 +179,7 @@ function CollectionView({ collection, products, preview }: { collection: Collect
           />
         ) : (
           <>
+            <h2 className="sr-only">{countLabel(t, lang, products.length)}</h2>
             <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
               <p className="text-[15px] text-muted" aria-live="polite">
                 <span className="font-bold text-ink">{countLabel(t, lang, products.length)}</span>

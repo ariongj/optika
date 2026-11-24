@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { ArrowRight, Timer } from 'lucide-react';
 import { Accent, Reveal } from '@/components/ui/misc';
 import { ButtonLink } from '@/components/ui/Button';

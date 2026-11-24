@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router';
+import { Outlet, useLocation, useNavigate } from 'react-router';
+import { Link, slashed } from '@/lib/router-links';
 import { scrollToSection } from '@/lib/utils';
 import { Construction, LayoutDashboard, MessageCircle, Phone } from 'lucide-react';
 import { readTheme } from '@/admin/components/store/theme';
@@ -221,10 +222,24 @@ export function SiteLayout() {
   );
 }
 
+// The page the visitor opened came with a title written for search results and link previews at build time
+// (scripts/prerender-meta.mjs), longer and more descriptive than the in-app one. Search engines read the title after the
+// script has run, so that page keeps it (in Albanian, the language it is written in). A shell that is not this page's
+// own (404.html for content added later) has another page's canonical address and is not used.
+const canonicalTag = typeof document === 'undefined' ? null : document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+const opened = canonicalTag && typeof location !== 'undefined' && new URL(canonicalTag.href).pathname === slashed(location.pathname) ? { path: slashed(location.pathname), title: document.title, canonical: canonicalTag.href } : null;
+
 /** Page title helper for storefront pages. */
 export function usePageTitle(title: string | undefined) {
   const settings = useSettings();
+  const lang = useLang();
+  const { pathname } = useLocation();
   useEffect(() => {
-    document.title = title ? `${title} — ${settings.companyName}` : settings.seo.title;
-  }, [title, settings.companyName, settings.seo.title]);
+    const here = slashed(window.location.pathname);
+    // (the home page's title is the one set in the CMS, Online Store → SEO: always the current setting)
+    if (opened && here === opened.path && lang === 'sq' && title) document.title = opened.title;
+    else document.title = title ? `${title} — ${settings.companyName}` : settings.seo.title;
+    // after moving within the app, the address that was the canonical one belongs to another page
+    if (canonicalTag && opened) canonicalTag.href = here === opened.path ? opened.canonical : window.location.origin + here;
+  }, [title, settings.companyName, settings.seo.title, lang, pathname]);
 }

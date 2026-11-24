@@ -4,8 +4,8 @@
 
 Options -Indexes
 DirectoryIndex index.html
-# Routes known at build time have their own <route>/index.html; anything else (e.g. a product added later in the CMS)
-# gets the app shell with HTTP 404, the same way the GitHub Pages version works today.
+# Routes known at build time have their own <route>/index.html; products, articles and the other database pages are
+# answered by the API (rewrite rules below); anything else gets the app shell with HTTP 404.
 ErrorDocument 404 /404.html
 
 <IfModule mod_mime.c>
@@ -30,6 +30,12 @@ ErrorDocument 404 /404.html
   # Never serve dot-files (except /.well-known/ for certificates), backups, archives or databases.
   RewriteRule (^|/)\.(?!well-known(/|$)) - [F,L]
   RewriteRule \.(?:zip|tar|t?gz|7z|rar|sql|sqlite|sqlite3|db|bak|old|orig|swp|log|ini|env|sh|md)$ - [F,L,NC]
+
+  # Pages whose content lives in the shop database (products, categories, collections, offers, CMS pages, articles)
+  # and the sitemap are answered from the current data (api/lib/seo.php): a product added, renamed or removed in the
+  # CMS has the right title, preview and status for search engines at once, and the sitemap lists what is published.
+  RewriteRule ^sitemap\.xml$ api/index.php?r=seo/sitemap [L]
+  RewriteRule ^(produkt|produktet|koleksioni|oferta|faqe|keshilla)/([^/.]+)/?$ api/index.php?r=seo/page&p=$1/$2 [L]
 </IfModule>
 
 <IfModule mod_headers.c>
@@ -46,8 +52,9 @@ ErrorDocument 404 /404.html
   Header always set Strict-Transport-Security "max-age=31536000"
   Header unset X-Powered-By
 
-  # Keep the CMS, the API and uploaded pictures out of search results.
-  SetEnvIf Request_URI "^/(?:admin|api|uploads)(?:/|$)" MV_NOINDEX
+  # Keep the CMS out of search results (the API says so itself, in api/lib/core.php). Pictures uploaded from the CMS
+  # are the shop's public product and page photos, so image search may show them.
+  SetEnvIf Request_URI "^/admin(?:/|$)" MV_NOINDEX
   Header always set X-Robots-Tag "noindex, nofollow" env=MV_NOINDEX
 
   # Build files under /assets/ carry a content hash in their name, so they never change: cached for a year. Other

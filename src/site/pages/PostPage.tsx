@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
-import { Link, useParams } from 'react-router';
+import { useParams } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { ArrowRight, CalendarDays, Clock, FileQuestion } from 'lucide-react';
 import type { HomeSection } from '@/lib/types';
 import { Img, Reveal, plain } from '@/components/ui/misc';

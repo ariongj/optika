@@ -20,6 +20,15 @@ function mv_dev_headers(): array
     return $out;
 }
 
+// the web root's rewrites to the API: the sitemap and the pages whose content lives in the database
+if ($uri === '/sitemap.xml') {
+    $uri = '/api/seo/sitemap';
+} elseif (preg_match('#^/(produkt|produktet|koleksioni|oferta|faqe|keshilla)/([^/.]+)/?$#', $uri, $m)) {
+    $_GET['p'] = "$m[1]/$m[2]";
+    $uri = '/api/seo/page';
+    foreach (mv_dev_headers() as $k => $v) header("$k: $v");
+}
+
 if (preg_match('#^/api(?:/(.*))?$#', $uri, $m)) {
     $_GET['r'] = $m[1] ?? '';
     $_SERVER['SCRIPT_NAME'] = '/api/index.php';
@@ -69,6 +78,8 @@ if ($real === false || !is_file($real) || !str_starts_with(str_replace('\\', '/'
 $ext = strtolower(pathinfo($real, PATHINFO_EXTENSION));
 http_response_code($status);
 foreach (mv_dev_headers() as $k => $v) header("$k: $v");
+// the web root's SetEnvIf rule: the CMS is kept out of search results
+if (preg_match('#^/admin(?:/|$)#', $uri)) header('X-Robots-Tag: noindex, nofollow');
 header('Content-Type: ' . ($types[$ext] ?? 'application/octet-stream'));
 if (str_starts_with($uri, '/assets/')) header('Cache-Control: public, max-age=31536000, immutable');
 elseif (in_array($ext, ['html', 'webmanifest'], true) || basename($real) === 'sw.js') header('Cache-Control: no-cache');

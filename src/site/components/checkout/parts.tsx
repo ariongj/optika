@@ -1,5 +1,5 @@
 import { Fragment, useState, type ReactNode } from 'react';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { AnimatePresence, motion } from '@/lib/motion';
 import { toast } from 'sonner';
 import { AlertCircle, Award, Check, ChevronDown, Eye, ShieldCheck, ShieldPlus, TicketPercent, X } from 'lucide-react';
@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { BACKEND } from '@/lib/backend/api';
 import { ensureCode, useCodeDiscounts } from '@/lib/backend/visitor';
 import { ck, pluralKey } from './dict';
+import { CARD_PAYMENTS } from '@/lib/launch';
 
 /* ------------------------------------------------------------------ */
 /* Helpers                                                             */
@@ -437,8 +438,11 @@ export function useTotalsView(totals: Totals, opts: { showEstimateHint?: boolean
 /* ------------------------------------------------------------------ */
 export function TrustNotes({ className, compact }: { className?: string; compact?: boolean }) {
   const t = useDict(ck);
+  const pay = useSettings().payments;
+  // name only the ways of paying this shop offers (card needs a bank's payment page, which the site doesn't have yet)
+  const secure = pay.card && CARD_PAYMENTS && !BACKEND ? 'trust_secureText' : pay.bank ? 'trust_secureText_bank' : 'trust_secureText_cod';
   const items = [
-    { icon: ShieldCheck, title: t('trust_secure'), text: t('trust_secureText') },
+    { icon: ShieldCheck, title: t('trust_secure'), text: t(secure) },
     { icon: Eye, title: t('trust_exam'), text: t('trust_examText') },
     { icon: Award, title: t('trust_warranty'), text: t('trust_warrantyText') },
   ];

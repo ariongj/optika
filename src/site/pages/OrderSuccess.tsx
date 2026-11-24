@@ -1,5 +1,6 @@
 import { BACKEND } from '@/lib/backend/api';
-import { Link, useParams } from 'react-router';
+import { useParams } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { ArrowRight, Banknote, CalendarCheck, Copy, CreditCard, FileText, FlaskConical, Home, Landmark, LayoutDashboard, Mail, PackageSearch, PhoneCall, ShieldCheck, ShieldPlus, Store, Truck } from 'lucide-react';
 import type { ComponentType } from 'react';
 import { Button, ButtonLink } from '@/components/ui/Button';

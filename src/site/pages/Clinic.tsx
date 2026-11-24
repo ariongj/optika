@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { ArrowRight, ArrowUpRight, CalendarCheck, CalendarClock, Check, Clock, FileText, Glasses, Info, Package, Pill, ScanEye, ShieldCheck, Stethoscope } from 'lucide-react';
 import { Accent, Img, Reveal } from '@/components/ui/misc';
 import { Button } from '@/components/ui/Button';

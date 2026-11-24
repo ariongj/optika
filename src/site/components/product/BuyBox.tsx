@@ -1,5 +1,5 @@
 import { useState, type Ref } from 'react';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { toast } from 'sonner';
 import { AnimatePresence, motion } from '@/lib/motion';
 import {

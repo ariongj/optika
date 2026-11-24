@@ -1,5 +1,6 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { useHistoryState } from '@/site/components/utility/useHistoryState';
 import { ArrowRight, ArrowUpRight, CalendarCheck, ChevronDown, Phone, Search, SearchX, Sparkles, X } from 'lucide-react';
 import type { Product } from '@/lib/types';

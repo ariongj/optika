@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { AlertCircle, CalendarCheck, Info } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Checkbox, FieldError, Input, Textarea } from '@/components/ui/Field';

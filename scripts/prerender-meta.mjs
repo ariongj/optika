@@ -49,8 +49,15 @@ const clip = (v, n = 158) => {
 };
 const brand = s.companyName || 'Miftari Vision';
 const titled = (t) => `${plain(t)} · ${brand}`;
+/** "Main — detail": the detail is dropped when the whole title would run past what results pages show (~65 chars). */
+const fitTitle = (main, detail) => (detail && titled(`${main} — ${detail}`).length <= 65 ? `${main} — ${detail}` : main);
+/** schema.org BreadcrumbList for a trail of [name, route] (route '' = home). */
+const crumbs = (trail) => ({
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [['Ballina', ''], ...trail].map(([name, route], i) => ({ '@type': 'ListItem', position: i + 1, name: plain(name), item: abs(route ? `${route}/` : '') })),
+});
 const shell = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
-const today = new Date().toISOString().slice(0, 10);
 
 const business = {
   '@context': 'https://schema.org',
@@ -112,12 +119,12 @@ const STATIC = [
   ['kontakt', 'Kontakt — Mbretëresha Teutë 182, Mitrovicë', `Na telefononi në ${s.phone}, na shkruani në WhatsApp ose ejani në optikë. Hën–Sht 10:00–19:30.`, '/images/misc/contact.webp'],
   ['keshilla', 'Këshilla për syzet dhe shëndetin e syve', 'Si ta lexoni recetën, çfarë është PD, lentet progresive, lentet për ekran dhe më shumë — të shpjeguara thjesht.', '/images/misc/lens.webp'],
   ['provo-virtualisht', 'Provo virtualisht — syzet në fytyrën tuaj', 'Provoni kornizat me kamerën live, me një foto ose në 3D. Imazhi përpunohet vetëm në pajisjen tuaj.', '/images/hero/sun.webp'],
-  ['matja-pd', 'Matja e PD-së me kamerë — distanca pupilare për pak sekonda', 'Matni distancën pupilare (PD) me kamerën e telefonit ose kompjuterit. Vlerë orientuese; imazhi përpunohet vetëm në pajisjen tuaj. Matja e saktë në optikë është falas.', '/images/misc/lens.webp'],
+  ['matja-pd', 'Matja e PD-së me kamerë — distanca pupilare', 'Matni distancën pupilare (PD) me kamerën e telefonit ose kompjuterit. Vlerë orientuese; imazhi përpunohet vetëm në pajisjen tuaj. Matja e saktë në optikë është falas.', '/images/misc/lens.webp'],
   ['klinika', 'Klinika Miftari — kujdes specialistik për sytë', 'Konsulta specialistike dhe vlerësim për sytë në Klinikën Miftari, Mitrovicë. Rezervoni termin online ose me telefon.', '/images/s/klinika.webp'],
   ['optical-lab', 'Optical Lab — lente me recetë dhe partneritet B2B', 'Laboratori optik i Miftari Vision Group: punim, centrim, montim dhe kontroll i lenteve me recetë — edhe për optikat partnere në Kosovë dhe BE.', '/images/s/lab-polish.webp'],
   ['lentet', 'Udhëzuesi i lenteve — zgjidhni lentet e duhura', 'Njëvizore, progresive, për ekran, fotokromatike apo me dioptri dielli? Gjeni lentet dhe indeksin e duhur për recetën tuaj.', '/images/misc/lens.webp'],
   ['gjej-kornizen', 'Gjeni kornizën tuaj — kuiz i shpejtë', 'Pesë pyetje për formën e fytyrës, stilin dhe madhësinë — dhe tri korniza që ju shkojnë, me provë virtuale.', '/images/cat/optike.webp'],
-  ['syze-inteligjente', 'Syze inteligjente — Ray-Ban Meta, Oakley Meta dhe Meta Ray-Ban Display', 'Syze me kamerë, audio dhe asistent zanor. Provojini te Miftari Vision në Mitrovicë; lente me dioptri nga laboratori ynë, kur modeli e lejon. Çmimi dhe disponueshmëria sipas kërkesës.', '/images/smart/hero.webp'],
+  ['syze-inteligjente', 'Syze inteligjente Ray-Ban Meta dhe Oakley Meta', 'Syze me kamerë, audio dhe asistent zanor. Provojini te Miftari Vision në Mitrovicë; lente me dioptri nga laboratori ynë, kur modeli e lejon. Çmimi dhe disponueshmëria sipas kërkesës.', '/images/smart/hero.webp'],
   ['rezervo', 'Rezervo kontrollin e syve', 'Zgjidhni shërbimin, ditën dhe orën — kontroll i syve, përshtatje, lente kontakti ose konsultë në Klinikën Miftari.', '/images/hero/exam.webp'],
 ];
 for (const [r, t, d, img] of STATIC) put(r, { title: t, description: d, image: img });
@@ -173,20 +180,26 @@ for (const [r, t] of [['shporta', 'Shporta'], ['pagesa', 'Pagesa'], ['kerko', 'K
 const catName = new Map(db.categories.map((c) => [c.id, c.name.sq]));
 /** Product route → its first photo (file path inside dist) and whether a thumbnail strip stands beside it. */
 const productPhoto = new Map();
-for (const c of db.categories) put(`produktet/${c.slug}`, { title: `${c.name.sq} — ${c.tagline.sq}`, description: c.description.sq, image: c.image, preload: openingImage(c.image) });
+for (const c of db.categories)
+  put(`produktet/${c.slug}`, { title: fitTitle(c.name.sq, c.tagline.sq), description: c.description.sq, image: c.image, preload: openingImage(c.image), jsonld: crumbs([['Produktet', 'produktet'], [c.name.sq, `produktet/${c.slug}`]]) });
+const catSlug = new Map(db.categories.map((c) => [c.id, c.slug]));
+// Frames photographed in several colours can share the same short text: those descriptions start with the product's
+// own name, so no two pages hand search engines the same summary.
+const shortCount = new Map();
+for (const p of db.products) shortCount.set(plain(p.short.sq), (shortCount.get(plain(p.short.sq)) ?? 0) + 1);
 for (const p of db.products.filter((x) => x.status === 'active')) {
-  const price = p.salePrice ?? p.price;
+  const price = p.salePrice > 0 && p.salePrice < p.price ? p.salePrice : p.price; // as the page shows it (basePrice)
   // "price on request" listings (smart glasses): no price in the text and no Offer in the structured data
   const onRequest = !!p.quoteOnly && !(p.price > 0);
   const firstRel = (BASE !== '/' && (p.images[0] ?? '').startsWith(BASE) ? p.images[0].slice(BASE.length) : (p.images[0] ?? '')).replace(/^\/+/, '');
   if (firstRel && fs.existsSync(path.join(DIST, firstRel))) productPhoto.set(`produkt/${p.slug}`, { rel: firstRel, many: p.images.length > 1 });
   put(`produkt/${p.slug}`, {
-    title: p.seo?.title || `${p.name.sq} — ${catName.get(p.categoryId) ?? ''}`,
-    description: p.seo?.description || `${plain(p.short.sq)} ${onRequest ? 'Çmimi sipas kërkesës' : LIVE_PRICES ? '' : `${price} €`} · ${brand}, Mitrovicë.`.replace(/\s+·/, ' ·'),
+    title: p.seo?.title || fitTitle(p.name.sq, catName.get(p.categoryId)),
+    description: p.seo?.description || `${shortCount.get(plain(p.short.sq)) > 1 ? `${plain(p.name.sq)}. ` : ''}${plain(p.short.sq)} ${onRequest ? 'Çmimi sipas kërkesës' : LIVE_PRICES ? '' : `${price} €`} · ${brand}, Mitrovicë.`.replace(/\s+·/, ' ·'),
     image: p.images[0],
     preload: p.images[0] ? openingImage(p.images[0]) : [],
     type: 'product',
-    jsonld: {
+    jsonld: [{
       '@context': 'https://schema.org',
       '@type': 'Product',
       name: p.name.sq,
@@ -203,19 +216,20 @@ for (const p of db.products.filter((x) => x.status === 'active')) {
         url: abs(`produkt/${p.slug}`),
         seller: { '@type': 'Organization', name: brand },
       } }),
-    },
+    }, crumbs([...(catSlug.has(p.categoryId) ? [[catName.get(p.categoryId), `produktet/${catSlug.get(p.categoryId)}`]] : []), [p.name.sq, `produkt/${p.slug}`]])],
   });
 }
 for (const c of db.collections.filter((x) => x.published)) put(`koleksioni/${c.slug}`, { title: c.seo?.title || c.title.sq, description: c.seo?.description || c.description.sq, image: c.image });
 for (const o of db.offers.filter((x) => x.status !== 'draft')) put(`oferta/${o.slug}`, { title: o.landing?.title?.sq || o.name.sq, description: o.landing?.text?.sq || o.description.sq, image: o.image });
-for (const pg of db.pages.filter((x) => x.published)) put(`faqe/${pg.slug}`, { title: pg.title.sq, description: pg.body.sq, image: '/images/misc/contact.webp' });
+for (const pg of db.pages.filter((x) => x.published)) put(`faqe/${pg.slug}`, { title: pg.seo?.title || pg.title.sq, description: pg.seo?.description || pg.body.sq, image: '/images/misc/contact.webp' });
 for (const po of db.posts.filter((x) => x.published))
   put(`keshilla/${po.slug}`, {
-    title: po.title.sq,
-    description: po.excerpt.sq,
+    title: po.seo?.title || po.title.sq,
+    description: po.seo?.description || po.excerpt.sq,
     image: po.cover,
     type: 'article',
-    jsonld: {
+    lastmod: String(po.publishedAt ?? '').slice(0, 10),
+    jsonld: [{
       '@context': 'https://schema.org',
       '@type': 'Article',
       headline: plain(po.title.sq),
@@ -224,7 +238,7 @@ for (const po of db.posts.filter((x) => x.published))
       datePublished: po.publishedAt,
       author: { '@type': 'Organization', name: po.author || brand },
       publisher: { '@type': 'Organization', name: brand, logo: { '@type': 'ImageObject', url: abs('icon-512.png') } },
-    },
+    }, crumbs([['Këshilla', 'keshilla'], [po.title.sq, `keshilla/${po.slug}`]])],
   });
 
 /** Prefer the 1200×630 JPG made for link previews (public/og/<dir>-<name>.jpg) over the WebP page image. */
@@ -238,7 +252,8 @@ function ogImage(img) {
 /* ---- write shells ---- */
 function render(route, m, shellFor = route) {
   const url = abs(route ? `${route}/` : '');
-  const title = m.raw ? plain(m.title) : titled(m.title);
+  // a long title (an article's) keeps its own words rather than losing them to the brand name at the cut-off
+  const title = m.raw || titled(m.title).length > 70 ? plain(m.title) : titled(m.title);
   const desc = clip(m.description);
   const image = ogImage(m.image || '/images/hero/optical.webp');
   const head = [
@@ -259,7 +274,7 @@ function render(route, m, shellFor = route) {
     `<meta name="twitter:image" content="${esc(image)}" />`,
     ...(m.preload ?? []),
     ...(shellFor === '404' ? [] : pageChunkLinks(route)),
-    m.jsonld ? `<script type="application/ld+json">${JSON.stringify(m.jsonld).replace(/</g, '\\u003c')}</script>` : '',
+    ...[m.jsonld ?? []].flat().map((j) => `<script type="application/ld+json">${JSON.stringify(j).replace(/</g, '\\u003c')}</script>`),
   ]
     .filter(Boolean)
     .join('\n    ');
@@ -309,7 +324,12 @@ const SHELL_CSS = [
   '.sh-r{display:flex;align-items:center;gap:2px;margin-left:auto}',
   '.sh-w,.sh-b{display:none}',
   '.sh-dark{height:calc(100svh - 113px);min-height:560px;background:#1c1a17}',
-  '.sh-srv{height:649px}.sh-cat{height:410px}',
+  // measured heights of those heroes (the dark box's own min-height must not stretch them): services 649 / 634 / 575 px,
+  // categories 400 / 460 px (a long description makes a phone's a little taller; the app's box then takes over)
+  '.sh-srv,.sh-cat{min-height:0}.sh-srv{height:649px}.sh-cat{height:400px}',
+  '@media(min-width:640px){.sh-srv{height:634px}.sh-cat{height:460px}}@media(min-width:768px){.sh-srv{height:575px}}',
+  // services and category heroes: the photo covers the whole dark box (PageHero / ShopHeader), under the same shading
+  '.sh-hero{position:relative;overflow:hidden}.sh-hero img,.sh-hero i{position:absolute;inset:0;width:100%;height:100%}.sh-hero img{object-fit:cover}',
   // product page: the main photo where the gallery draws it (src/site/pages/ProductPage.tsx, product/Gallery.tsx):
   // page padding, one line of breadcrumb (19.5px), the gap, then a 4:5 rounded box; from 1024px the 7-of-12 column,
   // with room on its left for the thumbnail strip (84px + 16px) when the product has more than one photo
@@ -322,7 +342,7 @@ const SHELL_CSS = [
   '@keyframes sh-in{from{opacity:0}}@keyframes sh-run{from{transform:translateX(-100%)}to{transform:translateX(250%)}}',
   '@media(prefers-reduced-motion:reduce){.sh-load:before{width:100%;animation:none}}',
   '@media(min-width:640px){.sh-c{padding:0 24px}.sh-w{display:grid}.sh-p{padding:32px 24px 0}.sh-pg{margin-top:51.5px}}',
-  '@media(min-width:1024px){.sh-c{padding:0 32px}.sh-m{display:none}.sh-srv{height:575px}.sh-cat{height:461px}' +
+  '@media(min-width:1024px){.sh-c{padding:0 32px}.sh-m{display:none}' +
     '.sh-p{padding:32px 32px 0}.sh-pg{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:48px}.sh-pl{grid-column:span 7/span 7}.sh-pt{padding-left:100px}}',
   '@media(min-width:1280px){.sh-b{display:block;flex:none;width:166px;margin-left:8px}.sh-pg{gap:64px}}',
   '@media(min-width:1536px){.sh-logo{height:46px}}',
@@ -337,8 +357,21 @@ function appShell(route) {
   // pages that open on something dark, so a light page doesn't flash first
   const first = route.split('/')[0];
   if (first === 'lentet' || first === 'optical-lab') return `${bar}${header()}<div class="sh-dark"></div>`;
-  if (first === 'sherbimet') return `${bar}${header()}<div class="sh-dark sh-srv"></div>`;
-  if (route.startsWith('produktet/')) return `${bar}${header()}<div class="sh-dark sh-cat"></div>`;
+  // the services and category pages open on a photo: drawn here (it is the largest thing on the first screen), so a slow
+  // phone shows it seconds before the JavaScript does; the app's own picture then takes its place without a fade
+  const heroBox = (cls, img, shades) => {
+    const rel = img ? (BASE !== '/' && img.startsWith(BASE) ? img.slice(BASE.length) : img).replace(/^\/+/, '') : '';
+    if (!rel || !fs.existsSync(path.join(DIST, rel))) return `<div class="sh-dark ${cls}"></div>`;
+    return `<div class="sh-dark sh-hero ${cls}" aria-hidden="true"><img src="${BASE}${rel}" alt="" fetchpriority="high" decoding="sync"${shades.img}>${shades.layers.map((bg) => `<i style="background:${bg}"></i>`).join('')}</div>`;
+  };
+  if (first === 'sherbimet')
+    return `${bar}${header()}${heroBox('sh-srv', '/images/hero/exam.webp', { img: ' style="opacity:.55"', layers: ['linear-gradient(to top,#1c1a17,rgb(28 26 23/.5),rgb(28 26 23/.2))'] })}`;
+  if (route.startsWith('produktet/')) {
+    const cat = db.categories.find((c) => `produktet/${c.slug}` === route);
+    // smart glasses open on their own dark launch banner, not on a photo
+    const photo = cat && !/\/images\/(?:smart\/|cat\/smart)/.test(cat.image) ? cat.image : '';
+    return `${bar}${header()}${heroBox('sh-cat', photo, { img: '', layers: ['linear-gradient(90deg,rgb(28 26 23/.9) 0%,rgb(28 26 23/.62) 42%,rgb(28 26 23/.12) 100%)', 'linear-gradient(to top,rgb(28 26 23/.7),transparent,rgb(28 26 23/.3))'] })}`;
+  }
   // a product: its first photo, in place. On a slow phone that is seconds before the JavaScript has it.
   const photo = productPhoto.get(route);
   if (photo)
@@ -370,14 +403,18 @@ fs.writeFileSync(
   render('', { ...pages.get(''), noindex: true, preload: [] }, '404'),
 );
 
-const urls = [...pages].filter(([, m]) => !m.noindex).map(([r]) => abs(r ? `${r}/` : ''));
+// <lastmod> only where the date is real (an article's publication date): a build date on every URL would tell search
+// engines that everything changed on every release, and they learn to ignore the field.
+const urls = [...pages].filter(([, m]) => !m.noindex).map(([r, m]) => ({ loc: abs(r ? `${r}/` : ''), lastmod: /^\d{4}-\d{2}-\d{2}$/.test(m.lastmod ?? '') ? m.lastmod : '' }));
 fs.writeFileSync(
   path.join(DIST, 'sitemap.xml'),
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls
-    .map((u) => `  <url><loc>${esc(u)}</loc><lastmod>${today}</lastmod></url>`)
+    .map((u) => `  <url><loc>${esc(u.loc)}</loc>${u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : ''}</url>`)
     .join('\n')}\n</urlset>\n`,
 );
-fs.writeFileSync(path.join(DIST, 'robots.txt'), `User-agent: *\nDisallow: ${BASE}admin/\n${LIVE_PRICES ? `Disallow: ${BASE}api/\n` : ''}Allow: /\n\nSitemap: ${abs('sitemap.xml')}\n`);
+// The CMS is not blocked here: its pages say noindex themselves (and the server adds X-Robots-Tag), which a crawler can
+// only read if it may fetch them. The API is not a page.
+fs.writeFileSync(path.join(DIST, 'robots.txt'), `User-agent: *\n${LIVE_PRICES ? `Disallow: ${BASE}api/\n` : ''}Allow: /\n\nSitemap: ${abs('sitemap.xml')}\n`);
 fs.rmSync(tmp, { recursive: true, force: true });
 fs.rmSync(path.join(DIST, '.vite'), { recursive: true, force: true }); // the build manifest isn't part of the site
 console.log(`prerender-meta: ${n} route shells, ${urls.length} URLs in sitemap.xml, robots.txt, 404.html`);

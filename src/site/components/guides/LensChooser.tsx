@@ -1,7 +1,7 @@
 import { maxOrderQty } from '@/lib/inventory';
 import { useCartFull } from '@/site/components/product/useCartFull';
 import { memo, useEffect, useMemo, useRef, type ComponentType } from 'react';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { toast } from 'sonner';
 import { AnimatePresence, motion, useReducedMotion } from '@/lib/motion';
 import { ArrowRight, ArrowUpRight, BookOpen, CalendarCheck, Car, Check, FlaskConical, Glasses, Info, Layers, Monitor, ShoppingBag, Sun, SunMoon } from 'lucide-react';

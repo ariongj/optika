@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { toast } from 'sonner';
 import { Heart, Plus, ArrowUpRight, CalendarCheck, Glasses, FlaskConical } from 'lucide-react';
 import type { Product } from '@/lib/types';

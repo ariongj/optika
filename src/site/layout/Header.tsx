@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Link, NavLink, useLocation } from 'react-router';
+import { useLocation } from 'react-router';
+import { Link, NavLink } from '@/lib/router-links';
 import {
   Aperture, ArrowRight, ArrowUpRight, CalendarCheck, Eye, FlaskConical, Glasses, Heart, Layers, Menu, PackageSearch, Phone, Ruler, ScanFace, Search, ShoppingBag,
   Sparkles, Stethoscope, type LucideIcon,

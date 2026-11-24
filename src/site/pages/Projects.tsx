@@ -229,6 +229,7 @@ export default function Projects() {
         </div>
       ) : (
         <>
+          <h2 className="sr-only">{t('showing', { n: list.length, total: all.length })}</h2>
           {/* Filter bar */}
           <div className="sticky top-[76px] z-30 border-b border-line bg-paper/90 backdrop-blur-xl">
             <div className="container-x flex items-center gap-4 py-3">

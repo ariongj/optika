@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { Link, useParams } from 'react-router';
+import { useParams } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { ArrowRight, ChevronRight, Clock, FileSearch, FileText, Mail, Phone, RefreshCw, Send } from 'lucide-react';
 import { Markdown } from '@/components/ui/Markdown';
 import { ButtonLink } from '@/components/ui/Button';

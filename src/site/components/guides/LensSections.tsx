@@ -1,5 +1,5 @@
 import { useId, useState, type ComponentType } from 'react';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { ArrowRight, ArrowUpRight, Check, Eye, FlaskConical, MonitorSmartphone, Shield, SunMedium, SunMoon, Waves, X } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import { Accent, Img, Reveal } from '@/components/ui/misc';

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { AnimatePresence, motion } from '@/lib/motion';
 import { ArrowRight, Search, X } from 'lucide-react';
 import { Img } from '@/components/ui/misc';

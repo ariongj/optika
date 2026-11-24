@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { ArrowRight, CalendarDays, Clock, Eye, Phone, Ruler, X } from 'lucide-react';
 import { Modal } from '@/components/ui/Overlay';
 import { Img } from '@/components/ui/misc';

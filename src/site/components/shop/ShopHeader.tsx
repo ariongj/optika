@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { Link } from 'react-router';
+import { Link } from '@/lib/router-links';
 import { ArrowRight, ArrowUpRight, CalendarCheck, FlaskConical, Glasses, LayoutGrid, Percent, ShieldPlus, Tag } from 'lucide-react';
 import type { Category, Product } from '@/lib/types';
 import { Accent, Img } from '@/components/ui/misc';
@@ -9,6 +9,7 @@ import { site } from '@/i18n/site';
 import { basePrice, discountPct, isOnSale, priceOnRequest } from '@/lib/pricing';
 import { money, perUnit } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { BASE, href } from '@/lib/paths';
 import { isLensPackage, rxReady } from '@/site/components/product/optical';
 import { T, countLabel } from './dict';
 import { common } from '@/i18n/common';
@@ -28,6 +29,12 @@ export function shopHref(slug: string | null, params: URLSearchParams, patch: Re
 /* ------------------------------------------------------------------ */
 /* Category banner                                                      */
 /* ------------------------------------------------------------------ */
+// The category photo the static first screen already shows, standing still (scripts/prerender-meta.mjs). The app draws it
+// still too, rather than zooming it in again once its script has arrived. (Read when this chunk loads: main.tsx waits for
+// it before React replaces that first screen.)
+const shellSrc = typeof document === 'undefined' ? null : (document.querySelector('#root > .sh-hero.sh-cat img')?.getAttribute('src') ?? null);
+const shellPhoto = shellSrc ? (shellSrc.startsWith(BASE) ? shellSrc : href(shellSrc)) : null;
+
 export function CategoryBanner({ category, products, sale }: { category: Category; products: Product[]; sale: boolean }) {
   const t = useDict(T);
   const ts = useDict(site);
@@ -45,7 +52,7 @@ export function CategoryBanner({ category, products, sale }: { category: Categor
 
   return (
     <section className="relative isolate overflow-hidden bg-ink">
-      <Img src={category.image} eager alt="" className="absolute inset-0 -z-10 h-full w-full object-cover" style={{ animation: 'kenburns 2.6s cubic-bezier(.16,1,.3,1) both' }} />
+      <Img src={category.image} eager alt="" className="absolute inset-0 -z-10 h-full w-full object-cover" style={shellPhoto && href(category.image) === shellPhoto ? undefined : { animation: 'kenburns 2.6s cubic-bezier(.16,1,.3,1) both' }} />
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgb(28_26_23/0.9)_0%,rgb(28_26_23/0.62)_42%,rgb(28_26_23/0.12)_100%)]" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink/70 via-transparent to-ink/30" />
       <div className="container-x flex min-h-[400px] flex-col pb-10 pt-7 sm:min-h-[460px] sm:pb-14 sm:pt-9">
